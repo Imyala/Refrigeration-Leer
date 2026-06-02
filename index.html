@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refrigeration Cycle Simulator</title>
+  <meta name="description" content="An interactive, animated vapour-compression refrigeration cycle simulator for learning how refrigerant flows and changes state." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Refrigeration Cycle Simulator</h1>
+      <p class="subtitle">Watch the refrigerant flow and change state through a vapour-compression cycle</p>
+    </div>
+    <div class="controls">
+      <label class="refrigerant-select">
+        <span>Refrigerant</span>
+        <select id="refrigerantSelect"></select>
+      </label>
+      <button id="powerBtn" class="btn btn-stop" type="button">Stop Compressor</button>
+    </div>
+  </header>
+
+  <section class="readouts" id="readouts" aria-label="Live system readings"></section>
+
+  <main class="stage">
+    <!-- Schematic diagram -->
+    <div class="diagram-wrap">
+      <svg id="diagram" viewBox="0 0 800 560" role="img" aria-label="Refrigeration cycle schematic">
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Pipes: a base layer and an animated flow overlay -->
+        <g class="pipes-base">
+          <path d="M 245 150 L 545 150" />
+          <path d="M 620 195 L 620 405" />
+          <path d="M 595 430 L 255 430" />
+          <path d="M 180 385 L 180 200" />
+        </g>
+        <g class="pipes-flow">
+          <path id="seg-discharge" d="M 245 150 L 545 150" data-segment="discharge" />
+          <path id="seg-liquid"    d="M 620 195 L 620 405" data-segment="liquid" />
+          <path id="seg-evapfeed"  d="M 595 430 L 255 430" data-segment="evapfeed" />
+          <path id="seg-suction"   d="M 180 385 L 180 200" data-segment="suction" />
+        </g>
+
+        <!-- Liquid receiver (sits on the liquid line) -->
+        <g class="component" data-component="receiver" tabindex="0" role="button" aria-label="Liquid receiver">
+          <rect x="588" y="260" width="64" height="80" rx="10" class="comp-box receiver-box" />
+          <rect x="596" y="300" width="48" height="32" rx="3" class="receiver-liquid" />
+          <text x="620" y="356" class="comp-label">RECEIVER</text>
+        </g>
+
+        <!-- Compressor -->
+        <g class="component" data-component="compressor" tabindex="0" role="button" aria-label="Compressor">
+          <rect x="115" y="105" width="130" height="90" rx="12" class="comp-box compressor-box" />
+          <circle cx="180" cy="143" r="20" class="comp-icon compressor-icon" />
+          <text x="180" y="183" class="comp-label">COMPRESSOR</text>
+        </g>
+
+        <!-- Condenser -->
+        <g class="component" data-component="condenser" tabindex="0" role="button" aria-label="Condenser">
+          <rect x="545" y="105" width="150" height="90" rx="12" class="comp-box condenser-box" />
+          <g class="fin-set condenser-fins">
+            <line x1="565" y1="120" x2="565" y2="180" /><line x1="580" y1="120" x2="580" y2="180" />
+            <line x1="595" y1="120" x2="595" y2="180" /><line x1="610" y1="120" x2="610" y2="180" />
+          </g>
+          <text x="640" y="150" class="comp-sub">heat OUT</text>
+          <text x="620" y="183" class="comp-label">CONDENSER</text>
+        </g>
+
+        <!-- Metering / expansion device -->
+        <g class="component" data-component="metering" tabindex="0" role="button" aria-label="Metering device">
+          <path d="M 620 410 L 640 430 L 620 450 L 600 430 Z" class="comp-box metering-box" />
+          <text x="620" y="478" class="comp-label">METERING DEVICE</text>
+        </g>
+
+        <!-- Evaporator -->
+        <g class="component" data-component="evaporator" tabindex="0" role="button" aria-label="Evaporator">
+          <rect x="105" y="385" width="150" height="90" rx="12" class="comp-box evaporator-box" />
+          <g class="fin-set evaporator-fins">
+            <line x1="125" y1="400" x2="125" y2="460" /><line x1="140" y1="400" x2="140" y2="460" />
+            <line x1="155" y1="400" x2="155" y2="460" /><line x1="170" y1="400" x2="170" y2="460" />
+          </g>
+          <text x="200" y="430" class="comp-sub">heat IN</text>
+          <text x="180" y="463" class="comp-label">EVAPORATOR</text>
+        </g>
+
+        <!-- Flowing particles get injected here -->
+        <g id="particles"></g>
+      </svg>
+
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <!-- Side: P-h diagram + component info -->
+    <aside class="side">
+      <div class="panel ph-panel">
+        <div class="panel-head">
+          <h2>Pressure–Enthalpy (P–h) diagram</h2>
+          <span class="hint">illustrative</span>
+        </div>
+        <svg id="phChart" viewBox="0 0 320 240" role="img" aria-label="Pressure enthalpy diagram"></svg>
+        <p class="ph-caption">The moving dot shows where the refrigerant is in its cycle right now. Inside the dome = a mix of liquid &amp; vapour; left of it = liquid; right = vapour.</p>
+      </div>
+
+      <div class="panel info-panel">
+        <div class="panel-head">
+          <h2 id="infoTitle">Click a component</h2>
+        </div>
+        <div id="infoBody" class="info-body">
+          <p class="info-hint">Select any component in the diagram to learn what it does and how it changes the refrigerant. Or just watch the colours flow — each colour is a different refrigerant state.</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Educational tool · values are approximate, representative operating points.</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
