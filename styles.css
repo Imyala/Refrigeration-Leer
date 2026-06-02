@@ -91,6 +91,35 @@ body {
 .slider-group input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
 .slider-hint { font-size: 11px; color: var(--muted); }
 .sim-controls .btn-ghost { align-self: center; }
+.fault-select { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.fault-select select {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+}
+
+/* Fault banner */
+.fault-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, rgba(224,64,90,.18), rgba(224,64,90,.04));
+  border-bottom: 1px solid #e0405a;
+  color: var(--text); font-size: 13px; line-height: 1.5;
+}
+.fault-banner[hidden] { display: none; }
+.fault-tag {
+  background: #e0405a; color: #fff; font-weight: 700; font-size: 11px;
+  letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+}
+
+/* Performance grid */
+.perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border-radius: 10px; overflow: hidden; }
+.perf-cell { background: #0c131b; padding: 12px 14px; }
+.perf-cell .k { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.perf-cell .v { font-size: 20px; font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.perf-cell .u { font-size: 11px; color: var(--muted); font-weight: 400; }
+.perf-cell.cop .v { color: #6fe0a0; }
+.perf-cell.cap .v { color: var(--accent); }
+.perf-caption { font-size: 11px; color: var(--muted); margin: 10px 0 0; line-height: 1.5; }
 
 /* ---------- Readouts ---------- */
 .readouts {

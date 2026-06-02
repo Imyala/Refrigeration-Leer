@@ -25,19 +25,29 @@ particles and animated flow lines so the movement is easy to follow visually.
   discharge gas gets hotter, and flow increases; add evaporator load and the
   low side warms up. Every readout, the info cards, and the P–h cycle update
   in real time. "Reset" returns to the nominal point.
+- **Fault simulation** — pick a fault (low charge, dirty/blocked condenser,
+  iced/starved evaporator, overcharge) and the whole system reacts the way it
+  would in the field: pressures, superheat, subcooling, discharge temperature,
+  COP and capacity all shift, and a banner explains the diagnostic signature.
+  Great for learning *how to read the gauges*.
+- **Performance panel** — live COP, capacity (relative to the fluid's nominal
+  point), refrigeration effect, compressor work, heat rejected and pressure
+  ratio, all computed from the cycle enthalpies.
 - **Click any component** for a detailed explanation and its in/out states.
 - **Start / Stop compressor** eases the flow up and down like the real thing.
 
 ## Accuracy notes
 
-- The **P–h diagram for R134a is built from a real saturation table**
-  (ASHRAE-style, `hf = 200 kJ/kg` reference at 0 °C). The dome shape and the
-  cycle-point enthalpies are computed from that data; saturation temperatures
-  follow from the live pressures.
-- Other refrigerants use representative operating values, and their P–h plot
-  is marked *illustrative* (the dome shown is R134a's for shape reference).
-- The slider model is **directionally correct but qualitative** — it's tuned
-  for intuition, not for engineering design.
+- **Every refrigerant is backed by its own saturation table**, so each P–h
+  dome is that fluid's real shape, and saturation temperatures and cycle
+  enthalpies are computed from data rather than hardcoded.
+- The property tables are **representative/approximate** (close to standard
+  references, embedded for a self-contained static site). R134a is the
+  best-calibrated; treat absolute COP comparisons *between* fluids as
+  indicative rather than exact. Trends within a fluid — and the fault
+  signatures — are the reliable, teachable part.
+- The slider and fault models are **directionally correct but qualitative** —
+  tuned for intuition, not for engineering design.
 
 ## Refrigerants
 

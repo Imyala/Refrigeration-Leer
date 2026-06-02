@@ -1,104 +1,109 @@
 /* =========================================================================
    Refrigeration Cycle Simulator
    -------------------------------------------------------------------------
-   A vapour-compression cycle visualised. Refrigerant data is kept in a table
-   keyed by fluid name so the simulator is interchangeable between fluids.
-   R134a is the reference fluid and is backed by a real saturation table
-   (used to draw an accurate P-h dome and compute cycle enthalpies). The
-   compressor-speed and evaporator-load sliders drive a small operating-point
-   model so pressures, temperatures and flow respond live.
+   A vapour-compression cycle visualised. Each refrigerant is backed by a
+   saturation table, so the P-h dome, saturation temperatures and cycle
+   enthalpies are all derived from data. Sliders (compressor speed, evaporator
+   load) and a fault selector drive an operating-point model so the whole
+   system — pressures, temps, flow, COP, capacity — responds live.
 
-   Values are representative of a typical air-conditioning duty and are meant
-   for learning the shape of the cycle, not for engineering design.
+   Property values are representative/approximate and meant for learning the
+   shape and behaviour of the cycle, not for engineering design.
    ========================================================================= */
 
-/* ---- Real R134a saturation table (ASHRAE-style) --------------------------
-   P in bar (absolute), T in °C, hf/hg in kJ/kg (ref: hf = 200 at 0 °C).      */
-const R134A_SAT = [
-  { T: -40, P: 0.512, hf: 148.1, hg: 374.0 },
-  { T: -30, P: 0.844, hf: 161.1, hg: 380.4 },
-  { T: -20, P: 1.327, hf: 173.6, hg: 386.6 },
-  { T: -10, P: 2.007, hf: 186.7, hg: 392.7 },
-  { T:   0, P: 2.928, hf: 200.0, hg: 398.6 },
-  { T:  10, P: 4.146, hf: 213.6, hg: 404.2 },
-  { T:  20, P: 5.717, hf: 227.5, hg: 409.3 },
-  { T:  30, P: 7.702, hf: 241.7, hg: 414.0 },
-  { T:  40, P: 10.166, hf: 256.4, hg: 418.0 },
-  { T:  50, P: 13.179, hf: 271.6, hg: 421.2 },
-  { T:  60, P: 16.818, hf: 287.5, hg: 423.3 },
-  { T:  70, P: 21.168, hf: 304.3, hg: 424.1 },
-  { T:  80, P: 26.332, hf: 322.4, hg: 422.9 },
-  { T:  90, P: 32.435, hf: 342.9, hg: 419.0 },
-  { T: 100, P: 39.724, hf: 369.0, hg: 408.0 },
-];
-const R134A_PMIN = R134A_SAT[0].P, R134A_PMAX = R134A_SAT[R134A_SAT.length - 1].P;
+/* ---- Saturation tables  [T(°C), P(bar abs), hf, hg (kJ/kg)] ---------------
+   Each table is internally consistent (its own enthalpy reference), so
+   differences within a fluid — and therefore COP — are meaningful.           */
+function toRows(arr) { return arr.map(([T, P, hf, hg]) => ({ T, P, hf, hg })); }
 
-// Generic 1-D linear interpolation over the table: look up `outKey` for a
-// given value of `inKey` (e.g. find T or hf/hg for a pressure P, or vice-versa).
+const TABLES = {
+  R134a: toRows([
+    [-40,0.512,148.1,374.0],[-30,0.844,161.1,380.4],[-20,1.327,173.6,386.6],
+    [-10,2.007,186.7,392.7],[0,2.928,200.0,398.6],[10,4.146,213.6,404.2],
+    [20,5.717,227.5,409.3],[30,7.702,241.7,414.0],[40,10.166,256.4,418.0],
+    [50,13.179,271.6,421.2],[60,16.818,287.5,423.3],[70,21.168,304.3,424.1],
+    [80,26.332,322.4,422.9],[90,32.435,342.9,419.0],[100,39.724,369.0,408.0],
+  ]),
+  R410A: toRows([
+    [-40,1.76,137.5,400.0],[-30,2.72,153.0,405.0],[-20,4.00,169.0,410.0],
+    [-10,5.73,185.0,414.5],[0,8.00,200.0,421.0],[10,10.9,218.0,425.0],
+    [20,14.4,234.0,428.0],[30,18.8,251.0,430.0],[40,24.1,269.0,430.5],
+    [50,30.6,289.0,428.0],[60,38.3,311.0,421.0],
+  ]),
+  R22: toRows([
+    [-40,1.05,154.0,388.0],[-30,1.64,166.0,393.0],[-20,2.45,178.0,398.0],
+    [-10,3.55,190.0,402.0],[0,4.98,200.0,405.0],[10,6.81,213.0,409.0],
+    [20,9.10,224.0,412.0],[30,11.9,237.0,414.0],[40,15.3,250.0,416.0],
+    [50,19.4,264.0,416.0],[60,24.3,279.0,414.0],[70,30.2,296.0,409.0],
+  ]),
+  R404A: toRows([
+    [-40,1.32,150.0,358.0],[-30,2.05,165.0,364.0],[-20,3.05,177.0,369.0],
+    [-10,4.39,189.0,372.0],[0,6.12,200.0,375.0],[10,8.31,214.0,378.0],
+    [20,11.1,229.0,379.0],[30,14.4,245.0,379.0],[40,18.5,262.0,377.0],
+    [50,23.2,281.0,372.0],[60,28.8,302.0,362.0],
+  ]),
+};
+
+// Generic 1-D linear interpolation: look up `outKey` for a given value of `inKey`.
 function interpTable(table, inKey, x, outKey) {
   const asc = table[0][inKey] < table[table.length - 1][inKey];
   for (let i = 0; i < table.length - 1; i++) {
-    let a = table[i], b = table[i + 1];
-    let lo = asc ? a[inKey] : b[inKey];
-    let hi = asc ? b[inKey] : a[inKey];
+    const a = table[i], b = table[i + 1];
+    const lo = Math.min(a[inKey], b[inKey]), hi = Math.max(a[inKey], b[inKey]);
     if (x >= lo && x <= hi) {
       const f = (x - a[inKey]) / (b[inKey] - a[inKey]);
       return a[outKey] + f * (b[outKey] - a[outKey]);
     }
   }
-  // clamp outside range
   const first = table[0], last = table[table.length - 1];
   return x <= (asc ? first[inKey] : last[inKey])
-    ? (asc ? first : last)[outKey]
-    : (asc ? last : first)[outKey];
+    ? (asc ? first : last)[outKey] : (asc ? last : first)[outKey];
 }
-const r134aTsatFromP = (p) => interpTable(R134A_SAT, "P", p, "T");
-const r134aHf = (t) => interpTable(R134A_SAT, "T", t, "hf");
-const r134aHg = (t) => interpTable(R134A_SAT, "T", t, "hg");
 
 const CP_VAP = 0.90;   // approx vapour specific heat (kJ/kg·K) for superheat
 const CP_LIQ = 1.40;   // approx liquid specific heat (kJ/kg·K) for subcool
 
 /* ---- Refrigerant base operating points ----------------------------------- */
 const REFRIGERANTS = {
-  R134a: {
-    label: "R134a", note: "HFC reference fluid — backed by a real saturation table.",
-    pLow: 3.5, pHigh: 16.0, tEvap: 6, tCond: 58, tSuction: 12, tDischarge: 75, tLiquid: 52,
-    h1: 402, h2: 432, h3: 280, h4: 280, table: true,
-  },
-  R410A: {
-    label: "R410A", note: "Modern high-pressure AC blend.",
-    pLow: 9.0, pHigh: 30.0, tEvap: 6, tCond: 50, tSuction: 12, tDischarge: 80, tLiquid: 45,
-    h1: 430, h2: 462, h3: 280, h4: 280, table: false,
-  },
-  R22: {
-    label: "R22", note: "Legacy HCFC, being phased out.",
-    pLow: 5.0, pHigh: 19.5, tEvap: 5, tCond: 50, tSuction: 11, tDischarge: 78, tLiquid: 44,
-    h1: 408, h2: 442, h3: 256, h4: 256, table: false,
-  },
-  R404A: {
-    label: "R404A", note: "Low-temperature commercial refrigeration blend.",
-    pLow: 4.2, pHigh: 18.0, tEvap: -10, tCond: 45, tSuction: -4, tDischarge: 65, tLiquid: 40,
-    h1: 365, h2: 392, h3: 264, h4: 264, table: false,
-  },
+  R134a: { label: "R134a", pLow: 3.5,  pHigh: 16.0, tEvap: 6,  tCond: 58, tSuction: 12, tDischarge: 75, tLiquid: 52 },
+  R410A: { label: "R410A", pLow: 9.0,  pHigh: 30.0, tEvap: 6,  tCond: 50, tSuction: 12, tDischarge: 80, tLiquid: 45 },
+  R22:   { label: "R22",   pLow: 5.0,  pHigh: 19.5, tEvap: 5,  tCond: 50, tSuction: 11, tDischarge: 78, tLiquid: 44 },
+  R404A: { label: "R404A", pLow: 4.2,  pHigh: 20.0, tEvap: -10,tCond: 43, tSuction: -4, tDischarge: 78, tLiquid: 38 },
 };
+Object.keys(REFRIGERANTS).forEach(k => { REFRIGERANTS[k].satTable = TABLES[k]; });
 const BASE_FLOW = 20;  // L/min at 100% compressor speed
 
-/* ---- State colours -------------------------------------------------------- */
-function getCss(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-const STATE_COLORS = {
-  hotgas: getCss("--state-hotgas"),
-  liquid: getCss("--state-liquid"),
-  flash:  getCss("--state-flash"),
-  vapor:  getCss("--state-vapor"),
+/* ---- Fault library -------------------------------------------------------
+   Each fault perturbs the operating point (pressure multipliers, superheat /
+   subcool / discharge offsets) the way the real fault would, plus a diagnosis. */
+const FAULTS = {
+  none: { label: "Healthy", mLow: 1, mHigh: 1, dSuper: 0, dSub: 0, dDisch: 0, diag: null },
+  lowCharge: {
+    label: "Low refrigerant charge", mLow: 0.72, mHigh: 0.88, dSuper: 14, dSub: -8, dDisch: 8,
+    diag: "Undercharged. Both pressures sag, suction superheat runs high, and subcooling falls toward zero — there isn't enough liquid to fill the condenser. Capacity and COP drop.",
+  },
+  dirtyCondenser: {
+    label: "Dirty / blocked condenser", mLow: 1.06, mHigh: 1.40, dSuper: -1, dSub: 5, dDisch: 18,
+    diag: "The condenser can't reject its heat. Head pressure and discharge temperature climb, subcooling rises, and the compressor works much harder — COP falls.",
+  },
+  icedEvaporator: {
+    label: "Iced / starved evaporator", mLow: 0.60, mHigh: 0.92, dSuper: -7, dSub: 1, dDisch: -4,
+    diag: "Poor evaporator airflow. Suction pressure and coil temperature drop, superheat collapses (risking liquid floodback to the compressor), and capacity plummets.",
+  },
+  overcharge: {
+    label: "Overcharge", mLow: 1.08, mHigh: 1.22, dSuper: -4, dSub: 9, dDisch: 6,
+    diag: "Too much refrigerant. Head pressure and subcooling run high as liquid backs up into the condenser, raising compressor load and lowering efficiency.",
+  },
 };
-function stateChip(color, text) {
-  return `<span class="state-chip" style="background:${color}">${text}</span>`;
-}
 
-/* ---- Segment → state map -------------------------------------------------- */
+/* ---- State colours -------------------------------------------------------- */
+function getCss(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+const STATE_COLORS = {
+  hotgas: getCss("--state-hotgas"), liquid: getCss("--state-liquid"),
+  flash:  getCss("--state-flash"),  vapor:  getCss("--state-vapor"),
+};
+function stateChip(color, text) { return `<span class="state-chip" style="background:${color}">${text}</span>`; }
+
 const SEGMENTS = [
   { id: "seg-discharge", state: "hotgas", color: STATE_COLORS.hotgas, label: "Discharge line · high-pressure hot vapour" },
   { id: "seg-liquid",    state: "liquid", color: STATE_COLORS.liquid, label: "Liquid line · high-pressure liquid" },
@@ -110,77 +115,61 @@ const SEGMENTS = [
 /* Live state                                                                */
 /* ========================================================================= */
 const state = {
-  running: true,
-  refrigerant: "R134a",
-  speed: 100,          // compressor speed %
-  load: 100,           // evaporator load %
-  dashOffset: 0,
-  phaseT: 0,
-  selected: null,
-  tourActive: false,
-  tourIndex: 0,
+  running: true, refrigerant: "R134a", speed: 100, load: 100, fault: "none",
+  dashOffset: 0, phaseT: 0, selected: null, tourActive: false, tourIndex: 0,
 };
-let current = null;    // derived operating point (see recompute)
+let current = null;
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const r1 = (v) => Math.round(v * 10) / 10;
 const r0 = (v) => Math.round(v);
 
-/* ---- Saturation temperature from pressure -------------------------------- */
-function satTemp(base, p) {
-  if (base.table) return r134aTsatFromP(p);
-  // linear fit  T = a·ln(p) + b  through the two known base points
-  if (base._a == null) {
-    base._a = (base.tCond - base.tEvap) / (Math.log(base.pHigh) - Math.log(base.pLow));
-    base._b = base.tEvap - base._a * Math.log(base.pLow);
-  }
-  return base._a * Math.log(p) + base._b;
-}
+const satTemp = (base, p) => interpTable(base.satTable, "P", p, "T");
 
-/* ---- Derive the operating point from sliders ----------------------------- */
-function recompute() {
-  const base = REFRIGERANTS[state.refrigerant];
-  const s = state.speed / 100;
-  const L = state.load / 100;
+/* ---- Derive a full operating point --------------------------------------- */
+function deriveAt(refKey, speed, load, faultKey) {
+  const base = REFRIGERANTS[refKey];
+  const s = speed / 100, L = load / 100;
+  const f = FAULTS[faultKey] || FAULTS.none;
+  const tbl = base.satTable;
 
-  // Operating-point model (qualitative but directionally correct):
-  // faster compressor pulls the low side down and pushes the high side up;
-  // more evaporator load raises the low side.
-  let pLow  = base.pLow  * (1 + 0.30 * (L - 1) - 0.22 * (s - 1));
-  let pHigh = base.pHigh * (1 + 0.28 * (s - 1) + 0.08 * (L - 1));
-  const pCeil = base.table ? R134A_PMAX - 0.5 : base.pHigh * 1.8;
-  pLow  = clamp(pLow, base.table ? R134A_PMIN + 0.1 : 0.6, base.pHigh * 0.85);
-  pHigh = clamp(pHigh, base.pLow * 1.6, pCeil);
+  let pLow  = base.pLow  * (1 + 0.30 * (L - 1) - 0.22 * (s - 1)) * f.mLow;
+  let pHigh = base.pHigh * (1 + 0.28 * (s - 1) + 0.08 * (L - 1)) * f.mHigh;
+  pLow  = clamp(pLow,  tbl[0].P + 0.05, base.pHigh * 0.85);
+  pHigh = clamp(pHigh, base.pLow * 1.4, tbl[tbl.length - 1].P - 0.5);
 
   const tEvap = satTemp(base, pLow);
   const tCond = satTemp(base, pHigh);
-  const superheat = base.tSuction - base.tEvap;     // fixed degrees of superheat
-  const subcool   = base.tCond   - base.tLiquid;    // fixed degrees of subcool
+  const superheat = clamp((base.tSuction - base.tEvap) + f.dSuper, 1, 60);
+  const subcool   = clamp((base.tCond   - base.tLiquid) + f.dSub, 0, 40);
   const tSuction = tEvap + superheat;
   const tLiquid  = tCond - subcool;
 
   const ratio = pHigh / pLow, baseRatio = base.pHigh / base.pLow;
-  let tDischarge = tCond + (base.tDischarge - base.tCond) * (ratio / baseRatio) * (0.6 + 0.4 * s);
-
+  const tDischarge = tCond + (base.tDischarge - base.tCond) * (ratio / baseRatio) * (0.6 + 0.4 * s) + f.dDisch;
   const flow = BASE_FLOW * s;
 
-  // Enthalpies for the P-h plot
-  let h1, h2, h3, h4;
-  if (base.table) {
-    h3 = r134aHf(tLiquid);
-    h1 = r134aHg(tEvap) + CP_VAP * (tSuction - tEvap);
-    h2 = r134aHg(tCond) + CP_VAP * (tDischarge - tCond);
-  } else {
-    h3 = base.h3 + CP_LIQ * (tLiquid - base.tLiquid);
-    h1 = base.h1 + CP_VAP * (tSuction - base.tSuction);
-    h2 = base.h2 + CP_VAP * (tDischarge - base.tDischarge);
-  }
-  h4 = h3;  // throttling is isenthalpic
+  // Enthalpies straight from the table
+  const h3 = interpTable(tbl, "T", tLiquid, "hf");          // subcooled liquid ≈ hf(T)
+  const h4 = h3;                                            // throttling is isenthalpic
+  const h1 = interpTable(tbl, "T", tEvap, "hg") + CP_VAP * superheat;
+  const h2 = interpTable(tbl, "T", tCond, "hg") + CP_VAP * (tDischarge - tCond);
 
-  current = {
-    base, pLow, pHigh, tEvap, tCond, tSuction, tDischarge, tLiquid,
-    superheat, subcool, ratio, flow, h1, h2, h3, h4, hasTable: base.table,
-  };
+  const effect  = h1 - h4;                  // refrigeration effect (kJ/kg)
+  const work    = Math.max(h2 - h1, 0.1);   // compressor work (kJ/kg)
+  const heatRej = h2 - h3;                  // heat rejected (kJ/kg)
+  const cop     = effect / work;
+  const capRaw  = effect * pLow * flow;     // capacity proxy (effect × density-proxy × flow)
+
+  return { base, pLow, pHigh, tEvap, tCond, tSuction, tDischarge, tLiquid,
+    superheat, subcool, ratio, flow, h1, h2, h3, h4, effect, work, heatRej, cop, capRaw };
+}
+
+function recompute() {
+  current = deriveAt(state.refrigerant, state.speed, state.load, state.fault);
+  const base = current.base;
+  if (base._capRef == null) base._capRef = deriveAt(state.refrigerant, 100, 100, "none").capRaw;
+  current.capacityPct = current.capRaw / base._capRef * 100;
 }
 
 /* ========================================================================= */
@@ -271,30 +260,42 @@ const COMPONENTS = {
 function renderReadouts() {
   const c = current;
   const rows = [
-    { label: "High Side",     value: `${r1(c.pHigh)} bar`, cls: "amber" },
-    { label: "Low Side",      value: `${r1(c.pLow)} bar`,  cls: "cold" },
-    { label: "Condenser",     value: `${r0(c.tCond)}°C`,   cls: "hot" },
-    { label: "Evaporator",    value: `${r0(c.tEvap)}°C`,   cls: "cold" },
+    { label: "High Side",     value: `${r1(c.pHigh)} bar`,    cls: "amber" },
+    { label: "Low Side",      value: `${r1(c.pLow)} bar`,     cls: "cold" },
+    { label: "Condenser",     value: `${r0(c.tCond)}°C`,      cls: "hot" },
+    { label: "Evaporator",    value: `${r0(c.tEvap)}°C`,      cls: "cold" },
     { label: "Discharge Gas", value: `${r0(c.tDischarge)}°C`, cls: "hot" },
-    { label: "Superheat",     value: `${r0(c.superheat)} K`, cls: "" },
-    { label: "Flow",          value: `${r0(c.flow)} L/min`,  cls: "" },
+    { label: "Superheat",     value: `${r0(c.superheat)} K`,  cls: "" },
+    { label: "Subcool",       value: `${r0(c.subcool)} K`,    cls: "" },
+    { label: "Flow",          value: `${r0(c.flow)} L/min`,   cls: "" },
     { label: "Compressor",    value: state.running ? "RUNNING" : "OFF", cls: state.running ? "ok" : "" },
   ];
   document.getElementById("readouts").innerHTML = rows.map(row => `
-    <div class="readout">
-      <div class="label">${row.label}</div>
-      <div class="value ${row.cls}">${row.value}</div>
+    <div class="readout"><div class="label">${row.label}</div>
+      <div class="value ${row.cls}">${row.value}</div></div>`).join("");
+}
+
+/* ---- Performance panel ---------------------------------------------------- */
+function renderPerf() {
+  const c = current;
+  const cells = [
+    { k: "COP (cooling)",   v: c.cop.toFixed(2), u: "", cls: "cop" },
+    { k: "Capacity",        v: r0(c.capacityPct), u: "% of nominal", cls: "cap" },
+    { k: "Cooling effect",  v: r0(c.effect), u: "kJ/kg" },
+    { k: "Compressor work", v: r0(c.work),   u: "kJ/kg" },
+    { k: "Heat rejected",   v: r0(c.heatRej),u: "kJ/kg" },
+    { k: "Pressure ratio",  v: c.ratio.toFixed(1), u: ": 1" },
+  ];
+  document.getElementById("perfGrid").innerHTML = cells.map(c2 => `
+    <div class="perf-cell ${c2.cls || ""}">
+      <div class="k">${c2.k}</div>
+      <div class="v">${c2.v} <span class="u">${c2.u}</span></div>
     </div>`).join("");
 }
 
-/* ========================================================================= */
-/* Legend                                                                    */
-/* ========================================================================= */
 function renderLegend() {
   document.getElementById("legend").innerHTML = SEGMENTS.map(s => `
-    <div class="legend-item">
-      <span class="legend-swatch" style="background:${s.color}"></span>${s.label}
-    </div>`).join("");
+    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.label}</div>`).join("");
 }
 
 /* ========================================================================= */
@@ -302,7 +303,6 @@ function renderLegend() {
 /* ========================================================================= */
 const PARTICLES_PER_SEGMENT = 5;
 let particles = [];
-
 function buildParticles() {
   const g = document.getElementById("particles");
   g.innerHTML = "";
@@ -316,7 +316,7 @@ function buildParticles() {
       dot.setAttribute("class", "particle");
       dot.setAttribute("fill", seg.color);
       g.appendChild(dot);
-      particles.push({ el: dot, path, len, t: i / PARTICLES_PER_SEGMENT, color: seg.color });
+      particles.push({ el: dot, path, len, t: i / PARTICLES_PER_SEGMENT });
     }
   });
 }
@@ -332,25 +332,20 @@ function updateParticles(speed) {
 /* ========================================================================= */
 /* P–h diagram                                                               */
 /* ========================================================================= */
-const ph = {
-  x0: 50, x1: 320, y0: 22, y1: 196,
-  hMin: 130, hMax: 445,
-  pTicks: [0.5, 1, 2, 5, 10, 20, 40],
-  hTicks: [150, 250, 350, 450],
-};
+const ph = { x0: 50, x1: 320, y0: 22, y1: 196, hMin: 130, hMax: 445,
+  pTicks: [0.5, 1, 2, 5, 10, 20, 40] };
 const hToX = (h) => ph.x0 + (clamp(h, ph.hMin, ph.hMax) - ph.hMin) / (ph.hMax - ph.hMin) * (ph.x1 - ph.x0);
 function pToY(p) {
-  const lo = Math.log10(0.5), hi = Math.log10(41);
-  const f = (Math.log10(clamp(p, 0.5, 41)) - lo) / (hi - lo);
+  const lo = Math.log10(0.5), hi = Math.log10(45);
+  const f = (Math.log10(clamp(p, 0.5, 45)) - lo) / (hi - lo);
   return ph.y1 - f * (ph.y1 - ph.y0);
 }
-
 let phCyclePoints = [];
 let movingDot = null;
 const DOT_COLORS = [STATE_COLORS.hotgas, STATE_COLORS.liquid, STATE_COLORS.flash, STATE_COLORS.vapor];
 
 function renderPhChart() {
-  const c = current;
+  const c = current, tbl = c.base.satTable;
   const svg = document.getElementById("phChart");
   const NS = "http://www.w3.org/2000/svg";
   svg.innerHTML = "";
@@ -362,35 +357,34 @@ function renderPhChart() {
     return el;
   };
 
-  // Axes
+  // auto-scale enthalpy axis to this fluid's table
+  ph.hMin = Math.min(...tbl.map(r => r.hf)) - 8;
+  ph.hMax = Math.max(...tbl.map(r => r.hg)) + 12;
+
   add("line", { x1: ph.x0, y1: ph.y0, x2: ph.x0, y2: ph.y1, stroke: "#2a3b4d" });
   add("line", { x1: ph.x0, y1: ph.y1, x2: ph.x1, y2: ph.y1, stroke: "#2a3b4d" });
   add("text", { x: 10, y: 14, fill: "#8aa0b3", "font-size": 10 }, "P (bar)");
   add("text", { x: ph.x1, y: 242, fill: "#8aa0b3", "font-size": 10, "text-anchor": "end" }, "h (kJ/kg) →");
 
-  // Pressure ticks (log)
   ph.pTicks.forEach(p => {
     const y = pToY(p);
     add("line", { x1: ph.x0 - 3, y1: y, x2: ph.x0, y2: y, stroke: "#2a3b4d" });
     add("text", { x: ph.x0 - 6, y: y + 3, fill: "#6f8294", "font-size": 9, "text-anchor": "end" }, String(p));
   });
-  // Enthalpy ticks
-  ph.hTicks.forEach(h => {
+  const span = ph.hMax - ph.hMin;
+  [0, 0.34, 0.67, 1].map(f => Math.round((ph.hMin + f * span) / 10) * 10).forEach(h => {
     const x = hToX(h);
     add("line", { x1: x, y1: ph.y1, x2: x, y2: ph.y1 + 3, stroke: "#2a3b4d" });
     add("text", { x: x, y: ph.y1 + 14, fill: "#6f8294", "font-size": 9, "text-anchor": "middle" }, String(h));
   });
 
-  // Saturation dome from the real R134a table (liquid line up, vapour line down)
-  let dome = "M " + hToX(R134A_SAT[0].hf) + " " + pToY(R134A_SAT[0].P);
-  R134A_SAT.forEach(r => { dome += ` L ${hToX(r.hf)} ${pToY(r.P)}`; });
-  for (let i = R134A_SAT.length - 1; i >= 0; i--) {
-    dome += ` L ${hToX(R134A_SAT[i].hg)} ${pToY(R134A_SAT[i].P)}`;
-  }
+  // saturation dome from this fluid's real table
+  let dome = "M " + hToX(tbl[0].hf) + " " + pToY(tbl[0].P);
+  tbl.forEach(r => { dome += ` L ${hToX(r.hf)} ${pToY(r.P)}`; });
+  for (let i = tbl.length - 1; i >= 0; i--) dome += ` L ${hToX(tbl[i].hg)} ${pToY(tbl[i].P)}`;
   dome += " Z";
   add("path", { d: dome, fill: "rgba(79,195,247,0.06)", stroke: "#3a5c72", "stroke-width": 1.1 });
 
-  // Cycle points (1 suction, 2 discharge, 3 liquid, 4 evap inlet)
   const P = {
     p1: { x: hToX(c.h1), y: pToY(c.pLow) },
     p2: { x: hToX(c.h2), y: pToY(c.pHigh) },
@@ -410,8 +404,7 @@ function renderPhChart() {
   movingDot = add("circle", { cx: P.p1.x, cy: P.p1.y, r: 5, fill: STATE_COLORS.hotgas, stroke: "#fff", "stroke-width": 1.5 });
   updateMovingDot();
 
-  document.getElementById("phSource").textContent =
-    c.hasTable ? "R134a data" : "illustrative · dome = R134a";
+  document.getElementById("phSource").textContent = c.base.label + " data";
 }
 
 function updateMovingDot() {
@@ -432,15 +425,11 @@ function showInfo(key) {
   document.getElementById("infoTitle").textContent = data.title;
   document.getElementById("infoBody").innerHTML = `
     <div class="phase-row">
-      <div class="phase-col">
-        <div class="k">In</div><div class="v">${data.inState}</div>
-        <div class="k" style="margin-top:6px">${data.inVals}</div>
-      </div>
+      <div class="phase-col"><div class="k">In</div><div class="v">${data.inState}</div>
+        <div class="k" style="margin-top:6px">${data.inVals}</div></div>
       <div class="arrow">→</div>
-      <div class="phase-col">
-        <div class="k">Out</div><div class="v">${data.outState}</div>
-        <div class="k" style="margin-top:6px">${data.outVals}</div>
-      </div>
+      <div class="phase-col"><div class="k">Out</div><div class="v">${data.outState}</div>
+        <div class="k" style="margin-top:6px">${data.outVals}</div></div>
     </div>
     <p>${data.body}</p>
     <ul>${data.points.map(p => `<li>${p}</li>`).join("")}</ul>`;
@@ -453,27 +442,20 @@ function showInfo(key) {
 /* Guided tour                                                               */
 /* ========================================================================= */
 const TOUR = [
-  { component: null, seg: null, phaseT: 0,
-    title: "The vapour-compression cycle",
+  { component: null, seg: null, phaseT: 0, title: "The vapour-compression cycle",
     text: "This loop moves heat from a cold space to a warmer one. The refrigerant is pumped around continuously, absorbing heat in one place and releasing it in another by changing state. Step through to follow one trip around the loop." },
-  { component: "compressor", seg: "seg-discharge", phaseT: 0.12,
-    title: "1 · Compressor",
+  { component: "compressor", seg: "seg-discharge", phaseT: 0.12, title: "1 · Compressor",
     text: "Cool low-pressure vapour is squeezed into hot high-pressure gas. Pressure and temperature shoot up so the refrigerant is now hotter than the outside air — watch point 1 climb to point 2 on the P–h chart." },
-  { component: "condenser", seg: "seg-liquid", phaseT: 0.40,
-    title: "2 · Condenser",
+  { component: "condenser", seg: "seg-liquid", phaseT: 0.40, title: "2 · Condenser",
     text: "The hot gas blows across the fins and dumps its heat to the air. It condenses from vapour to liquid at constant temperature (the flat top of the cycle, 2 → 3) and subcools slightly." },
-  { component: "receiver", seg: "seg-liquid", phaseT: 0.50,
-    title: "3 · Liquid receiver",
+  { component: "receiver", seg: "seg-liquid", phaseT: 0.50, title: "3 · Liquid receiver",
     text: "A reservoir of high-pressure liquid sits on the liquid line, smoothing out changes in load and ensuring only solid liquid (no bubbles) reaches the metering device." },
-  { component: "metering", seg: "seg-evapfeed", phaseT: 0.62,
-    title: "4 · Metering device",
+  { component: "metering", seg: "seg-evapfeed", phaseT: 0.62, title: "4 · Metering device",
     text: "The liquid is throttled through a tiny restriction. Pressure crashes, some of it flash-boils, and the mixture chills to evaporator temperature — the vertical drop 3 → 4 on the P–h chart." },
-  { component: "evaporator", seg: "seg-suction", phaseT: 0.88,
-    title: "5 · Evaporator",
+  { component: "evaporator", seg: "seg-suction", phaseT: 0.88, title: "5 · Evaporator",
     text: "Cold liquid boils inside the space being cooled, soaking up heat (this is the actual cooling, 4 → 1). It superheats slightly to dry out, then heads back to the compressor to start again." },
-  { component: null, seg: null, phaseT: 0,
-    title: "Full circle",
-    text: "That's one complete cycle. Heat went IN at the evaporator and OUT at the condenser; the compressor did the work to make it flow uphill. Try the sliders to see how speed and load reshape the cycle, or pick a different refrigerant." },
+  { component: null, seg: null, phaseT: 0, title: "Full circle",
+    text: "That's one complete cycle. Heat went IN at the evaporator and OUT at the condenser; the compressor did the work to make it flow uphill. Try the sliders and fault selector to see how the cycle reshapes, or pick a different refrigerant." },
 ];
 
 function setTour(active) {
@@ -483,7 +465,6 @@ function setTour(active) {
   document.querySelectorAll(".component").forEach(c => c.classList.remove("tour-focus"));
   if (active) { state.tourIndex = 0; gotoTourStep(0); }
 }
-
 function gotoTourStep(i) {
   state.tourIndex = clamp(i, 0, TOUR.length - 1);
   const step = TOUR[state.tourIndex];
@@ -492,24 +473,16 @@ function gotoTourStep(i) {
   document.getElementById("tourTitle").textContent = step.title;
   document.getElementById("tourText").textContent = step.text;
   document.getElementById("tourPrev").disabled = state.tourIndex === 0;
-  document.getElementById("tourNext").textContent =
-    state.tourIndex === TOUR.length - 1 ? "Finish" : "Next";
-
-  // highlight component + dim non-active pipes
-  document.querySelectorAll(".component").forEach(c =>
-    c.classList.toggle("tour-focus", c.dataset.component === step.component));
-  document.querySelectorAll(".pipes-flow path").forEach(p =>
-    p.classList.toggle("tour-dim", step.seg != null && p.id !== step.seg));
-
+  document.getElementById("tourNext").textContent = state.tourIndex === TOUR.length - 1 ? "Finish" : "Next";
+  document.querySelectorAll(".component").forEach(c => c.classList.toggle("tour-focus", c.dataset.component === step.component));
+  document.querySelectorAll(".pipes-flow path").forEach(p => p.classList.toggle("tour-dim", step.seg != null && p.id !== step.seg));
   if (step.component) showInfo(step.component);
-
-  // freeze the P-h dot at this stage
   state.phaseT = step.phaseT;
   updateMovingDot();
 }
 
 /* ========================================================================= */
-/* Power + sliders                                                           */
+/* Power + faults                                                            */
 /* ========================================================================= */
 function setRunning(run) {
   state.running = run;
@@ -520,27 +493,34 @@ function setRunning(run) {
   renderReadouts();
 }
 
+function updateFaultBanner() {
+  const f = FAULTS[state.fault];
+  const banner = document.getElementById("faultBanner");
+  if (state.fault === "none" || !f.diag) { banner.hidden = true; return; }
+  banner.hidden = false;
+  document.getElementById("faultText").innerHTML = `<b>${f.label}.</b> ${f.diag}`;
+}
+
 function refreshAll() {
   recompute();
   renderReadouts();
+  renderPerf();
   renderPhChart();
+  updateFaultBanner();
   if (state.selected) showInfo(state.selected);
 }
 
 /* ========================================================================= */
 /* Animation loop                                                            */
 /* ========================================================================= */
-const BASE_SPEED = 2.2;     // px/frame at 100% compressor speed
+const BASE_SPEED = 2.2;
 let currentSpeed = BASE_SPEED;
-
 function loop() {
   const targetSpeed = (state.running && !state.tourActive) ? BASE_SPEED * (state.speed / 100) : 0;
   currentSpeed += (targetSpeed - currentSpeed) * 0.05;
-
   state.dashOffset = (state.dashOffset - currentSpeed) % 1000;
   document.querySelectorAll(".pipes-flow path").forEach(p => p.setAttribute("stroke-dashoffset", state.dashOffset));
   updateParticles(currentSpeed);
-
   if (!state.tourActive) {
     state.phaseT = (state.phaseT + currentSpeed * 0.0012) % 1;
     updateMovingDot();
@@ -553,14 +533,17 @@ function loop() {
 /* ========================================================================= */
 function init() {
   const sel = document.getElementById("refrigerantSelect");
-  sel.innerHTML = Object.keys(REFRIGERANTS)
-    .map(k => `<option value="${k}">${REFRIGERANTS[k].label}</option>`).join("");
+  sel.innerHTML = Object.keys(REFRIGERANTS).map(k => `<option value="${k}">${REFRIGERANTS[k].label}</option>`).join("");
   sel.value = state.refrigerant;
   sel.addEventListener("change", () => { state.refrigerant = sel.value; refreshAll(); });
 
+  const fsel = document.getElementById("faultSelect");
+  fsel.innerHTML = Object.keys(FAULTS).map(k => `<option value="${k}">${FAULTS[k].label}</option>`).join("");
+  fsel.value = state.fault;
+  fsel.addEventListener("change", () => { state.fault = fsel.value; refreshAll(); });
+
   document.getElementById("powerBtn").addEventListener("click", () => setRunning(!state.running));
 
-  // sliders
   const speed = document.getElementById("speedSlider");
   const load = document.getElementById("loadSlider");
   speed.addEventListener("input", () => {
@@ -574,14 +557,13 @@ function init() {
     refreshAll();
   });
   document.getElementById("resetBtn").addEventListener("click", () => {
-    state.speed = 100; state.load = 100;
-    speed.value = 100; load.value = 100;
+    state.speed = 100; state.load = 100; state.fault = "none";
+    speed.value = 100; load.value = 100; fsel.value = "none";
     document.getElementById("speedOut").textContent = "100%";
     document.getElementById("loadOut").textContent = "100%";
     refreshAll();
   });
 
-  // components
   document.querySelectorAll(".component").forEach(c => {
     c.addEventListener("click", () => showInfo(c.dataset.component));
     c.addEventListener("keydown", e => {
@@ -589,7 +571,6 @@ function init() {
     });
   });
 
-  // tour
   document.getElementById("tourBtn").addEventListener("click", () => setTour(true));
   document.getElementById("tourExit").addEventListener("click", () => setTour(false));
   document.getElementById("tourPrev").addEventListener("click", () => gotoTourStep(state.tourIndex - 1));
@@ -600,9 +581,11 @@ function init() {
 
   recompute();
   renderReadouts();
+  renderPerf();
   renderLegend();
   buildParticles();
   renderPhChart();
+  updateFaultBanner();
   setRunning(true);
   requestAnimationFrame(loop);
 }

@@ -36,8 +36,17 @@
       <input id="loadSlider" type="range" min="50" max="150" value="100" step="1" />
       <span class="slider-hint">More heat → higher evaporator pressure &amp; temperature</span>
     </div>
+    <label class="fault-select">
+      <span>Fault to simulate</span>
+      <select id="faultSelect"></select>
+    </label>
     <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
   </section>
+
+  <div id="faultBanner" class="fault-banner" hidden>
+    <span class="fault-tag">FAULT</span>
+    <span id="faultText"></span>
+  </div>
 
   <main class="stage">
     <!-- Schematic diagram -->
@@ -122,6 +131,15 @@
         </div>
         <svg id="phChart" viewBox="0 0 340 250" role="img" aria-label="Pressure enthalpy diagram"></svg>
         <p class="ph-caption">The moving dot shows where the refrigerant is in its cycle right now. Inside the dome = a mix of liquid &amp; vapour; left of it = liquid; right = vapour.</p>
+      </div>
+
+      <div class="panel perf-panel">
+        <div class="panel-head">
+          <h2>Performance</h2>
+          <span class="hint">from the cycle enthalpies</span>
+        </div>
+        <div class="perf-grid" id="perfGrid"></div>
+        <p class="perf-caption">COP = cooling delivered ÷ compressor work. Capacity is relative to this fluid's nominal point. Energy figures are per kg of refrigerant.</p>
       </div>
 
       <div class="panel info-panel">
