@@ -18,11 +18,26 @@
         <span>Refrigerant</span>
         <select id="refrigerantSelect"></select>
       </label>
+      <button id="tourBtn" class="btn btn-tour" type="button">Guided Tour</button>
       <button id="powerBtn" class="btn btn-stop" type="button">Stop Compressor</button>
     </div>
   </header>
 
   <section class="readouts" id="readouts" aria-label="Live system readings"></section>
+
+  <section class="sim-controls" aria-label="Operating controls">
+    <div class="slider-group">
+      <label for="speedSlider">Compressor speed <output id="speedOut">100%</output></label>
+      <input id="speedSlider" type="range" min="50" max="150" value="100" step="1" />
+      <span class="slider-hint">Faster → wider pressure split, hotter discharge, more flow</span>
+    </div>
+    <div class="slider-group">
+      <label for="loadSlider">Evaporator load (heat in) <output id="loadOut">100%</output></label>
+      <input id="loadSlider" type="range" min="50" max="150" value="100" step="1" />
+      <span class="slider-hint">More heat → higher evaporator pressure &amp; temperature</span>
+    </div>
+    <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
+  </section>
 
   <main class="stage">
     <!-- Schematic diagram -->
@@ -103,9 +118,9 @@
       <div class="panel ph-panel">
         <div class="panel-head">
           <h2>Pressure–Enthalpy (P–h) diagram</h2>
-          <span class="hint">illustrative</span>
+          <span class="hint" id="phSource">R134a data</span>
         </div>
-        <svg id="phChart" viewBox="0 0 320 240" role="img" aria-label="Pressure enthalpy diagram"></svg>
+        <svg id="phChart" viewBox="0 0 340 250" role="img" aria-label="Pressure enthalpy diagram"></svg>
         <p class="ph-caption">The moving dot shows where the refrigerant is in its cycle right now. Inside the dome = a mix of liquid &amp; vapour; left of it = liquid; right = vapour.</p>
       </div>
 
@@ -123,6 +138,20 @@
   <footer class="footer">
     <span>Educational tool · values are approximate, representative operating points.</span>
   </footer>
+
+  <!-- Guided tour overlay -->
+  <div id="tourBar" class="tour-bar" hidden>
+    <div class="tour-progress"><span id="tourStep">1</span> / <span id="tourTotal">7</span></div>
+    <div class="tour-content">
+      <h3 id="tourTitle"></h3>
+      <p id="tourText"></p>
+    </div>
+    <div class="tour-nav">
+      <button id="tourPrev" class="btn btn-ghost" type="button">Back</button>
+      <button id="tourNext" class="btn btn-tour" type="button">Next</button>
+      <button id="tourExit" class="btn btn-ghost" type="button">Exit</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

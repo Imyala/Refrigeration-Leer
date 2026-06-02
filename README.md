@@ -15,6 +15,30 @@ transforms the refrigerant.
 Each pipe segment is colour-coded by refrigerant state, with flowing
 particles and animated flow lines so the movement is easy to follow visually.
 
+## Interactive features
+
+- **Guided tour** — the "Guided Tour" button walks step-by-step through the
+  whole cycle. Each step highlights one component, dims the rest of the loop,
+  fills in its data card, and parks the P–h dot at that stage.
+- **Live sliders** — *Compressor speed* and *Evaporator load* drive a small
+  operating-point model. Push the speed up and the pressure split widens, the
+  discharge gas gets hotter, and flow increases; add evaporator load and the
+  low side warms up. Every readout, the info cards, and the P–h cycle update
+  in real time. "Reset" returns to the nominal point.
+- **Click any component** for a detailed explanation and its in/out states.
+- **Start / Stop compressor** eases the flow up and down like the real thing.
+
+## Accuracy notes
+
+- The **P–h diagram for R134a is built from a real saturation table**
+  (ASHRAE-style, `hf = 200 kJ/kg` reference at 0 °C). The dome shape and the
+  cycle-point enthalpies are computed from that data; saturation temperatures
+  follow from the live pressures.
+- Other refrigerants use representative operating values, and their P–h plot
+  is marked *illustrative* (the dome shown is R134a's for shape reference).
+- The slider model is **directionally correct but qualitative** — it's tuned
+  for intuition, not for engineering design.
+
 ## Refrigerants
 
 The numbers are driven by a swappable refrigerant table, so the simulator is
@@ -54,4 +78,4 @@ It's a plain static site — no build step. Either:
 |------|---------|
 | `index.html` | Page structure + the SVG schematic |
 | `styles.css` | Dark theme, layout, state colours |
-| `app.js` | Refrigerant data, animation engine, P–h diagram, interactivity |
+| `app.js` | Refrigerant data + R134a table, operating-point model, animation, P–h diagram, tour, interactivity |
