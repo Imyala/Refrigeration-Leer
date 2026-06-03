@@ -96,6 +96,21 @@ const FAULTS = {
   },
 };
 
+/* ---- How each fault looks on the schematic --------------------------------
+   condFront / evapFront: 0..1 position of the phase-change front inside the
+   condenser / evaporator coil (how far through the coil the refrigerant is
+   still hot-gas / still boiling-wet). liquidSpill / suctionSpill: 0..1 length
+   of the *wrong* state spilling into the next pipe (hot gas down the liquid
+   line; wet refrigerant up the suction line = floodback). flags: components to
+   mark with a warning pulse.                                                  */
+const VIZ = {
+  none:           { condFront: 0.55, evapFront: 0.65, liquidSpill: 0.00, suctionSpill: 0.00, flags: [] },
+  lowCharge:      { condFront: 0.80, evapFront: 0.30, liquidSpill: 0.38, suctionSpill: 0.00, flags: ["receiver", "evaporator"] },
+  dirtyCondenser: { condFront: 0.93, evapFront: 0.58, liquidSpill: 0.16, suctionSpill: 0.00, flags: ["condenser"] },
+  icedEvaporator: { condFront: 0.40, evapFront: 0.95, liquidSpill: 0.00, suctionSpill: 0.42, flags: ["evaporator", "compressor"] },
+  overcharge:     { condFront: 0.45, evapFront: 0.78, liquidSpill: 0.00, suctionSpill: 0.16, flags: ["condenser"] },
+};
+
 /* ---- State colours -------------------------------------------------------- */
 function getCss(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const STATE_COLORS = {
@@ -131,6 +146,7 @@ const SEGMENTS = [
 const state = {
   running: true, refrigerant: "R134a", speed: 100, load: 100, fault: "none",
   dashOffset: 0, phaseT: 0, selected: null, tourActive: false, tourIndex: 0,
+  showHealthy: true,
 };
 let current = null;
 
@@ -350,6 +366,107 @@ SEGMENTS.forEach(s => { SEG_RGB[s.id] = hexToRgb(s.color); });
 function applyPipeColors(g) {
   SEGMENTS.forEach(s => document.getElementById(s.id).setAttribute("stroke", mixGrey(SEG_RGB[s.id], g)));
   particles.forEach(p => p.el.setAttribute("fill", mixGrey(p.rgb, g)));
+  // coil fills and spills fade out as the system greys (off = no refrigerant shown)
+  const f = 1 - g;
+  if (viz.fillCond) {
+    viz.fillCond.setAttribute("opacity", 0.5 * f);
+    viz.fillEvap.setAttribute("opacity", 0.5 * f);
+    viz.spillLiquid.setAttribute("opacity", (viz.spillLiquid._op || 0) * f);
+    viz.spillSuction.setAttribute("opacity", (viz.spillSuction._op || 0) * f);
+  }
+}
+
+/* ========================================================================= */
+/* Fault visualisation on the schematic                                      */
+/* ========================================================================= */
+const NS = "http://www.w3.org/2000/svg";
+const viz = {};   // holds gradient + fill + spill element refs
+
+function mkStop(offset, color) {
+  const s = document.createElementNS(NS, "stop");
+  s.setAttribute("offset", offset); s.setAttribute("stop-color", color);
+  return s;
+}
+function setupFaultViz() {
+  const svg = document.getElementById("diagram");
+  const defs = svg.querySelector("defs");
+
+  // Two horizontal gradients: condenser (hot→liquid) and evaporator (vapour→wet)
+  const gradCond = document.createElementNS(NS, "linearGradient");
+  gradCond.id = "gradCond"; gradCond.setAttribute("x1", "0"); gradCond.setAttribute("x2", "1");
+  gradCond.append(mkStop(0, STATE_COLORS.hotgas), mkStop(0.5, STATE_COLORS.hotgas),
+                  mkStop(0.6, STATE_COLORS.liquid), mkStop(1, STATE_COLORS.liquid));
+  const gradEvap = document.createElementNS(NS, "linearGradient");
+  gradEvap.id = "gradEvap"; gradEvap.setAttribute("x1", "0"); gradEvap.setAttribute("x2", "1");
+  gradEvap.append(mkStop(0, STATE_COLORS.vapor), mkStop(0.4, STATE_COLORS.vapor),
+                  mkStop(0.5, STATE_COLORS.flash), mkStop(1, STATE_COLORS.flash));
+  defs.append(gradCond, gradEvap);
+  viz.condStops = gradCond.querySelectorAll("stop");
+  viz.evapStops = gradEvap.querySelectorAll("stop");
+
+  // Refrigerant phase-fill rects inside the two coils (sit above box, below fins)
+  const addFill = (selector, x, y, w, h, grad) => {
+    const group = document.querySelector(selector);
+    const rect = document.createElementNS(NS, "rect");
+    rect.setAttribute("x", x); rect.setAttribute("y", y);
+    rect.setAttribute("width", w); rect.setAttribute("height", h);
+    rect.setAttribute("rx", 8); rect.setAttribute("class", "coil-fill");
+    rect.setAttribute("fill", `url(#${grad})`); rect.setAttribute("opacity", 0.5);
+    group.insertBefore(rect, group.firstElementChild.nextSibling);
+    return rect;
+  };
+  viz.fillCond = addFill('[data-component="condenser"]', 549, 109, 142, 82, "gradCond");
+  viz.fillEvap = addFill('[data-component="evaporator"]', 109, 389, 142, 82, "gradEvap");
+
+  // Spill overlays on the liquid and suction lines (abnormal state carried over)
+  const spills = document.createElementNS(NS, "g");
+  spills.id = "spills";
+  const mkSpill = (refId, color) => {
+    const src = document.getElementById(refId);
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", src.getAttribute("d"));
+    path.setAttribute("class", "spill-pipe");
+    path.setAttribute("stroke", color);
+    path.setAttribute("stroke-width", 10);
+    path.setAttribute("opacity", 0);
+    path._len = src.getTotalLength();
+    spills.appendChild(path);
+    return path;
+  };
+  viz.spillLiquid = mkSpill("seg-liquid", STATE_COLORS.hotgas);
+  viz.spillSuction = mkSpill("seg-suction", STATE_COLORS.flash);
+  const flow = svg.querySelector(".pipes-flow");
+  flow.parentNode.insertBefore(spills, flow.nextSibling);
+}
+
+function renderFaultViz() {
+  const v = VIZ[state.fault] || VIZ.none;
+  const dL = (state.load - 100) / 100;
+  // healthy fronts breathe a little with load so the sliders also show movement
+  const condFront = clamp(v.condFront + dL * 0.15, 0.08, 0.97);
+  const evapFront = clamp(v.evapFront + dL * 0.12, 0.08, 0.97);
+
+  // condenser gradient: hot from 0→condFront, then blend to liquid
+  viz.condStops[1].setAttribute("offset", condFront);
+  viz.condStops[2].setAttribute("offset", Math.min(condFront + 0.14, 1));
+  // evaporator gradient: vapour on the left (outlet), wet on the right (inlet)
+  const bb = 1 - evapFront;
+  viz.evapStops[1].setAttribute("offset", Math.max(bb - 0.07, 0));
+  viz.evapStops[2].setAttribute("offset", Math.min(bb + 0.07, 1));
+
+  // spill overlays: show the first `frac` of the pipe in the wrong-state colour
+  const setSpill = (path, frac) => {
+    if (frac <= 0.001) { path._op = 0; path.setAttribute("opacity", 0); return; }
+    const vis = path._len * frac;
+    path.setAttribute("stroke-dasharray", `${vis} ${path._len + vis}`);
+    path._op = 0.85;
+  };
+  setSpill(viz.spillLiquid, v.liquidSpill);
+  setSpill(viz.spillSuction, v.suctionSpill);
+
+  // warning pulse on affected components
+  document.querySelectorAll(".component").forEach(c =>
+    c.classList.toggle("fault-flag", v.flags.includes(c.dataset.component)));
 }
 
 /* ========================================================================= */
@@ -407,6 +524,24 @@ function renderPhChart() {
   for (let i = tbl.length - 1; i >= 0; i--) dome += ` L ${hToX(tbl[i].hg)} ${pToY(tbl[i].P)}`;
   dome += " Z";
   add("path", { d: dome, fill: "rgba(79,195,247,0.06)", stroke: "#3a5c72", "stroke-width": 1.1 });
+
+  // Healthy reference cycle (same speed & load, no fault) for comparison
+  const showCompare = state.showHealthy && state.fault !== "none";
+  document.getElementById("compareToggle").hidden = state.fault === "none";
+  if (showCompare) {
+    const h = deriveAt(state.refrigerant, state.speed, state.load, "none");
+    const H = [
+      { x: hToX(h.h1), y: pToY(h.pLow) }, { x: hToX(h.h2), y: pToY(h.pHigh) },
+      { x: hToX(h.h3), y: pToY(h.pHigh) }, { x: hToX(h.h4), y: pToY(h.pLow) },
+    ];
+    add("path", {
+      d: `M ${H[0].x} ${H[0].y} L ${H[1].x} ${H[1].y} L ${H[2].x} ${H[2].y} L ${H[3].x} ${H[3].y} Z`,
+      fill: "none", stroke: "#6fe0a0", "stroke-width": 1.4, "stroke-dasharray": "4 3",
+      "stroke-linejoin": "round", opacity: 0.8,
+    });
+    H.forEach(p => add("circle", { cx: p.x, cy: p.y, r: 2, fill: "#6fe0a0", opacity: 0.8 }));
+    add("text", { x: H[0].x + 4, y: H[0].y - 5, fill: "#6fe0a0", "font-size": 9, opacity: 0.9 }, "healthy");
+  }
 
   const P = {
     p1: { x: hToX(c.h1), y: pToY(c.pLow) },
@@ -528,6 +663,7 @@ function refreshAll() {
   renderReadouts();
   renderPerf();
   renderPhChart();
+  renderFaultViz();
   updateFaultBanner();
   if (state.selected) showInfo(state.selected);
 }
@@ -570,6 +706,11 @@ function init() {
   fsel.innerHTML = Object.keys(FAULTS).map(k => `<option value="${k}">${FAULTS[k].label}</option>`).join("");
   fsel.value = state.fault;
   fsel.addEventListener("change", () => { state.fault = fsel.value; refreshAll(); });
+
+  document.getElementById("comparePh").addEventListener("change", (e) => {
+    state.showHealthy = e.target.checked;
+    renderPhChart();
+  });
 
   document.getElementById("powerBtn").addEventListener("click", () => setRunning(!state.running));
 
@@ -618,7 +759,9 @@ function init() {
   renderPerf();
   renderLegend();
   buildParticles();
+  setupFaultViz();
   renderPhChart();
+  renderFaultViz();
   updateFaultBanner();
   setRunning(true);
   requestAnimationFrame(loop);

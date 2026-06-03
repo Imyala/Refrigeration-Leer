@@ -29,7 +29,15 @@ particles and animated flow lines so the movement is easy to follow visually.
   iced/starved evaporator, overcharge) and the whole system reacts the way it
   would in the field: pressures, superheat, subcooling, discharge temperature,
   COP and capacity all shift, and a banner explains the diagnostic signature.
-  Great for learning *how to read the gauges*.
+  Great for learning *how to read the gauges*. The fault also shows up **on the
+  schematic**: the phase-change fronts inside the condenser and evaporator
+  coils move, and the wrong state visibly spills into the next pipe — e.g. a
+  dirty condenser leaves hot gas (red) creeping down the liquid line, and an
+  iced evaporator pushes wet refrigerant (teal) up the suction line toward the
+  compressor (floodback). Affected components pulse with a warning.
+- **Compare to healthy** — when a fault is active, the P–h chart can overlay
+  the healthy cycle at the same speed/load (dashed green) so you can see
+  exactly how the fault reshapes the cycle.
 - **Performance panel** — live COP, capacity (relative to the fluid's nominal
   point), refrigeration effect, compressor work, heat rejected and pressure
   ratio, all computed from the cycle enthalpies.
