@@ -104,6 +104,20 @@ const STATE_COLORS = {
 };
 function stateChip(color, text) { return `<span class="state-chip" style="background:${color}">${text}</span>`; }
 
+// Colour the pipes go to when the compressor is off (no heat/flow).
+const OFF_GREY = [108, 120, 134];
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+// Blend a colour toward the off-grey by factor g (0 = full colour, 1 = grey).
+function mixGrey(rgb, g) {
+  const r = Math.round(rgb[0] + (OFF_GREY[0] - rgb[0]) * g);
+  const gr = Math.round(rgb[1] + (OFF_GREY[1] - rgb[1]) * g);
+  const b = Math.round(rgb[2] + (OFF_GREY[2] - rgb[2]) * g);
+  return `rgb(${r},${gr},${b})`;
+}
+
 const SEGMENTS = [
   { id: "seg-discharge", state: "hotgas", color: STATE_COLORS.hotgas, label: "Discharge line · high-pressure hot vapour" },
   { id: "seg-liquid",    state: "liquid", color: STATE_COLORS.liquid, label: "Liquid line · high-pressure liquid" },
@@ -310,13 +324,14 @@ function buildParticles() {
   SEGMENTS.forEach(seg => {
     const path = document.getElementById(seg.id);
     const len = path.getTotalLength();
+    const rgb = hexToRgb(seg.color);
     for (let i = 0; i < PARTICLES_PER_SEGMENT; i++) {
       const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       dot.setAttribute("r", "4");
       dot.setAttribute("class", "particle");
       dot.setAttribute("fill", seg.color);
       g.appendChild(dot);
-      particles.push({ el: dot, path, len, t: i / PARTICLES_PER_SEGMENT });
+      particles.push({ el: dot, path, len, t: i / PARTICLES_PER_SEGMENT, rgb });
     }
   });
 }
@@ -327,6 +342,14 @@ function updateParticles(speed) {
     p.el.setAttribute("cx", pt.x);
     p.el.setAttribute("cy", pt.y);
   });
+}
+
+// Blend the pipe and particle colours toward grey by factor g (0..1).
+const SEG_RGB = {};
+SEGMENTS.forEach(s => { SEG_RGB[s.id] = hexToRgb(s.color); });
+function applyPipeColors(g) {
+  SEGMENTS.forEach(s => document.getElementById(s.id).setAttribute("stroke", mixGrey(SEG_RGB[s.id], g)));
+  particles.forEach(p => p.el.setAttribute("fill", mixGrey(p.rgb, g)));
 }
 
 /* ========================================================================= */
@@ -489,7 +512,6 @@ function setRunning(run) {
   const btn = document.getElementById("powerBtn");
   btn.textContent = run ? "Stop Compressor" : "Start Compressor";
   btn.className = "btn " + (run ? "btn-stop" : "btn-start");
-  document.getElementById("particles").style.opacity = run ? "1" : "0.25";
   renderReadouts();
 }
 
@@ -515,9 +537,16 @@ function refreshAll() {
 /* ========================================================================= */
 const BASE_SPEED = 2.2;
 let currentSpeed = BASE_SPEED;
+let greyFactor = 0;           // 0 = full colour, 1 = grey (compressor off)
 function loop() {
   const targetSpeed = (state.running && !state.tourActive) ? BASE_SPEED * (state.speed / 100) : 0;
   currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+
+  // Fade pipes to grey when the compressor is off (no heat or cooling).
+  const greyTarget = state.running ? 0 : 1;
+  greyFactor += (greyTarget - greyFactor) * 0.04;
+  applyPipeColors(greyFactor);
+
   state.dashOffset = (state.dashOffset - currentSpeed) % 1000;
   document.querySelectorAll(".pipes-flow path").forEach(p => p.setAttribute("stroke-dashoffset", state.dashOffset));
   updateParticles(currentSpeed);
@@ -564,10 +593,15 @@ function init() {
     refreshAll();
   });
 
+  const onPick = (key) => {
+    showInfo(key);
+    // bring the info panel (just under the diagram) into view on small screens
+    document.getElementById("infoPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
   document.querySelectorAll(".component").forEach(c => {
-    c.addEventListener("click", () => showInfo(c.dataset.component));
+    c.addEventListener("click", () => onPick(c.dataset.component));
     c.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showInfo(c.dataset.component); }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(c.dataset.component); }
     });
   });
 

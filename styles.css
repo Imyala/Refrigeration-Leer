@@ -154,6 +154,8 @@ body {
   .stage { grid-template-columns: 1fr; }
 }
 
+.main-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
 .diagram-wrap {
   background: linear-gradient(180deg, var(--panel) 0%, #111b26 100%);
   border: 1px solid var(--line);
