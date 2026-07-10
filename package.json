@@ -4,6 +4,7 @@
   "private": true,
   "description": "Interactive refrigeration training tool: cycle simulator, gauge manifold, fault diagnosis quiz and PT trainer. Static site, no dependencies.",
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "build:scorm": "node tools/build-scorm.js"
   }
 }

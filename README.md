@@ -8,8 +8,12 @@ site with no build step.
 
 - **`index.html`** — the simulator: animated cycle, gauge manifold, technician
   quiz, PT trainer.
-- **`learn.html`** — the course: lessons, quizzes, progress tracking, with
-  deep links that open the simulator pre-configured for each topic.
+- **`learn.html`** — the course: lessons, quizzes, final exam & certificate,
+  progress tracking, with deep links that open the simulator pre-configured.
+- **`teach.html`** — instructor dashboard: cohort progress from student
+  exports, fully client-side.
+- **SCORM 1.2 export** — `npm run build:scorm` produces an LMS-importable
+  package (Moodle, Canvas, Blackboard, D2L) with gradebook reporting.
 
 ## What it teaches
 
@@ -94,6 +98,30 @@ inside `js/course1.js` / `js/course2.js` — add a lesson by adding an object
 (content, minutes, quiz) to a module's `lessons` array; the navigation,
 progress tracking and quizzes pick it up automatically.
 
+### Final exam & certificate
+
+The **Final exam** (sidebar, or the last card on the course home) draws 20
+questions — two at random from every module — with an 80% pass mark. Each
+attempt is a fresh paper and the best score is kept. Passing unlocks a
+**printable certificate of completion** carrying the learner's name, score,
+date and a deterministic certificate ID an instructor can verify by
+regenerating it. It is evidence of course completion, not a licence.
+
+### For institutions
+
+- **SCORM 1.2** — `npm run build:scorm` builds
+  `dist/refrigeration-course-scorm12.zip` for LMS import (Moodle: Add
+  activity → SCORM). Completion status and the exam score report to the
+  gradebook, and course progress is stored in the LMS (`cmi.suspend_data`)
+  so it follows the learner's LMS account across machines.
+- **Instructor dashboard** — `teach.html` loads any number of student
+  progress exports (Course overview → *Export progress*) into a cohort
+  table: per-module completion, exam results, overall %, CSV download.
+  Entirely client-side; no student data leaves the browser.
+- **Curriculum mapping** — see `docs/CURRICULUM_MAPPING.md` for indicative
+  mapping to the UEE training package (Cert III RAC), EPA 608 and typical
+  university learning outcomes.
+
 ## Accuracy notes
 
 - **Every refrigerant is backed by its own saturation table**, so each P–h
@@ -173,6 +201,11 @@ and unit conversion/formatting. CI runs them on every push
 | `js/app.js` | Schematic animation, readouts, P–h diagram, tour, deep links, wiring |
 | `js/md.js` | Markdown-subset renderer for lesson content (incl. !SIM directive) |
 | `js/course1.js`, `js/course2.js` | Course content: 10 modules, 28 lessons, quizzes |
-| `js/learn.js` | Course UI: routing, progress store, lesson quizzes |
-| `tests/` | Node built-in test-runner suites: model, units, markdown, course validation |
-| `docs/REVIEW_AND_ROADMAP.md` | Platform review and the phased roadmap |
+| `js/learn.js` | Course UI: routing, progress store, lesson quizzes, exam, certificate, export/import |
+| `js/exam.js` | Exam sampling + certificate code (pure, tested) |
+| `js/scorm.js` | SCORM 1.2 runtime adapter (LMS reporting + progress in suspend_data) |
+| `js/teach.js`, `teach.html` | Instructor cohort dashboard |
+| `tools/build-scorm.js` | SCORM 1.2 package builder (`npm run build:scorm`) |
+| `tests/` | Node built-in test-runner suites: model, units, markdown, course, exam, SCORM, packaging |
+| `docs/REVIEW_AND_ROADMAP.md` | Platform review, phased roadmap and status |
+| `docs/CURRICULUM_MAPPING.md` | Indicative mapping to UEE / EPA 608 / university outcomes |

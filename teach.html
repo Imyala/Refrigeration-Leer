@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructor Dashboard — Refrigeration Course</title>
+  <meta name="description" content="Instructor dashboard for the refrigeration course: load student progress exports to see cohort completion, exam results and who is stuck where." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#teachMain">Skip to content</a>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Instructor Dashboard</h1>
+      <p class="subtitle">Cohort progress for the refrigeration course — everything stays on this computer</p>
+    </div>
+    <div class="controls">
+      <a class="btn btn-learn" href="learn.html">Open Course</a>
+      <a class="btn btn-tour" href="index.html">Open Simulator</a>
+    </div>
+  </header>
+
+  <main id="teachMain" class="teach-main">
+    <div class="learn-hero">
+      <h2>Load student progress files</h2>
+      <p>Students export their progress from the course page (<b>Course overview →
+      Export progress</b>) and send you the <b>.json</b> file — by email, LMS
+      submission or a shared folder. Load any number of files below to see the
+      cohort at a glance. Nothing is uploaded: this page runs entirely in your
+      browser.</p>
+      <div class="quiz-controls">
+        <label class="btn btn-tour file-btn">Load progress files
+          <input id="studentFiles" type="file" accept=".json,application/json" multiple hidden />
+        </label>
+        <span id="teachStatus" class="io-status" aria-live="polite"></span>
+      </div>
+    </div>
+    <div id="cohort"></div>
+  </main>
+
+  <footer class="footer">
+    <span>Educational course · instructor view · no data leaves this browser.</span>
+  </footer>
+
+  <script src="js/md.js"></script>
+  <script src="js/course1.js"></script>
+  <script src="js/course2.js"></script>
+  <script src="js/teach.js"></script>
+</body>
+</html>

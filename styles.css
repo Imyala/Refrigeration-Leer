@@ -688,3 +688,124 @@ body.quiz-active .perf-panel { display: none; }
   flex-wrap: wrap;
 }
 .lesson-nav a { text-decoration: none; }
+
+/* ---------- Skip link ---------- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--accent);
+  color: #0c131b;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 0 0 10px 0;
+  text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+/* ---------- Home hero actions (export / import / name) ---------- */
+.hero-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.name-field input {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  min-width: 220px;
+}
+.file-btn { cursor: pointer; }
+.hero-actions .btn, .hero-actions a.btn { font-size: 13px; padding: 10px 14px; }
+.io-status { font-size: 12px; color: #6fe0a0; }
+
+/* ---------- Final exam + certificate ---------- */
+.exam-card { border-color: #7b5cd6; }
+.exam-card:hover { border-color: #9d82e8; }
+.nav-exam { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 10px; }
+.exam-intro p { font-size: 14px; }
+.q-module { font-weight: 400; font-size: 11px; color: var(--muted); }
+
+.cert-section {
+  background: var(--panel);
+  border: 1px solid #7b5cd6;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-top: 18px;
+  max-width: 860px;
+}
+.cert-section > h3 { margin: 0 0 6px; font-size: 16px; }
+
+.certificate { margin-top: 16px; }
+.cert-border {
+  background: #fdfcf7;
+  color: #1c2430;
+  border: 3px double #8a7434;
+  border-radius: 6px;
+  padding: 36px 40px;
+  text-align: center;
+  max-width: 720px;
+}
+.cert-course { margin: 0; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #8a7434; }
+.cert-border h4 { margin: 10px 0 18px; font-size: 26px; color: #1c2430; }
+.cert-awarded { margin: 0; font-size: 12px; color: #6b7686; text-transform: uppercase; letter-spacing: 2px; }
+.cert-name { margin: 8px 0 16px; font-size: 30px; font-weight: 700; color: #12324f; }
+.cert-detail { margin: 0 auto 22px; font-size: 14px; line-height: 1.6; max-width: 52ch; }
+.cert-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: #4c5866;
+  border-top: 1px solid #d8d2bd;
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+.cert-note { margin: 14px 0 0; font-size: 10px; color: #8a93a0; line-height: 1.5; }
+
+@media print {
+  body.print-cert { background: #fff; }
+  body.print-cert * { visibility: hidden; }
+  body.print-cert .certificate, body.print-cert .certificate * { visibility: visible; }
+  body.print-cert .certificate {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+  body.print-cert .cert-border { border-color: #8a7434; }
+}
+
+/* ---------- Instructor dashboard ---------- */
+.teach-main { max-width: 1200px; margin: 0 auto; padding: 20px 24px; }
+.teach-main .learn-hero p { max-width: 78ch; }
+.cohort-table { border-collapse: collapse; font-size: 13px; min-width: 640px; background: var(--panel); }
+.cohort-table th, .cohort-table td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: center;
+}
+.cohort-table th { background: #0c131b; color: var(--accent); }
+.cohort-table .student-name { text-align: left; font-weight: 600; }
+.cohort-table .exported { color: var(--muted); font-size: 12px; }
+.cell-all  { color: #6fe0a0; font-weight: 600; }
+.cell-part { color: #f5a623; }
+.cell-none { color: #55677a; }
+#cohort .table-wrap { overflow-x: auto; margin: 6px 0 12px; }

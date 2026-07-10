@@ -1,32 +1,68 @@
 /* =========================================================================
-   Learn — the course UI. Hash-routed views (home / module / lesson),
-   markdown-rendered lesson content, per-lesson quizzes, and progress
-   persisted in localStorage. Browser-only.
+   Learn — the course UI. Hash-routed views (home / module / lesson / exam),
+   markdown-rendered lesson content, per-lesson quizzes, a final exam with a
+   printable certificate, and progress persisted in localStorage — and in
+   the LMS via SCORM (cmi.suspend_data) when running as a SCORM package.
+   Browser-only.
    ========================================================================= */
 "use strict";
 
 /* ---- Progress store -------------------------------------------------------- */
+function mergeProgress(a, b) {
+  const out = Object.assign({}, a);
+  for (const [k, v] of Object.entries(b || {})) {
+    const cur = out[k];
+    out[k] = cur
+      ? { done: !!(cur.done || v.done), best: Math.max(cur.best || 0, v.best || 0), total: v.total || cur.total }
+      : v;
+  }
+  return out;
+}
+
 const Progress = {
   KEY: "refrigSim.progress",
   data: {},
   load() {
     try { this.data = JSON.parse(localStorage.getItem(this.KEY) || "{}"); }
     catch (e) { this.data = {}; }
+    const lms = RefrigScorm.Scorm.loadProgress();
+    if (lms) this.data = mergeProgress(this.data, lms);
   },
   save() {
     try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); }
     catch (e) { /* storage unavailable */ }
+    // Report to the LMS when running as SCORM content
+    const lessons = totalLessons(), done = totalDone();
+    const exam = this.data["exam/final"];
+    const score = exam && exam.total
+      ? Math.round(exam.best / exam.total * 100)
+      : Math.round(done / lessons * 100);
+    const status = done === lessons
+      ? (exam && exam.done ? "passed" : "completed")
+      : "incomplete";
+    RefrigScorm.Scorm.saveProgress(this.data, score, status);
   },
   get(modId, lesId) { return this.data[modId + "/" + lesId]; },
-  record(modId, lesId, score, total) {
+  record(modId, lesId, score, total, passScore) {
     const key = modId + "/" + lesId;
+    const need = passScore != null ? passScore : Math.ceil(total * 2 / 3);
     const prev = this.data[key] || {};
-    const done = prev.done || score >= Math.ceil(total * 2 / 3);
-    const best = Math.max(prev.best || 0, score);
-    this.data[key] = { done, best, total };
+    this.data[key] = {
+      done: prev.done || score >= need,
+      best: Math.max(prev.best || 0, score),
+      total,
+    };
     this.save();
   },
 };
+
+const NAME_KEY = "refrigSim.learnerName";
+function getLearnerName() {
+  try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; }
+}
+function setLearnerName(name) {
+  try { localStorage.setItem(NAME_KEY, name); } catch (e) { /* ignore */ }
+}
 
 const lessonDone = (mod, les) => !!(Progress.get(mod.id, les.id) || {}).done;
 const moduleDoneCount = (mod) => mod.lessons.filter(l => lessonDone(mod, l)).length;
@@ -51,15 +87,22 @@ function parseHash() {
 
 function route() {
   const { m, l } = parseHash();
-  const mod = COURSE.find(x => x.id === m);
-  if (!mod) renderHome();
+  if (m === "exam") renderExam();
   else {
-    const les = l && mod.lessons.find(x => x.id === l);
-    if (les) renderLesson(mod, les);
-    else renderModule(mod);
+    const mod = COURSE.find(x => x.id === m);
+    if (!mod) renderHome();
+    else {
+      const les = l && mod.lessons.find(x => x.id === l);
+      if (les) renderLesson(mod, les);
+      else renderModule(mod);
+    }
   }
   renderSidebar();
   window.scrollTo(0, 0);
+  // Move focus to the freshly rendered view for keyboard/screen-reader users
+  const main = document.getElementById("learnMain");
+  main.setAttribute("tabindex", "-1");
+  main.focus({ preventScroll: true });
 }
 
 /* ---- Sidebar ---------------------------------------------------------------- */
@@ -67,18 +110,24 @@ function renderSidebar() {
   const { m } = parseHash();
   const nav = document.getElementById("courseNav");
   const overall = `${totalDone()}/${totalLessons()}`;
+  const exam = Progress.get("exam", "final");
   nav.innerHTML = `
-    <a class="nav-home ${!m ? "active" : ""}" href="#">
+    <a class="nav-home ${!m ? "active" : ""}" href="#" ${!m ? 'aria-current="page"' : ""}>
       <span>Course overview</span><span class="nav-count">${overall}</span>
     </a>
     ${COURSE.map(mod => {
       const done = moduleDoneCount(mod);
       const all = done === mod.lessons.length;
-      return `<a class="nav-mod ${m === mod.id ? "active" : ""}" href="#${mod.id}">
+      const active = m === mod.id;
+      return `<a class="nav-mod ${active ? "active" : ""}" href="#${mod.id}" ${active ? 'aria-current="page"' : ""}>
         <span>${mod.title}</span>
         <span class="nav-count ${all ? "all" : ""}">${all ? "✓" : done + "/" + mod.lessons.length}</span>
       </a>`;
-    }).join("")}`;
+    }).join("")}
+    <a class="nav-mod nav-exam ${m === "exam" ? "active" : ""}" href="#exam" ${m === "exam" ? 'aria-current="page"' : ""}>
+      <span>Final exam &amp; certificate</span>
+      <span class="nav-count ${exam && exam.done ? "all" : ""}">${exam ? (exam.done ? "✓" : exam.best + "/" + exam.total) : "—"}</span>
+    </a>`;
 }
 
 /* ---- Views ------------------------------------------------------------------ */
@@ -93,10 +142,21 @@ function renderHome() {
       gauges, how to diagnose their faults and how to repair them — built around
       the interactive simulator. Work through the modules in order, or jump to
       what you need. Each lesson ends with a short quiz; pass it to mark the
-      lesson complete.</p>
+      lesson complete, then sit the final exam for a certificate.</p>
       <div class="progress-line">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
+      </div>
+      <div class="hero-actions">
+        <label class="name-field">Your name
+          <input id="learnerName" value="${RefrigMd.esc(getLearnerName())}" placeholder="used on exports &amp; certificate" />
+        </label>
+        <button id="exportBtn" class="btn btn-ghost" type="button">Export progress</button>
+        <label class="btn btn-ghost file-btn">Import progress
+          <input id="importFile" type="file" accept=".json,application/json" hidden />
+        </label>
+        <a class="btn btn-ghost" href="teach.html">Instructor dashboard</a>
+        <span id="ioStatus" class="io-status" aria-live="polite"></span>
       </div>
     </div>
     <div class="module-grid">
@@ -110,7 +170,19 @@ function renderHome() {
           <span class="module-meta">${mod.lessons.length} lessons · ${mdone} complete</span>
         </a>`;
       }).join("")}
+      <a class="module-card exam-card" href="#exam">
+        <h3>Final exam &amp; certificate</h3>
+        <p>Twenty questions drawn from the whole course — two per module. Score 80% to pass and generate a printable certificate of completion.</p>
+        <span class="module-meta">${(() => {
+          const e = Progress.get("exam", "final");
+          return e ? (e.done ? "passed ✓ · best " + e.best + "/" + e.total : "best " + e.best + "/" + e.total) : "not attempted";
+        })()}</span>
+      </a>
     </div>`;
+
+  document.getElementById("learnerName").addEventListener("change", (e) => setLearnerName(e.target.value.trim()));
+  document.getElementById("exportBtn").addEventListener("click", exportProgress);
+  document.getElementById("importFile").addEventListener("change", importProgress);
 }
 
 function renderModule(mod) {
@@ -149,26 +221,26 @@ function renderLesson(mod, les) {
     <section class="lesson-quiz" aria-label="Lesson quiz">
       <h3>Check your understanding</h3>
       ${p && p.done ? `<p class="quiz-status">Completed — best score ${p.best}/${p.total}. Retake it any time.</p>` : ""}
-      <div id="lessonQuiz">${renderQuizHtml(les)}</div>
+      <div id="lessonQuiz">${renderQuizHtml(les.quiz)}</div>
       <div class="quiz-controls">
         <button id="quizCheckBtn" class="btn btn-tour" type="button">Check answers</button>
-        <span id="quizResult" class="quiz-result"></span>
+        <span id="quizResult" class="quiz-result" aria-live="polite"></span>
       </div>
     </section>
     <nav class="lesson-nav">
       ${prev ? `<a class="btn btn-ghost" href="#${prev.mod.id}/${prev.les.id}">← ${prev.les.title}</a>` : "<span></span>"}
       ${next ? `<a class="btn btn-tour" href="#${next.mod.id}/${next.les.id}">${next.les.title} →</a>`
-             : `<a class="btn btn-tour" href="#">Back to course overview</a>`}
+             : `<a class="btn btn-tour" href="#exam">Sit the final exam →</a>`}
     </nav>`;
 
   document.getElementById("quizCheckBtn").addEventListener("click", () => checkQuiz(mod, les));
 }
 
-/* ---- Quiz ------------------------------------------------------------------- */
-function renderQuizHtml(les) {
-  return les.quiz.map((q, qi) => `
+/* ---- Quiz (shared markup for lessons and the exam) -------------------------- */
+function renderQuizHtml(questions, withModule) {
+  return questions.map((q, qi) => `
     <fieldset class="quiz-q" data-q="${qi}">
-      <legend>${qi + 1}. ${q.q}</legend>
+      <legend>${qi + 1}. ${q.q}${withModule ? ` <span class="q-module">— ${q.module}</span>` : ""}</legend>
       ${q.options.map((opt, oi) => `
         <label class="quiz-choice">
           <input type="radio" name="q${qi}" value="${oi}" />
@@ -178,23 +250,17 @@ function renderQuizHtml(les) {
     </fieldset>`).join("");
 }
 
-function checkQuiz(mod, les) {
-  const result = document.getElementById("quizResult");
-  const fields = Array.from(document.querySelectorAll("#lessonQuiz .quiz-q"));
-
+function markQuiz(container, questions) {
+  const fields = Array.from(container.querySelectorAll(".quiz-q"));
   const answers = fields.map(f => {
     const sel = f.querySelector("input:checked");
     return sel ? parseInt(sel.value, 10) : null;
   });
-  if (answers.some(a => a === null)) {
-    result.textContent = "Answer every question first.";
-    result.className = "quiz-result bad";
-    return;
-  }
+  if (answers.some(a => a === null)) return { incomplete: true };
 
   let score = 0;
   fields.forEach((f, qi) => {
-    const q = les.quiz[qi];
+    const q = questions[qi];
     const right = answers[qi] === q.answer;
     if (right) score++;
     f.classList.remove("correct", "wrong");
@@ -203,19 +269,208 @@ function checkQuiz(mod, les) {
     ex.innerHTML = (right ? "<b>✓ Correct.</b> " : `<b>✗ The answer is:</b> ${q.options[q.answer]}. `) + q.explain;
     ex.hidden = false;
   });
+  return { incomplete: false, score };
+}
 
+function checkQuiz(mod, les) {
+  const result = document.getElementById("quizResult");
+  const marked = markQuiz(document.getElementById("lessonQuiz"), les.quiz);
+  if (marked.incomplete) {
+    result.textContent = "Answer every question first.";
+    result.className = "quiz-result bad";
+    return;
+  }
   const total = les.quiz.length;
-  const passed = score >= Math.ceil(total * 2 / 3);
-  Progress.record(mod.id, les.id, score, total);
+  const passed = marked.score >= Math.ceil(total * 2 / 3);
+  Progress.record(mod.id, les.id, marked.score, total);
   result.innerHTML = passed
-    ? `Score ${score}/${total} — <b>lesson complete ✓</b>`
-    : `Score ${score}/${total} — review the explanations and try again (need ${Math.ceil(total * 2 / 3)}).`;
+    ? `Score ${marked.score}/${total} — <b>lesson complete ✓</b>`
+    : `Score ${marked.score}/${total} — review the explanations and try again (need ${Math.ceil(total * 2 / 3)}).`;
   result.className = "quiz-result " + (passed ? "good" : "bad");
   renderSidebar();
 }
 
+/* ---- Final exam -------------------------------------------------------------- */
+const EXAM = { questions: null, perModule: 2, passPct: 0.8 };
+
+function renderExam() {
+  const main = document.getElementById("learnMain");
+  const p = Progress.get("exam", "final");
+  const nQuestions = COURSE.length * EXAM.perModule;
+  const passMark = Math.ceil(nQuestions * EXAM.passPct);
+
+  if (!EXAM.questions) {
+    main.innerHTML = `
+      <div class="crumbs"><a href="#">Course</a> › <span>Final exam</span></div>
+      <h2>Final exam</h2>
+      <div class="learn-hero exam-intro">
+        <p><b>${nQuestions} questions</b>, two drawn at random from every module. Pass mark
+        <b>${passMark}/${nQuestions}</b> (80%). Every attempt draws a fresh paper, your best
+        score is kept, and passing unlocks a printable certificate of completion.</p>
+        <p class="module-blurb">${p ? `Best score so far: <b>${p.best}/${p.total}</b>${p.done ? " — passed ✓" : ""}` : "Not attempted yet."}</p>
+        <div class="quiz-controls">
+          <button id="examStartBtn" class="btn btn-tour" type="button">${p ? "Sit a new paper" : "Start the exam"}</button>
+        </div>
+      </div>
+      ${p && p.done ? certificateSectionHtml(p) : ""}`;
+    document.getElementById("examStartBtn").addEventListener("click", () => {
+      EXAM.questions = RefrigExam.pickExamQuestions(COURSE, EXAM.perModule);
+      renderExam();
+    });
+    if (p && p.done) wireCertificate(p);
+    return;
+  }
+
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>Final exam</span></div>
+    <h2>Final exam — ${EXAM.questions.length} questions</h2>
+    <p class="module-blurb">Pass mark ${passMark}/${EXAM.questions.length}. Take your time — the explanations appear after you submit.</p>
+    <section class="lesson-quiz" aria-label="Final exam">
+      <div id="examQuiz">${renderQuizHtml(EXAM.questions, true)}</div>
+      <div class="quiz-controls">
+        <button id="examSubmitBtn" class="btn btn-tour" type="button">Submit exam</button>
+        <button id="examCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+        <span id="quizResult" class="quiz-result" aria-live="polite"></span>
+      </div>
+      <div id="examOutcome"></div>
+    </section>`;
+
+  document.getElementById("examCancelBtn").addEventListener("click", () => { EXAM.questions = null; renderExam(); renderSidebar(); });
+  document.getElementById("examSubmitBtn").addEventListener("click", () => {
+    const result = document.getElementById("quizResult");
+    const marked = markQuiz(document.getElementById("examQuiz"), EXAM.questions);
+    if (marked.incomplete) {
+      result.textContent = "Answer every question first.";
+      result.className = "quiz-result bad";
+      return;
+    }
+    const total = EXAM.questions.length;
+    const passed = marked.score >= passMark;
+    Progress.record("exam", "final", marked.score, total, passMark);
+    result.innerHTML = passed
+      ? `Score ${marked.score}/${total} — <b>passed ✓</b>`
+      : `Score ${marked.score}/${total} — pass mark is ${passMark}. Review the explanations and sit a new paper.`;
+    result.className = "quiz-result " + (passed ? "good" : "bad");
+    document.getElementById("examSubmitBtn").disabled = true;
+    const rec = Progress.get("exam", "final");
+    document.getElementById("examOutcome").innerHTML =
+      `<div class="quiz-controls" style="margin-top:14px">
+         <button id="examAgainBtn" class="btn btn-ghost" type="button">Sit a new paper</button>
+       </div>` + (rec && rec.done ? certificateSectionHtml(rec) : "");
+    document.getElementById("examAgainBtn").addEventListener("click", () => {
+      EXAM.questions = RefrigExam.pickExamQuestions(COURSE, EXAM.perModule);
+      renderExam();
+    });
+    if (rec && rec.done) wireCertificate(rec);
+    renderSidebar();
+  });
+}
+
+/* ---- Certificate -------------------------------------------------------------- */
+function certificateSectionHtml(examRec) {
+  return `
+    <section class="cert-section" aria-label="Certificate">
+      <h3>Certificate of completion</h3>
+      <p class="module-blurb">Lessons complete: ${totalDone()}/${totalLessons()} · Final exam best score: ${examRec.best}/${examRec.total}.</p>
+      <div class="quiz-controls">
+        <label class="name-field">Name on certificate
+          <input id="certName" value="${RefrigMd.esc(getLearnerName())}" placeholder="your full name" />
+        </label>
+        <button id="certBtn" class="btn btn-tour" type="button">Generate certificate</button>
+      </div>
+      <div id="certOut"></div>
+    </section>`;
+}
+
+function wireCertificate(examRec) {
+  document.getElementById("certBtn").addEventListener("click", () => {
+    const name = document.getElementById("certName").value.trim();
+    if (!name) { document.getElementById("certName").focus(); return; }
+    setLearnerName(name);
+    const date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    const pct = Math.round(examRec.best / examRec.total * 100);
+    const code = RefrigExam.certificateCode([name, examRec.best, examRec.total, date].join("|"));
+    const allLessons = totalDone() === totalLessons();
+    const achievement = allLessons
+      ? `for completing all ${totalLessons()} lessons and passing the final examination`
+      : `for passing the final examination (lessons completed: ${totalDone()}/${totalLessons()})`;
+    document.getElementById("certOut").innerHTML = `
+      <div class="certificate">
+        <div class="cert-border">
+          <p class="cert-course">Refrigeration Learning Course</p>
+          <h4>Certificate of Completion</h4>
+          <p class="cert-awarded">awarded to</p>
+          <p class="cert-name">${RefrigMd.esc(name)}</p>
+          <p class="cert-detail">${achievement}
+          with a score of <b>${examRec.best}/${examRec.total} (${pct}%)</b></p>
+          <div class="cert-foot">
+            <span>${date}</span>
+            <span>Certificate ID: ${code}</span>
+          </div>
+          <p class="cert-note">Evidence of course completion — regenerate with the same name, score and date to verify the ID. Not a refrigerant-handling licence or trade qualification.</p>
+        </div>
+      </div>
+      <div class="quiz-controls">
+        <button id="certPrintBtn" class="btn btn-tour" type="button">Print / save as PDF</button>
+      </div>`;
+    document.getElementById("certPrintBtn").addEventListener("click", () => {
+      document.body.classList.add("print-cert");
+      const cleanup = () => document.body.classList.remove("print-cert");
+      window.addEventListener("afterprint", cleanup, { once: true });
+      window.print();
+      setTimeout(cleanup, 2000);
+    });
+  });
+}
+
+/* ---- Progress export / import -------------------------------------------------- */
+function exportProgress() {
+  const name = getLearnerName();
+  const payload = {
+    format: "refrig-progress-v1",
+    name: name || null,
+    exported: new Date().toISOString(),
+    progress: Progress.data,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const slug = (name || "learner").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "learner";
+  a.download = `refrig-progress-${slug}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  document.getElementById("ioStatus").textContent = "Progress exported — send the file to your instructor.";
+}
+
+function importProgress(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const status = document.getElementById("ioStatus");
+    try {
+      const data = JSON.parse(reader.result);
+      if (data.format !== "refrig-progress-v1" || typeof data.progress !== "object") {
+        throw new Error("not a progress file");
+      }
+      Progress.data = mergeProgress(Progress.data, data.progress);
+      Progress.save();
+      if (data.name && !getLearnerName()) setLearnerName(data.name);
+      route();
+      document.getElementById("ioStatus").textContent = "Progress imported and merged.";
+    } catch (err) {
+      status.textContent = "Could not import that file — it isn't a progress export.";
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
 /* ---- Boot ------------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  RefrigScorm.Scorm.init();
   Progress.load();
   buildFlat();
   window.addEventListener("hashchange", route);

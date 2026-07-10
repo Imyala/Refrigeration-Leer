@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#mainStage">Skip to main content</a>
   <header class="topbar">
     <div class="title-block">
       <h1>Refrigeration Cycle Simulator</h1>
@@ -82,10 +83,10 @@
       <button id="quizEndBtn" class="btn btn-ghost" type="button">End quiz</button>
     </div>
     <div id="quizClues" class="quiz-clues" hidden></div>
-    <div id="quizFeedback" class="quiz-feedback" hidden></div>
+    <div id="quizFeedback" class="quiz-feedback" aria-live="polite" hidden></div>
   </section>
 
-  <main class="stage">
+  <main class="stage" id="mainStage">
     <!-- Left column: schematic diagram + the component info directly beneath it -->
     <div class="main-col">
     <div class="diagram-wrap">
@@ -236,7 +237,7 @@
         <button id="ptCheckBtn" class="btn btn-tour" type="button">Check</button>
         <button id="ptNewBtn" class="btn btn-ghost" type="button">New question</button>
       </div>
-      <div id="ptFeedback" class="pt-feedback" hidden></div>
+      <div id="ptFeedback" class="pt-feedback" aria-live="polite" hidden></div>
       <p class="perf-caption">Reading expected pressures straight off the PT relationship is how technicians judge whether a system is running correctly — practise until it's automatic.</p>
     </div>
   </section>

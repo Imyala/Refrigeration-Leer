@@ -7,6 +7,37 @@ sold to universities, TAFEs and other higher-education institutions.
 
 **Date:** July 2026
 
+## Status
+
+- **Phase 1 — done.** Technician diagnosis quiz, virtual gauge manifold with PT
+  rings, PT chart + target-pressure trainer, kPa/bar/psi + °C/°F units, fault
+  library grown to 10, accessibility pass, code modularised with tests + CI.
+- **Phase 2 — done.** Structured course (`learn.html`): 10 modules / 28 lessons
+  with per-lesson quizzes, explanations, saved progress, and simulator deep
+  links; content authored in a markdown subset with validation tests.
+- **Phase 3 — static-feasible parts done.**
+  - **SCORM 1.2 package** (`npm run build:scorm`): imports into Moodle/Canvas/
+    Blackboard/D2L; reports completion + exam score to the gradebook and stores
+    progress in the LMS (suspend_data), so it follows the learner's account.
+  - **Final exam** (20 questions, 2 random per module, 80% pass) and a
+    printable **certificate of completion** with a verifiable integrity code.
+  - **Instructor dashboard** (`teach.html`): aggregates student progress
+    exports into a cohort table (module completion, exam, overall %, CSV) —
+    fully client-side.
+  - **Progress export/import** on the course page; learner name field.
+  - **Curriculum mapping** (docs/CURRICULUM_MAPPING.md): UEE/Cert III RAC,
+    EPA 608, university outcomes, delivery options.
+  - Accessibility round 2: skip links, aria-live feedback, focus management
+    on route changes, aria-current navigation.
+- **Phase 3 — remaining items that genuinely require a server** (build against
+  a pilot institution's requirements, not speculatively):
+  - **LTI 1.3 tool** (OIDC login + grade passback) — needs a hosted backend
+    with key management; SCORM covers LMS delivery until then.
+  - **Central accounts / SSO (SAML/OIDC)** and live instructor dashboards —
+    needs a database + auth provider; the file-based dashboard covers pilots.
+  - **CoolProp-grade property data** (WASM) — an accuracy upgrade for
+    university sales; current tables are honest and disclosed as approximate.
+
 ---
 
 ## 1. Review of the current app
