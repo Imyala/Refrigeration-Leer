@@ -1,9 +1,15 @@
-# Refrigeration Cycle Simulator
+# Refrigeration Learning Platform
 
-An interactive, animated **vapour-compression refrigeration training tool**.
-Watch the refrigerant flow around the loop, change colour as it changes state,
-read the gauges like a technician, diagnose hidden faults, and practise the
-pressure–temperature relationship — all in a plain static site.
+An interactive **refrigeration training platform**: an animated
+vapour-compression simulator with fault diagnosis, plus a structured
+**10-module course** (28 lessons with quizzes and saved progress) covering
+fundamentals through to repair procedures and safety — all in a plain static
+site with no build step.
+
+- **`index.html`** — the simulator: animated cycle, gauge manifold, technician
+  quiz, PT trainer.
+- **`learn.html`** — the course: lessons, quizzes, progress tracking, with
+  deep links that open the simulator pre-configured for each topic.
 
 ## What it teaches
 
@@ -60,6 +66,33 @@ pressure–temperature relationship — all in a plain static site.
 - **Accessibility** — pipe states are labelled with text (not colour alone),
   controls are keyboard-operable with visible focus, and animation respects
   `prefers-reduced-motion`.
+
+## The course (learn.html)
+
+A structured curriculum in ten modules / 28 lessons, written for learners
+working toward field competence:
+
+1. **Heat, temperature & pressure** — the physics, latent heat, the PT relationship
+2. **The vapour-compression cycle** — the four processes, the P–h diagram, a full lap
+3. **Components deep-dive** — compressors, metering devices, heat exchangers, accessories
+4. **Refrigerants & the environment** — families/numbering, ODP/GWP & law, safety classes
+5. **Superheat & subcooling** — measurement technique and the diagnostic matrix
+6. **System types** — splits & heat pumps, cool rooms, racks and chillers
+7. **Electrical fundamentals** — motors & starting gear, controls, ladder-diagram diagnosis
+8. **Fault diagnosis** — the routine, gauge signatures of ten faults, quiz practice
+9. **Repair procedures** — recovery, evacuation, charging methods, leaks & brazing
+10. **Safety** — refrigerant/pressure/cold hazards, electrical & site safety
+
+Each lesson ends with a **checked quiz** (explanations for every answer);
+passing marks the lesson complete, and progress is saved in the browser.
+Lessons embed **deep links** that open the simulator pre-configured
+(`index.html?r=R404A&fault=lowCharge&speed=120&load=80`, plus `quiz=1`,
+`tour=1` and `view=pt`).
+
+Lesson content is authored in a small markdown subset (`js/md.js`) directly
+inside `js/course1.js` / `js/course2.js` — add a lesson by adding an object
+(content, minutes, quiz) to a module's `lessons` array; the navigation,
+progress tracking and quizzes pick it up automatically.
 
 ## Accuracy notes
 
@@ -128,14 +161,18 @@ and unit conversion/formatting. CI runs them on every push
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Page structure + the SVG schematic |
-| `styles.css` | Dark theme, layout, state colours |
+| `index.html` | Simulator page structure + the SVG schematic |
+| `learn.html` | Course page (sidebar navigation + lesson view) |
+| `styles.css` | Dark theme, layout, state colours, course styles |
 | `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |
 | `js/model.js` | Interpolation, saturation lookups, operating-point derivation |
 | `js/units.js` | kPa/bar/psi and °C/°F display, gauge-vs-absolute, localStorage prefs |
 | `js/gauges.js` | Analog gauge manifold with PT rings |
 | `js/pt.js` | PT chart + target-pressure trainer |
 | `js/quiz.js` | Technician diagnosis quiz |
-| `js/app.js` | Schematic animation, readouts, P–h diagram, tour, wiring |
-| `tests/` | Node built-in test-runner suites for model, data and units |
+| `js/app.js` | Schematic animation, readouts, P–h diagram, tour, deep links, wiring |
+| `js/md.js` | Markdown-subset renderer for lesson content (incl. !SIM directive) |
+| `js/course1.js`, `js/course2.js` | Course content: 10 modules, 28 lessons, quizzes |
+| `js/learn.js` | Course UI: routing, progress store, lesson quizzes |
+| `tests/` | Node built-in test-runner suites: model, units, markdown, course validation |
 | `docs/REVIEW_AND_ROADMAP.md` | Platform review and the phased roadmap |

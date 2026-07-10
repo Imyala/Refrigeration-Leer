@@ -567,6 +567,16 @@ function loop() {
 /* Wiring                                                                    */
 /* ========================================================================= */
 function init() {
+  // Deep links (used by the Learn course): index.html?r=R404A&fault=lowCharge
+  // &speed=120&load=80, plus quiz=1 / tour=1 / view=pt.
+  const urlq = new URLSearchParams(location.search);
+  if (urlq.get("r") && REFRIGERANTS[urlq.get("r")]) state.refrigerant = urlq.get("r");
+  if (urlq.get("fault") && FAULTS[urlq.get("fault")]) state.fault = urlq.get("fault");
+  const uSpeed = parseInt(urlq.get("speed"), 10);
+  if (uSpeed >= 50 && uSpeed <= 150) state.speed = uSpeed;
+  const uLoad = parseInt(urlq.get("load"), 10);
+  if (uLoad >= 50 && uLoad <= 150) state.load = uLoad;
+
   const sel = document.getElementById("refrigerantSelect");
   sel.innerHTML = Object.keys(REFRIGERANTS).map(k => `<option value="${k}">${REFRIGERANTS[k].label}</option>`).join("");
   sel.value = state.refrigerant;
@@ -599,6 +609,10 @@ function init() {
 
   const speed = document.getElementById("speedSlider");
   const load = document.getElementById("loadSlider");
+  speed.value = state.speed;
+  load.value = state.load;
+  document.getElementById("speedOut").textContent = state.speed + "%";
+  document.getElementById("loadOut").textContent = state.load + "%";
   speed.addEventListener("input", () => {
     state.speed = +speed.value;
     document.getElementById("speedOut").textContent = state.speed + "%";
@@ -651,6 +665,13 @@ function init() {
   setRunning(true);
   initPtTrainer();
   requestAnimationFrame(loop);
+
+  // Deep-link actions, once everything is wired
+  if (urlq.get("quiz") === "1") startQuiz();
+  else if (urlq.get("tour") === "1") setTour(true);
+  if (urlq.get("view") === "pt") {
+    document.querySelector(".pt-section").scrollIntoView({ behavior: "smooth" });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
