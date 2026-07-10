@@ -143,6 +143,10 @@ function renderHome() {
       the interactive simulator. Work through the modules in order, or jump to
       what you need. Each lesson ends with a short quiz; pass it to mark the
       lesson complete, then sit the final exam for a certificate.</p>
+      <p class="align-note">Aligned to Australian practice: every lesson lists its references —
+      the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
+      (3000, 5149, 4836) and the ARAC manuals (Boyle, Vols 1 &amp; 2, pub. AIRAH) —
+      cited at topic level; always work to the current editions.</p>
       <div class="progress-line">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
@@ -218,6 +222,14 @@ function renderLesson(mod, les) {
       <span class="lesson-mins">~${les.minutes} min ${lessonDone(mod, les) ? " · <b class=\"done-tag\">completed ✓</b>" : ""}</span>
     </div>
     <article class="lesson-content">${RefrigMd.render(les.content)}</article>
+    ${les.refs && les.refs.length ? `
+    <aside class="lesson-refs" aria-label="References">
+      <h3>References &amp; alignment</h3>
+      <ul>${les.refs.map(r => `<li>${RefrigMd.inline(r)}</li>`).join("")}</ul>
+      <p>Topic-level alignment: this lesson paraphrases publicly available requirements and
+      general trade knowledge — it does not reproduce standards text. Always work to the
+      current editions.</p>
+    </aside>` : ""}
     <section class="lesson-quiz" aria-label="Lesson quiz">
       <h3>Check your understanding</h3>
       ${p && p.done ? `<p class="quiz-status">Completed — best score ${p.best}/${p.total}. Retake it any time.</p>` : ""}

@@ -26,6 +26,10 @@ test("module and lesson ids are unique and well-formed", () => {
       assert.ok(les.title, `${mod.id}/${les.id}: title`);
       assert.ok(les.minutes > 0, `${mod.id}/${les.id}: minutes`);
       assert.ok(les.content && les.content.length > 200, `${mod.id}/${les.id}: substantive content`);
+      assert.ok(Array.isArray(les.refs) && les.refs.length >= 1, `${mod.id}/${les.id}: references present`);
+      for (const r of les.refs) {
+        assert.ok(typeof r === "string" && r.length > 10, `${mod.id}/${les.id}: substantive reference`);
+      }
     }
   }
 });

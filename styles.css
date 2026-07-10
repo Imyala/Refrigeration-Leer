@@ -515,6 +515,7 @@ body.quiz-active .perf-panel { display: none; }
 }
 .learn-hero h2 { margin: 0 0 8px; font-size: 20px; }
 .learn-hero p { margin: 0 0 14px; color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 70ch; }
+.align-note { font-size: 12px !important; color: #f5a623 !important; }
 .progress-line { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); }
 .progress-bar {
   flex: 1;
@@ -631,6 +632,21 @@ body.quiz-active .perf-panel { display: none; }
   text-decoration: none;
 }
 .sim-link:hover { background: #1a4a68; }
+
+/* ---------- Learn: lesson references ---------- */
+.lesson-refs {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid #f5a623;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-top: 14px;
+  max-width: 860px;
+  font-size: 13px;
+}
+.lesson-refs h3 { margin: 0 0 6px; font-size: 13px; color: #f5a623; letter-spacing: .5px; }
+.lesson-refs ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+.lesson-refs p { margin: 8px 0 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
 
 /* ---------- Learn: lesson quiz ---------- */
 .lesson-quiz {

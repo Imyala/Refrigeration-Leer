@@ -6,6 +6,11 @@ document. Training organisations must validate coverage against the current
 version of their training package / certification scheme; unit codes change
 between training-package releases.
 
+**Standards alignment:** every lesson cites its references (ARCtick
+Refrigerant Handling Code of Practice, AS/NZS 3000/5149/4836, and the ARAC
+manuals Vols 1 & 2) in an in-lesson references panel — see
+`docs/REFERENCES.md` for the master bibliography and the alignment policy.
+
 ## The course at a glance
 
 | # | Module | Lessons | Assessment available |

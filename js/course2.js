@@ -19,6 +19,9 @@
         id: "split-ac-heat-pumps",
         title: "Split air conditioners and heat pumps",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — domestic and commercial air conditioning; heat pump systems",
+        ],
         content: `
 The wall split is the highest-volume refrigeration machine on earth, and the
 reverse-cycle version — the heat pump — is the same hardware taught one new
@@ -91,6 +94,9 @@ resumes.
         id: "commercial-refrigeration",
         title: "Cool rooms, freezers, racks and chillers",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — commercial and industrial systems; supermarket refrigeration",
+        ],
         content: `
 Commercial refrigeration is where most trade work lives: keeping food cold,
 around the clock, with consequences when it fails.
@@ -179,6 +185,10 @@ which simplifies safety and lets one machine serve an entire building.
         id: "motors-starting",
         title: "Motors, capacitors and starting gear",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — electric motors, starting components and electrical principles",
+          "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
+        ],
         content: `
 Half of "refrigeration" faults are electrical. The compressor is a motor
 first and a pump second — and single-phase motors need help to start.
@@ -265,6 +275,11 @@ open = broken winding, and any winding to earth = burnout territory.
         id: "controls-diagnosis",
         title: "Controls, ladder diagrams and electrical diagnosis",
         minutes: 8,
+        refs: [
+          "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
+          "AS/NZS 4836 — Safe working on or near low-voltage electrical installations and equipment",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — electrical components, controls and wiring",
+        ],
         content: `
 Around every compressor sits a ring of switches deciding when it may run.
 Learn to read them on paper and interrogate them with a meter, in that order.
@@ -297,6 +312,27 @@ voltmeter:
 
 One sweep along the rung and the open device names itself. It beats parts
 swapping every time.
+
+## The Australian electrical boundary
+
+Electrical work on RAC equipment sits under two regimes at once, and knowing
+where one ends and the other begins is a licence matter:
+
+- **Fixed-wiring electrical work** — installing circuits, isolators,
+switchboard work, hard-wiring equipment — is **licensed electrical work under
+state and territory law** and must be done by a licensed electrician, with
+the installation complying with **AS/NZS 3000 (the Wiring Rules)**.
+- **RAC technicians** work up to that boundary: control-circuit diagnosis,
+component testing and replacement within the equipment, and plug-connected
+equipment. Some hold a **state restricted electrical licence** permitting
+defined tasks such as like-for-like disconnect/reconnect of fixed-wired
+equipment — the scope varies by state, so know yours.
+- Practical AS/NZS 3000 touchpoints you will meet on installs: a **lockable
+isolation switch adjacent to the equipment**, RCD protection requirements,
+and cable selection/protection — all specified by the electrician's design,
+not improvised on the roof.
+- Safe-isolation practice ("test for dead") follows **AS/NZS 4836** — the
+same ritual described below, formalised.
 
 >! Safety order is not negotiable: isolate, lock off, prove dead with a
 > tested meter — then apply power deliberately only for live tests that the
@@ -354,6 +390,9 @@ swapping every time.
         id: "diagnostic-method",
         title: "The diagnostic routine",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service and maintenance techniques; systematic fault diagnosis",
+        ],
         content: `
 Good diagnosticians are not lucky — they run the same disciplined loop every
 time, and they do the cheap steps first.
@@ -439,6 +478,9 @@ and re-measure.
         id: "gauge-signatures",
         title: "Gauge signatures of the classic faults",
         minutes: 9,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — fault diagnosis from operating pressures and temperatures",
+        ],
         content: `
 Every fault bends the numbers in its own shape. This table is the map — and
 every row is available in the simulator to see live.
@@ -515,6 +557,9 @@ Two pairs are nearly identical on gauges alone:
         id: "quiz-practice",
         title: "Deliberate practice with the Technician Quiz",
         minutes: 6,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service diagnostics practice",
+        ],
         content: `
 Knowledge becomes skill through repetitions. The simulator's **Technician
 Quiz** gives you unlimited faulty systems to diagnose — here is how to get
@@ -597,6 +642,11 @@ more for your gauge-reading than any chapter of theory.
         id: "recovery",
         title: "Refrigerant recovery",
         minutes: 7,
+        refs: [
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
+          "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
+        ],
         content: `
 Before any circuit is opened, the refrigerant comes out — into a cylinder,
 not the sky. Recovery is a legal duty, an environmental one, and simply good
@@ -626,6 +676,16 @@ Set the scales, calculate the limit, stop before it.
 The recovered weight is itself a diagnostic: compare it against the
 nameplate charge. A 5 kg system that yields 2.5 kg has told you where the
 performance went — and that there is a leak to find before recharging.
+
+## The Australian paperwork side
+
+Under the Ozone Protection and Synthetic Greenhouse Gas Management Act and
+the **Refrigerant Handling Code of Practice**, recovery before opening a
+circuit is not best practice — it is a **licence condition**. Possessing the
+recovered refrigerant requires a **Refrigerant Trading Authorisation**;
+recovery cylinders must be approved, in test and correctly labelled; and
+recovered quantities are recorded. Contaminated or unwanted refrigerant goes
+back through the supplier for reclaim or destruction — never into the air.
 
 >! Cylinders: keep them upright, capped, out of the sun, and never — ever —
 > warm one with a flame to speed it up. Warm water is the hottest thing that
@@ -672,6 +732,10 @@ performance went — and that there is a leak to find before recharging.
         id: "evacuation",
         title: "Evacuation: pulling a proper vacuum",
         minutes: 8,
+        refs: [
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "ARC technical resource — Evacuation: stationary refrigeration and air-conditioning systems (arcltd.org.au)",
+        ],
         content: `
 Air and moisture are the enemies inside a refrigeration circuit: air's
 non-condensables raise the head pressure, and moisture freezes at the
@@ -704,6 +768,13 @@ The working target: pull the system below **500 microns** (many specify
 For wet or opened systems: pull a vacuum, break it to a slight positive with
 **dry nitrogen** (which soaks up moisture), and repeat twice more. The
 nitrogen sweeps water vapour out far faster than a pump alone.
+
+> **Code alignment:** the Australia & NZ Refrigerant Handling Code of
+> Practice specifies evacuation by the **deep-evacuation or
+> triple-evacuation (oxygen-free nitrogen) methods**, with the vacuum
+> measured on a **dedicated vacuum gauge — not a service manifold gauge** —
+> through dedicated large-bore, short evacuation hoses. The method is a
+> requirement, not a preference; target depths are in the current edition.
 
 > Time spent evacuating is bought back in compressor life. The five-minute
 > "vacuum" that stops at 5,000 microns leaves the acid factory installed.
@@ -744,6 +815,10 @@ nitrogen sweeps water vapour out far faster than a pump alone.
         id: "charging",
         title: "Charging methods",
         minutes: 8,
+        refs: [
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — charging methods and system commissioning",
+        ],
         content: `
 There is a correct amount of refrigerant for every system, and three honest
 ways to hit it. Guessing by "beer-can cold" is not one of them.
@@ -822,6 +897,10 @@ high = overcharged.
         id: "leaks-brazing",
         title: "Leak detection and brazing basics",
         minutes: 8,
+        refs: [
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — tubing, brazing and welding practice",
+        ],
         content: `
 Every kilogram a system needs to be "topped up" escaped through a hole. Find
 the hole, fix it properly, prove it — that is the whole discipline.
@@ -837,7 +916,10 @@ the hole, fix it properly, prove it — that is the whole discipline.
 >! **Never pressure-test with oxygen or compressed air.** Oxygen meeting
 > refrigeration oil can detonate, and air introduces moisture and
 > non-condensables. Nitrogen only, through a regulator, with a relief
-> fitting.
+> fitting. In Australia the Refrigerant Handling Code of Practice governs
+> leak-test practice, including whether and how a trace of refrigerant may
+> be used with nitrogen for electronic detection — work to the current
+> edition, and never to a habit.
 
 ## Brazing that lasts
 
@@ -908,6 +990,11 @@ mystery fault.
         id: "refrigerant-pressure-hazards",
         title: "Refrigerant, pressure and cold hazards",
         minutes: 7,
+        refs: [
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
+          "Safety data sheets (SDS) for the specific refrigerant; state/territory WHS regulations",
+        ],
         content: `
 Refrigerants are safe *in the circuit*. The hazards appear when they get out
 — or when you open a path for them.
@@ -988,6 +1075,11 @@ ignition source within the work zone before opening the circuit.
         id: "electrical-site-safety",
         title: "Electrical and site safety",
         minutes: 7,
+        refs: [
+          "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
+          "AS/NZS 4836 — Safe working on or near low-voltage electrical installations and equipment",
+          "State/territory electrical safety and WHS regulators",
+        ],
         content: `
 The electrical hazard on refrigeration plant is the same one electricians
 face — plus stored charge, remote starts and wet floors.

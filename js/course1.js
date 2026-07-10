@@ -24,6 +24,9 @@
         id: "heat-and-temperature",
         title: "Heat, temperature and how heat moves",
         minutes: 6,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — basic refrigeration principles: heat, temperature and heat transfer",
+        ],
         content: `
 Heat and temperature are related but they are not the same thing, and keeping
 them separate in your head is the first step to understanding refrigeration.
@@ -98,6 +101,9 @@ iced evaporator) are behind so many service calls.
         id: "sensible-latent",
         title: "Sensible heat, latent heat and change of state",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — change of state, sensible and latent heat",
+        ],
         content: `
 Matter exists as solid, liquid or gas, and moving between those states takes
 (or releases) large amounts of energy. Refrigeration is built on that fact.
@@ -178,6 +184,10 @@ The small sensible portions at each end have names you will use every day:
         id: "pressure-and-pt",
         title: "Pressure and the PT relationship",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — the pressure–temperature relationship and saturation",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — the P–h diagram and PT data as diagnostic tools",
+        ],
         content: `
 Here is the trick that makes the whole vapour-compression cycle possible:
 **the boiling point of a liquid depends on its pressure.**
@@ -269,6 +279,9 @@ what do I actually see?"*
         id: "four-processes",
         title: "The four processes around the loop",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — the vapour-compression cycle",
+        ],
         content: `
 Every vapour-compression system — from a bar fridge to a supermarket rack —
 performs the same four processes in an endless loop.
@@ -346,6 +359,9 @@ head — every gauge reading you ever take belongs to one side or the other.
         id: "ph-diagram",
         title: "Reading the P–h diagram",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — the pressure–enthalpy diagram and plant efficiency",
+        ],
         content: `
 The **pressure–enthalpy (P–h) diagram** is the map of the refrigeration
 cycle. Learn to read it and every fault becomes a shape you can recognise.
@@ -411,6 +427,9 @@ comparison.
         id: "follow-the-refrigerant",
         title: "Follow the refrigerant: one full lap",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — cycle components and refrigerant states",
+        ],
         content: `
 Put the last two lessons together and ride one kilogram of refrigerant around
 the loop. The colours below match the simulator's pipes.
@@ -507,6 +526,9 @@ to the condenser on the next lap.
         id: "compressors",
         title: "Compressors",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — compressors: types, applications and protection",
+        ],
         content: `
 The compressor is the heart of the system: it creates the pressure difference
 that everything else depends on, and it is usually the most expensive part to
@@ -591,6 +613,9 @@ what the speed slider in the simulator models.
         id: "metering-devices",
         title: "Metering devices: cap tube, TXV, EEV",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerant flow controls: capillary tubes, TXVs and EEVs",
+        ],
         content: `
 The metering device has two jobs: hold back the high-side pressure, and feed
 the evaporator *exactly* as much liquid as the load can boil off. Too little
@@ -669,6 +694,9 @@ from mechanics to electronics: check sensors, wiring and drive signals.
         id: "heat-exchangers",
         title: "Condensers and evaporators",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — condensers and evaporators; defrost fundamentals",
+        ],
         content: `
 The two coils are where the system actually touches the world. Both live or
 die by **surface area, temperature difference and airflow**.
@@ -750,6 +778,9 @@ is one of the classic faults in the simulator.
         id: "accessories",
         title: "The supporting cast: receivers, driers, sight glasses and friends",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — system accessories: receivers, driers, sight glasses, accumulators and controls",
+        ],
         content: `
 Around the four main components sits a cast of smaller parts. None of them
 changes the refrigerant's state in the cycle sense, but systems do not run
@@ -829,6 +860,10 @@ long or safely without them.
         id: "families-numbering",
         title: "Refrigerant families and numbering",
         minutes: 7,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerants: families, blends and natural refrigerants",
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+        ],
         content: `
 Hundreds of fluids have been used as refrigerants. The R-number system tames
 the zoo — and the family a refrigerant belongs to tells you its history and
@@ -903,6 +938,11 @@ called **temperature glide**. Practical consequences:
         id: "environment-law",
         title: "ODP, GWP and the rules of the game",
         minutes: 7,
+        refs: [
+          "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
+          "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+        ],
         content: `
 Two numbers decided the fate of every refrigerant of the last forty years —
 and they explain most of what is on the van today.
@@ -930,7 +970,18 @@ pressure is what drives the industry toward R32 (GWP ≈ 675), the HFOs
 ## What the rules mean at the tools
 
 - **Venting refrigerant is illegal** in virtually every jurisdiction. Recover it — always.
-- **Handling licences are mandatory**: in Australia a refrigerant handling licence (the ARCtick scheme); in the US EPA Section 608 certification; in Europe F-gas certification. Buying refrigerant requires one.
+- **Handling licences are mandatory.** In Australia, the Ozone Protection and
+Synthetic Greenhouse Gas Management Act 1989 and its Regulations create the
+scheme administered by the **Australian Refrigeration Council (ARC)** — the
+ARCtick scheme. Individuals need a **Refrigerant Handling Licence (RHL)**:
+the full refrigeration and air-conditioning licence, or a restricted class
+(such as split-system installation and decommissioning, automotive air
+conditioning, or restricted refrigerant recovery), with supervised **trainee
+licences** for students. Businesses need a **Refrigerant Trading
+Authorisation (RTA)** to acquire, possess and dispose of refrigerant — you
+cannot buy fluorocarbon refrigerant without one. In the US it is EPA Section
+608 certification; in Europe, F-gas certification.
+- **The Codes of Practice are a licence condition** in Australia — the next lesson covers them.
 - Systems must be **leak-tight and leak-tested**; larger plant has mandatory periodic leak inspection.
 - Recovered refrigerant is reused, reclaimed, or destroyed — never released.
 
@@ -979,6 +1030,11 @@ pressure is what drives the industry toward R32 (GWP ≈ 675), the HFOs
         id: "safety-classes",
         title: "Safety classes: A1, A2L, A3, B2L",
         minutes: 7,
+        refs: [
+          "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerant safety groups and handling",
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+        ],
         content: `
 As GWP limits push out the old HFCs, their replacements bring new hazards —
 mild flammability, real flammability, toxicity, or extreme pressure. The
@@ -1035,6 +1091,115 @@ safety classification tells you which, at a glance.
           },
         ],
       },
+      {
+        id: "australian-rulebook",
+        title: "The Australian rulebook: ARCtick, the Code of Practice and the standards",
+        minutes: 8,
+        refs: [
+          "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
+          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
+          "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
+          "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
+          "Australian Refrigeration and Air-conditioning (ARAC) Vols 1 & 2, Boyle — pub. AIRAH — the standard trade texts",
+        ],
+        content: `
+Australian refrigeration work sits inside a specific legal and technical
+framework. Knowing which document governs what is itself an assessable
+competency — and it keeps your licence.
+
+## The law: the Ozone Act and its Regulations
+
+The **Ozone Protection and Synthetic Greenhouse Gas Management Act 1989
+(Cth)** and its Regulations control the import, manufacture, use and disposal
+of ozone-depleting substances and synthetic greenhouse gases — which is to
+say, fluorocarbon refrigerants. The Regulations create the licensing scheme
+that the **Australian Refrigeration Council (ARC)** administers on behalf of
+the Australian Government — the scheme you know by its brand, **ARCtick**.
+
+## The licences
+
+- **Refrigerant Handling Licence (RHL)** — personal. The **full refrigeration
+and air-conditioning licence** covers stationary RAC work generally;
+**restricted classes** cover defined scopes such as split-system installation
+and decommissioning, automotive air conditioning, and restricted refrigerant
+recovery. **Trainee licences** allow supervised handling while studying, for
+a limited period.
+- **Refrigerant Trading Authorisation (RTA)** — business-level. Required to
+**acquire, possess and dispose** of refrigerant; suppliers may only sell to
+RTA holders, and the RTA carries record-keeping conditions.
+- "Handling" is defined broadly: anything with a fluorocarbon refrigerant or
+RAC component that **risks an emission** — decanting, installing,
+commissioning, servicing, decommissioning.
+
+## The Code of Practice
+
+The **Australia & New Zealand Refrigerant Handling Code of Practice** is the
+how-to that licence holders are expected to work to:
+
+- **Part 1 — self-contained low charge systems** (small hermetic equipment).
+- **Part 2 — everything else**: stationary and transport systems generally — recovery, evacuation, charging, leak testing, brazing practice and record keeping.
+
+First published in 2007 and since updated (a revised edition was released in
+the mid-2020s) — **always work to the current edition**, because equipment,
+refrigerants (A2Ls especially) and methods have moved.
+
+## The standards around the trade
+
+- **AS/NZS 5149 series** — refrigerating systems and heat pumps: safety and environmental requirements (safety classes, charge limits, occupancy categories, machinery rooms).
+- **AS/NZS 3000 (the Wiring Rules)** — electrical installations. The boundary matters: **fixed-wiring electrical work must be done by a licensed electrician under state and territory law**; RAC technicians work up to that boundary (and some hold state restricted electrical licences for defined tasks such as like-for-like disconnect/reconnect). Module 7 covers the working relationship.
+- **AS/NZS 4836** — safe working on or near low-voltage electrical installations: the safe-isolation practices behind "test for dead".
+
+## The trade texts
+
+**Australian Refrigeration and Air-conditioning, Volumes 1 and 2** (Graham
+Boyle, published by AIRAH) are the standard Australian teaching texts — Vol 1
+for principles, components and systems; Vol 2 for the P–h diagram,
+diagnostics, service techniques and heat-load work. This course's lessons
+list them (and the Code and standards) in each lesson's references so you can
+go deeper in the authoritative source.
+
+>! Standards and the Code are living documents, and paid standards are
+> copyright — this course aligns with them and cites them at topic level, but
+> the current editions themselves are the authority you work (and are
+> assessed) against. Your RTO or employer should hold current copies.
+`,
+        quiz: [
+          {
+            q: "A Refrigerant Trading Authorisation (RTA) is…",
+            options: [
+              "a personal licence to handle refrigerant",
+              "a business-level authorisation required to acquire, possess and dispose of refrigerant",
+              "a licence to perform electrical wiring work",
+              "an import permit for equipment",
+            ],
+            answer: 1,
+            explain: "The RTA is the business permit — suppliers may only sell refrigerant to RTA holders. The personal permit is the Refrigerant Handling Licence (RHL).",
+          },
+          {
+            q: "Part 1 of the Refrigerant Handling Code of Practice covers…",
+            options: [
+              "self-contained low charge systems",
+              "automotive air conditioning only",
+              "ammonia plant",
+              "electrical wiring",
+            ],
+            answer: 0,
+            explain: "Part 1 covers small self-contained low-charge equipment; Part 2 covers other stationary and transport systems — recovery, evacuation, charging and leak-test practice.",
+          },
+          {
+            q: "Fixed electrical wiring on an air-conditioning installation must be carried out by…",
+            options: [
+              "any ARCtick licence holder",
+              "a licensed electrician under state/territory law, with the installation complying with AS/NZS 3000",
+              "the equipment supplier",
+              "anyone, if the power is off",
+            ],
+            answer: 1,
+            explain: "The refrigerant licence and the electrical licence are separate regimes. Fixed wiring is licensed electrical work under state law, installed to the Wiring Rules (AS/NZS 3000).",
+          },
+        ],
+      },
     ],
   },
 
@@ -1050,6 +1215,9 @@ safety classification tells you which, at a glance.
         id: "measuring-sh-sc",
         title: "Measuring superheat and subcooling",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service diagnostics: superheat and subcooling measurement",
+        ],
         content: `
 Pressures alone tell you *where* the system is operating. Superheat and
 subcooling tell you *what the refrigerant is doing* inside the coils — they
@@ -1130,6 +1298,9 @@ compressor; 25 K superheat means a starving coil.
         id: "interpreting-sh-sc",
         title: "Interpreting SH & SC: the diagnostic matrix",
         minutes: 8,
+        refs: [
+          "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — diagnosing system condition from operating readings",
+        ],
         content: `
 Once you can measure superheat and subcooling, the pair becomes a fault
 compass. Each combination points somewhere specific.

@@ -97,8 +97,17 @@ Lessons embed **deep links** that open the simulator pre-configured
 
 Lesson content is authored in a small markdown subset (`js/md.js`) directly
 inside `js/course1.js` / `js/course2.js` — add a lesson by adding an object
-(content, minutes, quiz) to a module's `lessons` array; the navigation,
+(content, minutes, refs, quiz) to a module's `lessons` array; the navigation,
 progress tracking and quizzes pick it up automatically.
+
+**References & alignment:** the course is aligned to Australian practice —
+the ARCtick **Refrigerant Handling Code of Practice** (Parts 1 & 2), the
+**Ozone Protection and SGG Management Act** licensing scheme (RHL/RTA),
+**AS/NZS 3000 / 5149 / 4836** (topic-level citations; standards text is not
+reproduced) and the **ARAC manuals** (Boyle, Vols 1 & 2, published by
+AIRAH). Every lesson displays its references in an in-lesson panel; the
+master bibliography and alignment policy are in `docs/REFERENCES.md`, and
+the test suite enforces that every lesson carries references.
 
 ### Final exam & certificate
 
