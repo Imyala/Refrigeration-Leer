@@ -128,6 +128,26 @@ function quizAnswer(key) {
     else if (b.dataset.key === key) b.classList.add(family ? "partial" : "wrong");
   });
 
+  // Feed the spaced-repetition deck shared with the Learn course: a missed
+  // fault (including a same-family near-miss) resurfaces as a written
+  // scenario card tomorrow; an exact diagnosis pushes an existing card out.
+  let deckNote = "";
+  if (Quiz.fault !== "none") {
+    try {
+      const KEY = "refrigSim.srs";
+      const cards = JSON.parse(localStorage.getItem(KEY) || "{}");
+      const cardKey = "fault/" + Quiz.fault;
+      if (!exact) {
+        cards[cardKey] = RefrigSrs.grade(cards[cardKey], false, Date.now());
+        deckNote = `<p>🔁 Added to your <a href="learn.html#practice">Practice deck</a> — this one will resurface tomorrow so it sticks.</p>`;
+      } else if (cards[cardKey]) {
+        cards[cardKey] = RefrigSrs.grade(cards[cardKey], true, Date.now());
+        deckNote = `<p>🔁 You'd missed this one before — nailing it now pushes its next review ${RefrigSrs.describeWhen(cards[cardKey].due, Date.now())}.</p>`;
+      }
+      localStorage.setItem(KEY, JSON.stringify(cards));
+    } catch (e) { /* storage unavailable */ }
+  }
+
   const verdict = exact
     ? `<b class="good">Correct!</b>`
     : family
@@ -137,7 +157,7 @@ function quizAnswer(key) {
     ? `<p>${fActual.diag}</p>`
     : `<p>The system was healthy — every reading sat where the PT relationship says it should. Always verify before condemning a part.</p>`;
   const fb = document.getElementById("quizFeedback");
-  fb.innerHTML = `${verdict}${diag}<p><b>Field clues you'd look for:</b> ${fActual.clues.join(" · ")}</p>`;
+  fb.innerHTML = `${verdict}${diag}<p><b>Field clues you'd look for:</b> ${fActual.clues.join(" · ")}</p>${deckNote}`;
   fb.className = "quiz-feedback " + (exact ? "good" : family ? "partial" : "bad");
   fb.hidden = false;
 

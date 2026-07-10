@@ -77,12 +77,30 @@ const Flags = {
 };
 
 /* ---- Spaced-repetition practice deck ------------------------------------------ */
+function lessonTitleByHash(hash) {
+  const [m, l] = hash.split("/");
+  const mod = COURSE.find(x => x.id === m);
+  const les = mod && mod.lessons.find(x => x.id === l);
+  return les ? `${mod.title} › ${les.title}` : hash;
+}
+
+/* Resolve a card key to its question + source. Keys:
+   "mod/les/qi" (lesson quiz), "fault/<key>" (Technician Quiz misses),
+   "recall/<id>" (typed recall cards). */
 function questionByKey(key) {
+  if (key.startsWith("fault/")) {
+    const c = RefrigCards.FAULT_CARDS[key.slice(6)];
+    return c ? { q: c, srcTitle: "From the Technician Quiz — fault diagnosis", srcHash: "diagnosis/gauge-signatures" } : null;
+  }
+  if (key.startsWith("recall/")) {
+    const c = RefrigCards.RECALL_CARDS[key.slice(7)];
+    return c ? { q: c, srcTitle: lessonTitleByHash(c.lesson), srcHash: c.lesson } : null;
+  }
   const [m, l, qi] = key.split("/");
   const mod = COURSE.find(x => x.id === m);
   const les = mod && mod.lessons.find(x => x.id === l);
   const q = les && les.quiz[parseInt(qi, 10)];
-  return q ? { mod, les, q } : null;
+  return q ? { q, srcTitle: `${mod.title} › ${les.title}`, srcHash: `${mod.id}/${les.id}` } : null;
 }
 
 const Srs = {
@@ -100,6 +118,15 @@ const Srs = {
   },
   record(key, correct) {
     this.cards[key] = RefrigSrs.grade(this.cards[key], correct, Date.now());
+    this.save();
+  },
+  // add an unseen card, first due tomorrow (used for typed recall cards)
+  enqueueNew(key) {
+    if (this.cards[key]) return;
+    const c = RefrigSrs.newCard(Date.now());
+    c.int = 1;
+    c.due = Date.now() + RefrigSrs.DAY;
+    this.cards[key] = c;
     this.save();
   },
   dueKeys() { return RefrigSrs.dueKeys(this.cards, Date.now()); },
@@ -447,6 +474,10 @@ function checkQuiz(mod, les) {
   Progress.record(mod.id, les.id, marked.score, total);
   // every checked question joins (or updates) the spaced-repetition deck
   marked.results.forEach((right, qi) => Srs.record(`${mod.id}/${les.id}/${qi}`, right));
+  // typed recall cards tied to this lesson join too, due tomorrow
+  Object.entries(RefrigCards.RECALL_CARDS).forEach(([id, c]) => {
+    if (c.lesson === `${mod.id}/${les.id}`) Srs.enqueueNew(`recall/${id}`);
+  });
   result.innerHTML = passed
     ? (marked.score === total
         ? `${marked.score}/${total} — perfect. <b>Lesson complete ✓</b>`
@@ -709,10 +740,11 @@ function renderPracticeCard(main) {
   const key = PRACTICE.queue[PRACTICE.pos];
   const found = questionByKey(key);
   if (!found) { PRACTICE.pos++; renderPractice(); return; }
-  const { mod, les, q } = found;
+  const { q, srcTitle, srcHash } = found;
+  const typed = q.type === "input";
 
   // shuffle option display order, remembering the mapping to original indexes
-  const order = q.options.map((_, i) => i);
+  const order = typed ? [] : q.options.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
@@ -723,47 +755,79 @@ function renderPracticeCard(main) {
     <div class="crumbs"><a href="#">Course</a> › <a href="#practice">Practice</a> › <span>${PRACTICE.ahead ? "practising ahead" : "today's review"}</span></div>
     <div class="practice-progress">${remaining} card${remaining === 1 ? "" : "s"} to go</div>
     <section class="lesson-quiz practice-card" aria-label="Practice question">
-      <p class="practice-src">${mod.title} › ${les.title}</p>
+      <p class="practice-src">${srcTitle}</p>
       <h3 class="practice-q">${q.q}</h3>
+      ${typed ? `
+      <div class="pt-answer practice-input">
+        <input id="practiceInput" type="number" step="any" inputmode="decimal" aria-label="Your answer" />
+        <span class="pt-unit">${q.unit || ""}</span>
+        <button id="practiceCheckBtn" class="btn btn-tour" type="button">Check</button>
+      </div>` : `
       <div class="quiz-options practice-options">
         ${order.map(oi => `<button class="quiz-opt" data-orig="${oi}" type="button">${q.options[oi]}</button>`).join("")}
-      </div>
+      </div>`}
       <div id="practiceFeedback" class="quiz-explain" hidden></div>
       <div class="quiz-controls">
         <button id="practiceNextBtn" class="btn btn-tour" type="button" hidden>Next</button>
-        <a class="btn btn-ghost" href="#${mod.id}/${les.id}" target="_blank" rel="noopener" id="practiceLessonLink" hidden>Reread the lesson ↗</a>
+        <a class="btn btn-ghost" href="#${srcHash}" target="_blank" rel="noopener" id="practiceLessonLink" hidden>Reread the lesson ↗</a>
         <button id="practiceStopBtn" class="btn btn-ghost" type="button">Finish for now</button>
       </div>
     </section>`;
 
-  main.querySelectorAll(".practice-options .quiz-opt").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const picked = parseInt(btn.dataset.orig, 10);
-      const right = picked === q.answer;
+  const answered = (right, correctText) => {
+    // scheduling counts the FIRST attempt in this session only
+    if (!(key in PRACTICE.firstTry)) {
+      PRACTICE.firstTry[key] = right;
+      Srs.record(key, right);
+    }
+    if (!right) PRACTICE.queue.push(key);     // requeue until answered correctly
 
-      // scheduling counts the FIRST attempt in this session only
-      if (!(key in PRACTICE.firstTry)) {
-        PRACTICE.firstTry[key] = right;
-        Srs.record(key, right);
-      }
-      if (!right) PRACTICE.queue.push(key);   // requeue until answered correctly
+    const fb = document.getElementById("practiceFeedback");
+    fb.innerHTML = right
+      ? `<b>✓ Got it.</b> ${q.explain} <span class="practice-sched">This one retreats ${RefrigSrs.describeWhen(Srs.cards[key].due, Date.now())}.</span>`
+      : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${correctText}</b>. ${q.explain} <span class="practice-sched">It'll come around again shortly, and tomorrow too — that's the method, not a penalty.</span>`;
+    fb.hidden = false;
+    document.getElementById("practiceNextBtn").hidden = false;
+    if (!right) document.getElementById("practiceLessonLink").hidden = false;
+    // defer the focus move: if the answer arrived via the Enter key, focusing
+    // Next inside the same key event lets that Enter activate the button and
+    // skip straight past the feedback
+    setTimeout(() => {
+      const btn = document.getElementById("practiceNextBtn");
+      if (btn && !btn.hidden) btn.focus();
+    }, 80);
+  };
 
-      main.querySelectorAll(".practice-options .quiz-opt").forEach(b => {
-        b.disabled = true;
-        const orig = parseInt(b.dataset.orig, 10);
-        if (orig === q.answer) b.classList.add("correct");
-        else if (orig === picked) b.classList.add("partial");
-      });
-      const fb = document.getElementById("practiceFeedback");
-      fb.innerHTML = right
-        ? `<b>✓ Got it.</b> ${q.explain} <span class="practice-sched">This one retreats ${RefrigSrs.describeWhen(Srs.cards[key].due, Date.now())}.</span>`
-        : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain} <span class="practice-sched">It'll come around again shortly, and tomorrow too — that's the method, not a penalty.</span>`;
-      fb.hidden = false;
-      document.getElementById("practiceNextBtn").hidden = false;
-      if (!right) document.getElementById("practiceLessonLink").hidden = false;
-      document.getElementById("practiceNextBtn").focus();
+  if (typed) {
+    const input = document.getElementById("practiceInput");
+    const checkTyped = () => {
+      const v = parseFloat(input.value);
+      if (!Number.isFinite(v)) { input.focus(); return; }
+      input.disabled = true;
+      document.getElementById("practiceCheckBtn").disabled = true;
+      const right = Math.abs(v - q.answer) <= (q.tolerance || 0);
+      answered(right, `${q.answer}${q.unit ? " " + q.unit : ""}`);
+    };
+    document.getElementById("practiceCheckBtn").addEventListener("click", checkTyped);
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); checkTyped(); }
     });
-  });
+    input.focus();
+  } else {
+    main.querySelectorAll(".practice-options .quiz-opt").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const picked = parseInt(btn.dataset.orig, 10);
+        const right = picked === q.answer;
+        main.querySelectorAll(".practice-options .quiz-opt").forEach(b => {
+          b.disabled = true;
+          const orig = parseInt(b.dataset.orig, 10);
+          if (orig === q.answer) b.classList.add("correct");
+          else if (orig === picked) b.classList.add("partial");
+        });
+        answered(right, q.options[q.answer]);
+      });
+    });
+  }
   document.getElementById("practiceNextBtn").addEventListener("click", () => { PRACTICE.pos++; renderPractice(); });
   document.getElementById("practiceStopBtn").addEventListener("click", () => { endPractice(); renderPractice(); renderSidebar(); });
 }

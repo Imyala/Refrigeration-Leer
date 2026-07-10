@@ -25,4 +25,14 @@ test("SCORM package builds with a valid manifest and zip", () => {
   for (const [, href] of manifest.matchAll(/<file href="([^"]+)"\/>/g)) {
     assert.ok(fs.existsSync(path.join(ROOT, "dist", "scorm", href)), `packaged: ${href}`);
   }
+
+  // every script a packaged HTML file references must itself be packaged —
+  // a missing script would 404 inside the LMS
+  const pkgDir = path.join(ROOT, "dist", "scorm");
+  for (const html of ["learn.html", "index.html", "teach.html"]) {
+    const src = fs.readFileSync(path.join(pkgDir, html), "utf8");
+    for (const [, scriptSrc] of src.matchAll(/<script src="([^"]+)"><\/script>/g)) {
+      assert.ok(fs.existsSync(path.join(pkgDir, scriptSrc)), `${html} references packaged script: ${scriptSrc}`);
+    }
+  }
 });
