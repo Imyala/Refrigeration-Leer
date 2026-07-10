@@ -30,6 +30,8 @@ test("module and lesson ids are unique and well-formed", () => {
       for (const r of les.refs) {
         assert.ok(typeof r === "string" && r.length > 10, `${mod.id}/${les.id}: substantive reference`);
       }
+      assert.ok(typeof les.simple === "string" && les.simple.length > 80,
+        `${mod.id}/${les.id}: plain-words explanation present`);
     }
   }
 });

@@ -56,6 +56,26 @@ const Progress = {
   },
 };
 
+/* ---- "Mark for review" flags -------------------------------------------------- */
+const Flags = {
+  KEY: "refrigSim.flags",
+  set: new Set(),
+  load() {
+    try { this.set = new Set(JSON.parse(localStorage.getItem(this.KEY) || "[]")); }
+    catch (e) { this.set = new Set(); }
+  },
+  save() {
+    try { localStorage.setItem(this.KEY, JSON.stringify([...this.set])); }
+    catch (e) { /* storage unavailable */ }
+  },
+  has(modId, lesId) { return this.set.has(modId + "/" + lesId); },
+  toggle(modId, lesId) {
+    const k = modId + "/" + lesId;
+    if (this.set.has(k)) this.set.delete(k); else this.set.add(k);
+    this.save();
+  },
+};
+
 const NAME_KEY = "refrigSim.learnerName";
 function getLearnerName() {
   try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; }
@@ -88,6 +108,7 @@ function parseHash() {
 function route() {
   const { m, l } = parseHash();
   if (m === "exam") renderExam();
+  else if (m === "review") renderReview();
   else {
     const mod = COURSE.find(x => x.id === m);
     if (!mod) renderHome();
@@ -127,6 +148,10 @@ function renderSidebar() {
     <a class="nav-mod nav-exam ${m === "exam" ? "active" : ""}" href="#exam" ${m === "exam" ? 'aria-current="page"' : ""}>
       <span>Final exam &amp; certificate</span>
       <span class="nav-count ${exam && exam.done ? "all" : ""}">${exam ? (exam.done ? "✓" : exam.best + "/" + exam.total) : "—"}</span>
+    </a>
+    <a class="nav-mod nav-review ${m === "review" ? "active" : ""}" href="#review" ${m === "review" ? 'aria-current="page"' : ""}>
+      <span>🚩 My review list</span>
+      <span class="nav-count">${Flags.set.size}</span>
     </a>`;
 }
 
@@ -143,6 +168,10 @@ function renderHome() {
       the interactive simulator. Work through the modules in order, or jump to
       what you need. Each lesson ends with a short quiz; pass it to mark the
       lesson complete, then sit the final exam for a certificate.</p>
+      <p>Written for every learner — from first-year apprentices to career changers.
+      Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
+      demonstrations</b> in the simulator; and if something doesn't click, mark it
+      🚩 and it waits on your review list.</p>
       <p class="align-note">Aligned to Australian practice: every lesson lists its references —
       the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
       (3000, 5149, 4836) and the ARAC manuals (Boyle, Vols 1 &amp; 2, pub. AIRAH) —
@@ -160,6 +189,7 @@ function renderHome() {
           <input id="importFile" type="file" accept=".json,application/json" hidden />
         </label>
         <a class="btn btn-ghost" href="teach.html">Instructor dashboard</a>
+        ${Flags.set.size ? `<a class="btn btn-ghost" href="#review">🚩 Review list (${Flags.set.size})</a>` : ""}
         <span id="ioStatus" class="io-status" aria-live="polite"></span>
       </div>
     </div>
@@ -212,6 +242,7 @@ function renderLesson(mod, les) {
   const idx = flatIndex(mod, les);
   const prev = FLAT[idx - 1], next = FLAT[idx + 1];
   const p = Progress.get(mod.id, les.id);
+  const flagged = Flags.has(mod.id, les.id);
 
   main.innerHTML = `
     <div class="crumbs">
@@ -221,6 +252,18 @@ function renderLesson(mod, les) {
       <h2>${les.title}</h2>
       <span class="lesson-mins">~${les.minutes} min ${lessonDone(mod, les) ? " · <b class=\"done-tag\">completed ✓</b>" : ""}</span>
     </div>
+    <div class="lesson-tools">
+      <button id="flagBtn" class="flag-btn ${flagged ? "on" : ""}" type="button" aria-pressed="${flagged}">
+        ${flagged ? "🚩 On your review list — tap again when it clicks" : "🚩 Confusing? Mark it for review"}
+      </button>
+    </div>
+    ${les.simple ? `
+    <details class="plain-words" ${flagged ? "open" : ""}>
+      <summary>💡 In plain words — a simpler way to say it</summary>
+      <p>${les.simple}</p>
+      <p class="plain-hint">Still foggy after the full lesson? Mark it for review and try the
+      demonstrations — seeing it move often does what words can't.</p>
+    </details>` : ""}
     <article class="lesson-content">${RefrigMd.render(les.content)}</article>
     ${les.refs && les.refs.length ? `
     <aside class="lesson-refs" aria-label="References">
@@ -232,10 +275,13 @@ function renderLesson(mod, les) {
     </aside>` : ""}
     <section class="lesson-quiz" aria-label="Lesson quiz">
       <h3>Check your understanding</h3>
+      <p class="quiz-note">This is practice, not a test — a wrong pick here costs nothing and
+      shows you exactly what to look at again.</p>
       ${p && p.done ? `<p class="quiz-status">Completed — best score ${p.best}/${p.total}. Retake it any time.</p>` : ""}
       <div id="lessonQuiz">${renderQuizHtml(les.quiz)}</div>
       <div class="quiz-controls">
         <button id="quizCheckBtn" class="btn btn-tour" type="button">Check answers</button>
+        <button id="quizRetryBtn" class="btn btn-ghost" type="button" hidden>Fresh try</button>
         <span id="quizResult" class="quiz-result" aria-live="polite"></span>
       </div>
     </section>
@@ -246,6 +292,61 @@ function renderLesson(mod, les) {
     </nav>`;
 
   document.getElementById("quizCheckBtn").addEventListener("click", () => checkQuiz(mod, les));
+  document.getElementById("quizRetryBtn").addEventListener("click", () => {
+    document.getElementById("lessonQuiz").innerHTML = renderQuizHtml(les.quiz);
+    document.getElementById("quizResult").textContent = "";
+    document.getElementById("quizRetryBtn").hidden = true;
+  });
+  document.getElementById("flagBtn").addEventListener("click", () => {
+    Flags.toggle(mod.id, les.id);
+    renderLesson(mod, les);
+    renderSidebar();
+  });
+}
+
+/* ---- Review list -------------------------------------------------------------- */
+function renderReview() {
+  const main = document.getElementById("learnMain");
+  const flagged = [];
+  const unfinished = [];
+  COURSE.forEach(mod => mod.lessons.forEach(les => {
+    if (Flags.has(mod.id, les.id)) flagged.push({ mod, les });
+    const p = Progress.get(mod.id, les.id);
+    if (p && !p.done && !Flags.has(mod.id, les.id)) unfinished.push({ mod, les, p });
+  }));
+
+  const row = ({ mod, les }, extra) => `
+    <div class="lesson-row review-row">
+      <a class="lesson-title" href="#${mod.id}/${les.id}">${les.title}</a>
+      <span class="lesson-mins">${mod.title}</span>
+      ${extra || ""}
+    </div>`;
+
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>My review list</span></div>
+    <h2>🚩 My review list</h2>
+    <p class="module-blurb">Everything you've marked as "not clicked yet", in one place. Revisit a
+    lesson, open its plain-words box, run the demonstrations — and un-flag it when it makes sense.
+    Marking things you don't get is what good learners do.</p>
+    ${flagged.length ? `
+      <h3 class="review-heading">Marked as confusing (${flagged.length})</h3>
+      <div class="lesson-list">
+        ${flagged.map(f => row(f, `<button class="btn btn-ghost unflag-btn" data-key="${f.mod.id}/${f.les.id}" type="button">Got it now ✓</button>`)).join("")}
+      </div>` : `
+      <div class="learn-hero"><p>Nothing marked right now. If a lesson ever feels foggy, hit
+      <b>🚩 Confusing? Mark it for review</b> at the top of the lesson and it will wait for you here.</p></div>`}
+    ${unfinished.length ? `
+      <h3 class="review-heading">Quizzes started but not finished (${unfinished.length})</h3>
+      <div class="lesson-list">
+        ${unfinished.map(f => row(f, `<span class="lesson-mins">best ${f.p.best}/${f.p.total} — nearly there</span>`)).join("")}
+      </div>` : ""}`;
+
+  main.querySelectorAll(".unflag-btn").forEach(b => b.addEventListener("click", () => {
+    const [m, l] = b.dataset.key.split("/");
+    Flags.toggle(m, l);
+    renderReview();
+    renderSidebar();
+  }));
 }
 
 /* ---- Quiz (shared markup for lessons and the exam) -------------------------- */
@@ -275,10 +376,12 @@ function markQuiz(container, questions) {
     const q = questions[qi];
     const right = answers[qi] === q.answer;
     if (right) score++;
-    f.classList.remove("correct", "wrong");
-    f.classList.add(right ? "correct" : "wrong");
+    f.classList.remove("correct", "learn");
+    f.classList.add(right ? "correct" : "learn");
     const ex = f.querySelector(".quiz-explain");
-    ex.innerHTML = (right ? "<b>✓ Correct.</b> " : `<b>✗ The answer is:</b> ${q.options[q.answer]}. `) + q.explain;
+    ex.innerHTML = right
+      ? "<b>✓ Got it.</b> " + q.explain
+      : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain}`;
     ex.hidden = false;
   });
   return { incomplete: false, score };
@@ -296,9 +399,13 @@ function checkQuiz(mod, les) {
   const passed = marked.score >= Math.ceil(total * 2 / 3);
   Progress.record(mod.id, les.id, marked.score, total);
   result.innerHTML = passed
-    ? `Score ${marked.score}/${total} — <b>lesson complete ✓</b>`
-    : `Score ${marked.score}/${total} — review the explanations and try again (need ${Math.ceil(total * 2 / 3)}).`;
-  result.className = "quiz-result " + (passed ? "good" : "bad");
+    ? (marked.score === total
+        ? `${marked.score}/${total} — perfect. <b>Lesson complete ✓</b>`
+        : `${marked.score}/${total} — <b>lesson complete ✓</b> nice work.`)
+    : `${marked.score}/${total} — good practice! The tips above show exactly what to
+       revisit. Have another go when you're ready (${Math.ceil(total * 2 / 3)} completes the lesson).`;
+  result.className = "quiz-result " + (passed ? "good" : "keep-going");
+  document.getElementById("quizRetryBtn").hidden = passed;
   renderSidebar();
 }
 
@@ -360,9 +467,11 @@ function renderExam() {
     const passed = marked.score >= passMark;
     Progress.record("exam", "final", marked.score, total, passMark);
     result.innerHTML = passed
-      ? `Score ${marked.score}/${total} — <b>passed ✓</b>`
-      : `Score ${marked.score}/${total} — pass mark is ${passMark}. Review the explanations and sit a new paper.`;
-    result.className = "quiz-result " + (passed ? "good" : "bad");
+      ? `Score ${marked.score}/${total} — <b>passed ✓</b> well earned.`
+      : `Score ${marked.score}/${total} — the pass mark is ${passMark}, and you're on the way.
+         Every paper is different, your best score is always kept, and the explanations above
+         are the study list. Sit a fresh one whenever you're ready.`;
+    result.className = "quiz-result " + (passed ? "good" : "keep-going");
     document.getElementById("examSubmitBtn").disabled = true;
     const rec = Progress.get("exam", "final");
     document.getElementById("examOutcome").innerHTML =
@@ -484,6 +593,7 @@ function importProgress(e) {
 document.addEventListener("DOMContentLoaded", () => {
   RefrigScorm.Scorm.init();
   Progress.load();
+  Flags.load();
   buildFlat();
   window.addEventListener("hashchange", route);
   route();

@@ -43,6 +43,18 @@
         i++; continue;
       }
 
+      const fig = line.match(/^!FIG\[([a-z0-9-]+)\]\s*$/);
+      if (fig) {
+        const F = (typeof module !== "undefined" && typeof require !== "undefined")
+          ? require("./figures.js")
+          : root.RefrigFigures;
+        const f = F && F.FIGURES[fig[1]];
+        out.push(f
+          ? `<figure class="fig">${f.svg}<figcaption>${esc(f.caption)}</figcaption></figure>`
+          : `<!-- missing figure: ${esc(fig[1])} -->`);
+        i++; continue;
+      }
+
       if (/^>/.test(line)) {
         const warn = /^>!/.test(line);
         const buf = [];
@@ -86,7 +98,7 @@
       // paragraph: gather continuation lines until a blank or structural line
       const buf = [line];
       i++;
-      while (i < lines.length && lines[i].trim() && !/^(##|###|- |\d+\. |\||>|!SIM)/.test(lines[i])) {
+      while (i < lines.length && lines[i].trim() && !/^(##|###|- |\d+\. |\||>|!SIM|!FIG)/.test(lines[i])) {
         buf.push(lines[i]);
         i++;
       }

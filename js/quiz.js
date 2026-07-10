@@ -132,7 +132,7 @@ function quizAnswer(key) {
     ? `<b class="good">Correct!</b>`
     : family
       ? `<b class="part">Close — half credit.</b> ${QUIZ_FAMILY_HINTS[fActual.family] || ""}`
-      : `<b class="bad">Not this time.</b> It was <b>${fActual.label}</b>.`;
+      : `<b class="part">Good attempt — it was <i>${fActual.label}</i>.</b> Every miss in here is one you won't make on a real job; here's how to spot it next time:`;
   const diag = fActual.diag
     ? `<p>${fActual.diag}</p>`
     : `<p>The system was healthy — every reading sat where the PT relationship says it should. Always verify before condemning a part.</p>`;

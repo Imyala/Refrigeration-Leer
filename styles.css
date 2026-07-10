@@ -633,6 +633,71 @@ body.quiz-active .perf-panel { display: none; }
 }
 .sim-link:hover { background: #1a4a68; }
 
+/* ---------- Learn: lesson tools (flag) + plain words + figures ---------- */
+.lesson-tools { margin: 10px 0 0; }
+.flag-btn {
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.flag-btn:hover { border-color: #f5a623; color: var(--text); }
+.flag-btn.on { border: 1px solid #f5a623; color: #f5a623; background: rgba(245,166,35,.08); }
+
+.plain-words {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid #6fe0c5;
+  border-radius: 12px;
+  margin-top: 12px;
+  max-width: 860px;
+}
+.plain-words summary {
+  cursor: pointer;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6fe0c5;
+  list-style-position: inside;
+}
+.plain-words[open] summary { border-bottom: 1px solid var(--line); }
+.plain-words p { margin: 12px 18px; font-size: 15px; line-height: 1.7; }
+.plain-words .plain-hint { font-size: 12px; color: var(--muted); }
+
+.lesson-content .fig { margin: 18px 0; }
+.lesson-content .fig svg {
+  width: 100%;
+  max-width: 580px;
+  height: auto;
+  display: block;
+  background: #0c131b;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+}
+.lesson-content .fig figcaption {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 6px;
+  max-width: 580px;
+}
+
+/* ---------- Learn: review list ---------- */
+.review-heading { font-size: 15px; margin: 22px 0 6px; }
+.review-row { flex-wrap: wrap; }
+.review-row .lesson-title { color: var(--text); text-decoration: none; flex: 1; }
+.review-row .lesson-title:hover { color: var(--accent); }
+.unflag-btn { padding: 7px 12px; font-size: 12px; }
+
+/* ---------- Learn: supportive quiz states ---------- */
+.quiz-note { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+.quiz-q.learn { border-color: #f5a623; }
+.quiz-result.keep-going { color: #f5a623; }
+
 /* ---------- Learn: lesson references ---------- */
 .lesson-refs {
   background: var(--panel);

@@ -24,6 +24,7 @@
         id: "heat-and-temperature",
         title: "Heat, temperature and how heat moves",
         minutes: 6,
+        simple: "Heat is energy on the move; temperature just says how concentrated it is. Think of temperature as how loud one speaker is, and heat as the total sound in the room. Heat always slides from hotter things to colder things — so a fridge doesn't 'make cold': it quietly carries heat from inside the box to the air outside, like a bucket brigade for warmth.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — basic refrigeration principles: heat, temperature and heat transfer",
         ],
@@ -44,6 +45,8 @@ refrigeration system is designed around that rule:
 
 - The **evaporator** runs *colder* than the space, so heat flows from the space into the refrigerant.
 - The **condenser** runs *hotter* than the outdoor air, so heat flows out of the refrigerant.
+
+!FIG[heat-flow]
 
 ## Three ways heat travels
 
@@ -101,6 +104,7 @@ iced evaporator) are behind so many service calls.
         id: "sensible-latent",
         title: "Sensible heat, latent heat and change of state",
         minutes: 7,
+        simple: "Warming something up is 'sensible' heat — you can feel the change on a thermometer. But turning liquid into vapour swallows a giant gulp of energy with NO temperature change at all — that's 'latent' (hidden) heat. Fridges exploit it: they boil a liquid inside the cold box (soaking up a huge gulp of heat) and squeeze the vapour back to liquid outside (dumping the same gulp). Boiling and un-boiling, around and around.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — change of state, sensible and latent heat",
         ],
@@ -125,6 +129,8 @@ thermometer cannot see it).
 
 The same happens in reverse: when vapour condenses back to liquid it *gives
 up* the same huge amount of heat, again at constant temperature.
+
+!FIG[latent-plateau]
 
 ## Why refrigeration cares
 
@@ -184,6 +190,7 @@ The small sensible portions at each end have names you will use every day:
         id: "pressure-and-pt",
         title: "Pressure and the PT relationship",
         minutes: 8,
+        simple: "Put a liquid under more pressure and it needs more heat to boil; drop the pressure and it boils colder — that's why water boils cooler up a mountain. While liquid and vapour sit together in a coil, pressure and temperature are locked like two ends of a see-saw: know one and you know the other. That's the whole trick behind your gauges — reading a pressure IS reading the coil's temperature.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — the pressure–temperature relationship and saturation",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — the P–h diagram and PT data as diagnostic tools",
@@ -204,10 +211,14 @@ refrigerant, one pressure means one temperature and vice versa. This is the
 **pressure–temperature (PT) relationship**, and it is printed on PT charts,
 gauge dials and app tables that technicians use every day.
 
+!FIG[pt-curve]
+
 That lock is what your gauges exploit:
 
 - Measure the **low-side pressure** and the PT chart tells you the temperature the evaporator coil is boiling at.
 - Measure the **high-side pressure** and it tells you the condensing temperature.
+
+!FIG[gauge-pt-ring]
 
 ## Gauge pressure vs absolute pressure
 
@@ -279,12 +290,15 @@ what do I actually see?"*
         id: "four-processes",
         title: "The four processes around the loop",
         minutes: 7,
+        simple: "The cycle is a delivery loop with four stops: SQUEEZE (the compressor makes the vapour hot), COOL (the condenser dumps heat outside and the gas turns to liquid), DROP (the metering device lets the pressure crash so the liquid gets freezing cold), SOAK (the cold liquid boils in the evaporator, soaking heat out of the room). Then back to the start. Only the squeeze costs electricity — the rest is heat flowing downhill by itself.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — the vapour-compression cycle",
         ],
         content: `
 Every vapour-compression system — from a bar fridge to a supermarket rack —
 performs the same four processes in an endless loop.
+
+!FIG[cycle-loop]
 
 ## 1. Compression (work in)
 
@@ -359,6 +373,7 @@ head — every gauge reading you ever take belongs to one side or the other.
         id: "ph-diagram",
         title: "Reading the P–h diagram",
         minutes: 8,
+        simple: "The P–h chart is a map of how much energy each kilogram of refrigerant carries (left–right) at what pressure (up–down). The running cycle draws a squashed rectangle on it. A wider bottom edge means more cooling for the same flow; a taller shape means the compressor is working harder. Healthy systems draw wide, shortish loops; struggling ones draw narrow, tall ones.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — the pressure–enthalpy diagram and plant efficiency",
         ],
@@ -374,6 +389,8 @@ cycle. Learn to read it and every fault becomes a shape you can recognise.
 
 Move to the right on the chart and the refrigerant is carrying more energy.
 That is the whole trick of reading it.
+
+!FIG[ph-legs]
 
 ## The four legs of the cycle
 
@@ -427,6 +444,7 @@ comparison.
         id: "follow-the-refrigerant",
         title: "Follow the refrigerant: one full lap",
         minutes: 7,
+        simple: "Ride along for one lap: cool blue vapour gets squeezed into hot red gas → it sheds its heat through the condenser and leaves as warm orange liquid → it squirts through a tiny gap and comes out as freezing teal froth → the froth boils away in the evaporator, stealing heat from the room, and returns as cool blue vapour to go again. If you ever see the wrong colour in the wrong pipe on the simulator, that's exactly how real faults behave.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — cycle components and refrigerant states",
         ],
@@ -526,6 +544,7 @@ to the condenser on the next lap.
         id: "compressors",
         title: "Compressors",
         minutes: 8,
+        simple: "The compressor is the pump that drives the whole loop — a motor squeezing vapour into a smaller space so it comes out hot and high-pressure. Different designs (pistons, scrolls, screws) suit different sizes, but they all obey one rule: they pump VAPOUR only. Liquid doesn't squash, so liquid reaching a running compressor is like dropping a spoon in a blender.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — compressors: types, applications and protection",
         ],
@@ -613,6 +632,7 @@ what the speed slider in the simulator models.
         id: "metering-devices",
         title: "Metering devices: cap tube, TXV, EEV",
         minutes: 8,
+        simple: "The metering device is a tiny adjustable doorway between the high- and low-pressure sides. Too small an opening starves the coil (weak cooling); too wide floods it (liquid heads for the compressor — dangerous). A TXV is a self-adjusting doorway: a little temperature feeler on the outlet pipe opens and closes it so the coil gets exactly as much liquid as it can boil.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerant flow controls: capillary tubes, TXVs and EEVs",
         ],
@@ -637,6 +657,8 @@ evaporator outlet and adjusts flow to hold it steady (typically 4–8 K):
 - A **sensing bulb** clamped to the suction line at the coil outlet contains a fluid that tracks line temperature — warmer bulb, higher bulb pressure, valve opens.
 - Evaporator pressure and a spring push the other way.
 - The balance point keeps the coil as full as possible *without* letting liquid escape.
+
+!FIG[txv-balance]
 
 Because it controls superheat, a healthy TXV automatically compensates for
 load changes. Failure modes you will meet: bulb loses its charge (valve
@@ -694,6 +716,7 @@ from mechanics to electronics: check sensors, wiring and drive signals.
         id: "heat-exchangers",
         title: "Condensers and evaporators",
         minutes: 7,
+        simple: "The two coils are just radiators: one soaks heat up indoors (evaporator), one sheds it outdoors (condenser). Both live and die by airflow — a coil blocked with dirt or ice is like breathing through a straw. And frost is sneaky: it insulates the coil, which makes it run colder, which grows MORE frost. That runaway loop is why freezers defrost themselves on a schedule.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — condensers and evaporators; defrost fundamentals",
         ],
@@ -728,6 +751,8 @@ moisture out of the air. Cool rooms for vegetables use small TDs to keep
 produce from drying out; freezers do not care.
 
 ## Frost: the slow strangler
+
+!FIG[frost-spiral]
 
 Any coil running below 0°C grows frost. Frost is an insulator **and** an
 airflow blocker, so heat transfer falls, suction pressure drops, the coil
@@ -778,6 +803,7 @@ is one of the classic faults in the simulator.
         id: "accessories",
         title: "The supporting cast: receivers, driers, sight glasses and friends",
         minutes: 7,
+        simple: "Around the four big parts is a pit crew. The receiver is a tank of spare liquid. The filter-drier is a water-and-dirt trap (moisture is poison inside the pipes). The sight glass is a little window — bubbles mean trouble. The accumulator is a catch-pot that stops liquid slugging the compressor. None of them change the refrigerant — they keep the main act on stage.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — system accessories: receivers, driers, sight glasses, accumulators and controls",
         ],
@@ -860,6 +886,7 @@ long or safely without them.
         id: "families-numbering",
         title: "Refrigerant families and numbering",
         minutes: 7,
+        simple: "Refrigerant names work like number plates — the number tells you the family. The old chlorine ones (R12, R22) chewed the ozone layer and are gone. Today's HFCs (R134a, R410A) are ozone-safe but strong greenhouse gases, so they're being wound down too. The new crowd: mildly flammable synthetics like R32, and naturals like propane, CO2 and ammonia. Blends (the R4xx ones) are cocktails — charge them as liquid so the recipe stays right.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerants: families, blends and natural refrigerants",
           "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
@@ -938,6 +965,7 @@ called **temperature glide**. Practical consequences:
         id: "environment-law",
         title: "ODP, GWP and the rules of the game",
         minutes: 7,
+        simple: "Two report cards decide a refrigerant's fate: ODP (does it damage the ozone layer?) and GWP (how strongly does it warm the planet?). What it means at the toolbag is simple: never let refrigerant escape, always recover it into a cylinder, and you need a licence to handle it — plus your business needs an authorisation to buy it. Venting gas isn't just sloppy, it's illegal.",
         refs: [
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
           "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
@@ -1030,6 +1058,7 @@ cannot buy fluorocarbon refrigerant without one. In the US it is EPA Section
         id: "safety-classes",
         title: "Safety classes: A1, A2L, A3, B2L",
         minutes: 7,
+        simple: "Every refrigerant wears a safety badge: a letter for toxicity (A = kinder, B = nastier) and a number for flammability (1 = won't burn, 2L = lights reluctantly, 3 = basically BBQ gas). R32 is a 2L — keep sparks and flames away. Propane is a 3 — treat every leak like a gas leak. Ammonia is the B — toxic, but at least it announces itself with a stink you can't ignore.",
         refs: [
           "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerant safety groups and handling",
@@ -1095,6 +1124,7 @@ safety classification tells you which, at a glance.
         id: "australian-rulebook",
         title: "The Australian rulebook: ARCtick, the Code of Practice and the standards",
         minutes: 8,
+        simple: "Think of the Australian rules as layers. The LAW says you need a licence and must never vent refrigerant. The CODE OF PRACTICE is the how-to rulebook your licence expects you to follow. The STANDARDS (like AS/NZS 3000 for wiring) are the engineering fine print. And the ARAC volumes are the trade's textbooks. You don't memorise them all — you learn which book answers which question, and you always use the current edition.",
         refs: [
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
           "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
@@ -1215,6 +1245,7 @@ go deeper in the authoritative source.
         id: "measuring-sh-sc",
         title: "Measuring superheat and subcooling",
         minutes: 8,
+        simple: "Superheat and subcooling sound fancy, but each is just a subtraction. Superheat: how many degrees warmer is the vapour than its boiling point? (pipe temperature minus the gauge's saturation temperature). Subcooling: how many degrees cooler is the liquid than its condensing point? Each needs two readings — a pressure from the gauge and a pipe temperature from a clamp thermometer. That's it.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service diagnostics: superheat and subcooling measurement",
         ],
@@ -1238,11 +1269,15 @@ the vapour is 6 degrees above its boiling point at that pressure.
 3. Clamp a good **thermometer probe** to the suction line at the same point — clean pipe, firm contact, insulated over the probe.
 4. **SH = line temperature − saturation temperature.**
 
+!FIG[superheat-measure]
+
 ## Measuring subcooling
 
 1. Read the **head pressure** and convert to saturation (condensing) temperature.
 2. Measure the **liquid-line temperature** near the condenser outlet or receiver.
 3. **SC = saturation temperature − line temperature.**
+
+!FIG[subcool-measure]
 
 ## What healthy looks like
 
@@ -1298,6 +1333,7 @@ compressor; 25 K superheat means a starving coil.
         id: "interpreting-sh-sc",
         title: "Interpreting SH & SC: the diagnostic matrix",
         minutes: 8,
+        simple: "Those two numbers are a compass. High superheat = the coil is starving (not enough refrigerant arriving). Superheat near zero = the coil is flooding (liquid escaping toward the compressor — act fast). Low subcooling = almost no liquid in reserve. High subcooling = liquid piling up behind something. Put the pair together and the system practically names its own fault.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — diagnosing system condition from operating readings",
         ],

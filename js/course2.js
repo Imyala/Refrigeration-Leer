@@ -19,6 +19,7 @@
         id: "split-ac-heat-pumps",
         title: "Split air conditioners and heat pumps",
         minutes: 7,
+        simple: "A heat pump is an air conditioner that can run backwards. A special four-way valve flips the flow, so the indoor coil switches from soaking heat up (cooling) to dumping heat in (heating). Even cold winter air still holds heat worth harvesting — that's why heat pumps beat plain electric heaters. In winter the outdoor coil frosts up, so the machine briefly runs backwards to melt itself clean.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — domestic and commercial air conditioning; heat pump systems",
         ],
@@ -48,6 +49,8 @@ roles of its two coils:
 Because each coil must be fed from either direction, heat pumps use paired
 metering devices with check valves (or a single bi-flow EEV), and an
 **accumulator** protects the compressor during changeovers.
+
+!FIG[reversing-valve]
 
 ## Defrost
 
@@ -94,6 +97,7 @@ resumes.
         id: "commercial-refrigeration",
         title: "Cool rooms, freezers, racks and chillers",
         minutes: 8,
+        simple: "Same cycle, bigger jobs. A cool room is a fridge you can walk into. A freezer room needs heaters built into the coil because the room air is too cold to ever melt the frost. Supermarkets gang many compressors together in a plant room to feed all the cases. Really big buildings don't pipe refrigerant everywhere — they chill water and pump that around instead.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — commercial and industrial systems; supermarket refrigeration",
         ],
@@ -185,6 +189,7 @@ which simplifies safety and lets one machine serve an entire building.
         id: "motors-starting",
         title: "Motors, capacitors and starting gear",
         minutes: 8,
+        simple: "Single-phase motors can't start on their own — they need a capacitor (an electrical slingshot) and a relay to fire the starting winding. So when a compressor hums, strains and clicks off instead of starting, it's usually this cheap start gear that has died — not the expensive compressor. Test the capacitor before you condemn anything bigger.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — electric motors, starting components and electrical principles",
           "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
@@ -275,6 +280,7 @@ open = broken winding, and any winding to earth = burnout territory.
         id: "controls-diagnosis",
         title: "Controls, ladder diagrams and electrical diagnosis",
         minutes: 8,
+        simple: "The control circuit is a chain of gates in a row — thermostat, pressure switches, overload — and ALL must be closed before the compressor may run. A ladder diagram is just a picture of that chain. To find the broken gate, put a voltmeter across each one: a closed gate reads about zero volts; the open gate shows full voltage. One more thing for Australia: fixed wiring belongs to licensed electricians — know exactly where your part of the job ends.",
         refs: [
           "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
           "AS/NZS 4836 — Safe working on or near low-voltage electrical installations and equipment",
@@ -301,6 +307,8 @@ with its switches **in series** ahead of it. The logic reads like a
 sentence: *"the compressor contactor pulls in when the thermostat AND the LP
 switch AND the HP switch AND the overload are all closed."* Find the load,
 read right-to-left, and the diagram tells you every device that can stop it.
+
+!FIG[ladder-rung]
 
 ## Meter method: find the open switch
 
@@ -390,6 +398,7 @@ same ritual described below, formalised.
         id: "diagnostic-method",
         title: "The diagnostic routine",
         minutes: 7,
+        simple: "Diagnose like a doctor. Ask the patient (the owner) what changed. Look, listen and feel before connecting anything. Then measure, and compare your numbers with what a HEALTHY system would show in today's weather. Only then decide — and prove it with one more check before replacing parts. The rookie trap is 'adding gas' to any low reading: that treats the symptom and hides the disease.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service and maintenance techniques; systematic fault diagnosis",
         ],
@@ -478,6 +487,7 @@ and re-measure.
         id: "gauge-signatures",
         title: "Gauge signatures of the classic faults",
         minutes: 9,
+        simple: "Every fault bends the numbers into its own recognisable footprint. Both pressures low? Something is starving the flow. Both high? Too much heat or refrigerant on the high side. Pressures squeezing toward each other? The pump itself is worn out. Superheat at zero? Liquid is where it shouldn't be — that one's urgent. Learn the footprints and a pair of gauges becomes a lie detector.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — fault diagnosis from operating pressures and temperatures",
         ],
@@ -557,6 +567,7 @@ Two pairs are nearly identical on gauges alone:
         id: "quiz-practice",
         title: "Deliberate practice with the Technician Quiz",
         minutes: 6,
+        simple: "Reading about faults is like reading about swimming — at some point you have to get wet. The Technician Quiz is the safe pool: fifty broken systems in an afternoon, no customer watching, nothing to break. Wrong guesses cost nothing here and teach the most. Read the explanation, spot what you missed, and go again — streaks build the instinct.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — service diagnostics practice",
         ],
@@ -642,6 +653,7 @@ more for your gauge-reading than any chapter of theory.
         id: "recovery",
         title: "Refrigerant recovery",
         minutes: 7,
+        simple: "Before opening any system, the refrigerant comes out into a bottle — never into the sky (that's illegal, and it's your licence on the line). The recovery machine is basically a vacuum cleaner for refrigerant. The golden rule: a cylinder is FULL at 80% by weight, because liquid expands as it warms — an overfilled bottle in the sun is a bomb. So everything gets weighed, always.",
         refs: [
           "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
@@ -658,6 +670,8 @@ practice: recovered gas can often be returned to the same system.
 - **Recovery cylinder** — a dedicated, in-test cylinder for recovered gas. Never an unknown or disposable cylinder.
 - **Scales** — the cylinder sits on scales for the whole job.
 - Hoses as short as practical, with ball valves; a filter-drier ahead of the machine protects it from a contaminated system.
+
+!FIG[recovery-hookup]
 
 ## The non-negotiable rule: 80%
 
@@ -732,6 +746,7 @@ back through the supplier for reclaim or destruction — never into the air.
         id: "evacuation",
         title: "Evacuation: pulling a proper vacuum",
         minutes: 8,
+        simple: "After a repair the pipes hold air and invisible moisture — both poison for the system. A vacuum pump pulls the pressure down so far that water literally boils away at room temperature. Then the micron gauge plays lie detector while you watch: creeps up and keeps going = a leak; rises then levels off = still wet, keep pulling; stays put = clean, dry, and ready to charge.",
         refs: [
           "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
           "ARC technical resource — Evacuation: stationary refrigeration and air-conditioning systems (arcltd.org.au)",
@@ -762,6 +777,8 @@ The working target: pull the system below **500 microns** (many specify
 - Rises fast and keeps climbing → a **leak**.
 - Rises then plateaus (e.g. settles around 1,000–1,500 microns) → **moisture** still boiling off; keep pulling or apply gentle heat.
 - Holds below ~500 microns for 10–15 minutes → dry and tight. Charge it.
+
+!FIG[vacuum-decay]
 
 ## Triple evacuation
 
@@ -815,6 +832,7 @@ nitrogen sweeps water vapour out far faster than a pump alone.
         id: "charging",
         title: "Charging methods",
         minutes: 8,
+        simple: "There are three honest ways to put refrigerant in: weigh it in (best — the nameplate tells you exactly how much), or fine-tune while watching superheat (fixed-orifice systems) or subcooling (TXV systems). Blends must leave the cylinder as liquid or the mixture changes. Add a little, wait for it to settle, re-read, repeat. Charging by 'that feels cold enough' is guessing, not technique.",
         refs: [
           "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — charging methods and system commissioning",
@@ -897,6 +915,7 @@ high = overcharged.
         id: "leaks-brazing",
         title: "Leak detection and brazing basics",
         minutes: 8,
+        simple: "Every 'top-up' escaped through a hole — so find the hole: follow oil stains, spray bubbles, use the sniffer or UV dye. Pressure-test with nitrogen ONLY: never air (it brings moisture) and never oxygen (it can explode on contact with oil). When brazing, run a gentle nitrogen flow through the pipe so the inside doesn't grow black flakes that later choke the valves. Then: test, vacuum, weigh the charge in.",
         refs: [
           "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — tubing, brazing and welding practice",
@@ -990,6 +1009,7 @@ mystery fault.
         id: "refrigerant-pressure-hazards",
         title: "Refrigerant, pressure and cold hazards",
         minutes: 7,
+        simple: "Refrigerant is safe inside the pipes. Loose in a room, it can silently push the air out at floor level (it's heavier than air and has no smell), freeze skin on contact, or — with the newer flammable types — find a spark. So: ventilate, wear gloves and glasses, keep cylinders cool, upright and capped, and read the safety data sheet before the emergency, not during it.",
         refs: [
           "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
           "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
@@ -1075,6 +1095,7 @@ ignition source within the work zone before opening the circuit.
         id: "electrical-site-safety",
         title: "Electrical and site safety",
         minutes: 7,
+        simple: "Electricity doesn't give second chances. The ritual is always the same: isolate, lock it off with YOUR OWN lock, and prove the circuit dead with a tester you've just checked on a live source. Watch for capacitors (they keep a bite after the power is off) and machines that restart themselves on timers. Add ladders, hot pipes and heavy gear — and the boring routine is exactly what gets you home.",
         refs: [
           "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
           "AS/NZS 4836 — Safe working on or near low-voltage electrical installations and equipment",

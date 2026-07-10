@@ -95,6 +95,27 @@ Lessons embed **deep links** that open the simulator pre-configured
 (`index.html?r=R404A&fault=lowCharge&speed=120&load=80`, plus `quiz=1`,
 `tour=1` and `view=pt`).
 
+### Built for every learner — apprentices to adults
+
+- **Plain-words explanations**: every lesson has a "💡 In plain words" box —
+  the same idea retold simply, with analogies (written for readers from
+  first-year apprentices up). With the technical text and the live simulator
+  demonstrations, every topic is explained at least three ways.
+- **Diagrams**: an inline SVG figure library (`js/figures.js`, embedded via
+  the `!FIG[id]` directive) illustrates the key ideas — heat flow, the latent
+  plateau, the PT curve, gauge reading, cycle loop, P–h legs, TXV balance,
+  superheat/subcooling measurement, ladder rungs, recovery hookup, the
+  vacuum decay test and more. All captioned and screen-reader labelled.
+- **Mark for review**: a "🚩 Confusing? Mark it for review" button on every
+  lesson. Flagged lessons collect in **My review list** (sidebar), the
+  plain-words box auto-opens on flagged lessons, and un-flagging is a
+  one-tap "Got it now ✓". Quizzes started but not yet passed also appear in
+  the review list.
+- **Supportive quizzes**: framed as practice, not tests. Wrong answers get
+  warm, teaching-first feedback ("💡 Not this one — here's the idea…"),
+  amber styling instead of red, a one-click fresh try, and encouraging
+  progress messages. The exam and Technician Quiz keep the same tone.
+
 Lesson content is authored in a small markdown subset (`js/md.js`) directly
 inside `js/course1.js` / `js/course2.js` — add a lesson by adding an object
 (content, minutes, refs, quiz) to a module's `lessons` array; the navigation,
