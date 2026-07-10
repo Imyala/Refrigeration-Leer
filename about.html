@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Institutions — Refrigeration Learning Platform</title>
+  <meta name="description" content="An interactive refrigeration training platform for TAFEs, universities and RTOs: simulator, structured course, fault-diagnosis practice, exams, certificates and SCORM LMS delivery." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#aboutMain">Skip to content</a>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Refrigeration Learning Platform</h1>
+      <p class="subtitle">For TAFEs, universities, RTOs and training departments</p>
+    </div>
+    <div class="controls">
+      <a class="btn btn-tour" href="index.html">Try the Simulator</a>
+      <a class="btn btn-learn" href="learn.html">Start the Course</a>
+      <a class="btn btn-ghost" href="teach.html">Instructor Dashboard</a>
+    </div>
+  </header>
+
+  <main id="aboutMain" class="teach-main">
+    <div class="learn-hero">
+      <h2>Teach how refrigeration actually behaves — not just how it's drawn</h2>
+      <p>Most refrigeration teaching material is static: diagrams, slides, videos.
+      This platform is a <b>live vapour-compression system</b> students can probe,
+      break and diagnose — wrapped in a structured 10-module course with quizzes,
+      a final exam and a certificate. It runs in any browser, imports into your
+      LMS as a SCORM package with gradebook reporting, and needs no installation,
+      no server and no student accounts.</p>
+      <div class="quiz-controls">
+        <a class="btn btn-tour" href="index.html?quiz=1">See the Technician Quiz — the flagship exercise</a>
+        <a class="btn btn-ghost" href="learn.html#diagnosis/gauge-signatures">Open a sample lesson</a>
+      </div>
+    </div>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <h3>Interactive simulator</h3>
+        <p>An animated cycle with real per-refrigerant saturation data: colour-coded
+        state flow, a live P–h diagram, an analog gauge manifold with PT rings,
+        compressor-speed and load sliders, and kPa/bar/psi + °C/°F units.</p>
+      </div>
+      <div class="module-card">
+        <h3>Fault diagnosis that behaves like the field</h3>
+        <p>Ten faults with realistic gauge signatures — from low charge to leaking
+        compressor valves. Technician Quiz mode hides the fault and makes students
+        read gauges, superheat and subcooling to find it, with scored feedback.</p>
+      </div>
+      <div class="module-card">
+        <h3>Structured 10-module course</h3>
+        <p>28 lessons from heat fundamentals through components, refrigerants,
+        electrical, diagnosis, repair procedures and safety. Every lesson ends in a
+        quiz with explanations; lessons deep-link the simulator into the exact
+        scenario being taught.</p>
+      </div>
+      <div class="module-card">
+        <h3>Exam &amp; certificate</h3>
+        <p>A 20-question final exam drawn randomly from the whole question bank
+        (fresh paper every attempt, 80% pass mark) and a printable certificate of
+        completion with a verifiable ID.</p>
+      </div>
+      <div class="module-card">
+        <h3>Instructor tools</h3>
+        <p>A cohort dashboard that aggregates student progress exports — per-module
+        completion, exam results, CSV download — entirely in the instructor's
+        browser. No student data ever leaves your institution.</p>
+      </div>
+      <div class="module-card">
+        <h3>LMS-ready (SCORM 1.2)</h3>
+        <p>Import into Moodle, Canvas, Blackboard or D2L as a SCORM activity.
+        Completion and exam scores report to the gradebook, and each learner's
+        progress is stored against their LMS account.</p>
+      </div>
+    </div>
+
+    <div class="learn-hero" style="margin-top:20px">
+      <h2>Three ways to deploy</h2>
+      <div class="table-wrap">
+        <table class="cohort-table deploy-table">
+          <tr><th>Option</th><th>Setup</th><th>Progress &amp; grades</th><th>Best for</th></tr>
+          <tr>
+            <td class="student-name">LMS (SCORM)</td>
+            <td>Import one zip into Moodle / Canvas / Blackboard / D2L</td>
+            <td>Gradebook + LMS accounts</td>
+            <td>Accredited delivery, cohorts at scale</td>
+          </tr>
+          <tr>
+            <td class="student-name">Web</td>
+            <td>Host the static site (or use this one)</td>
+            <td>In the browser, with export/import</td>
+            <td>Open access, apprentices, revision</td>
+          </tr>
+          <tr>
+            <td class="student-name">Classroom</td>
+            <td>Nothing — share the link</td>
+            <td>Instructor dashboard from student exports</td>
+            <td>Pilots, workshops, blended sessions</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="learn-hero" style="margin-top:20px">
+      <h2>Procurement pack</h2>
+      <p>The documents procurement and teaching committees ask for are in the
+      <b>docs/</b> folder of this repository:</p>
+      <ul class="doc-list">
+        <li><b>Curriculum mapping</b> — indicative coverage of UEE (Cert III RAC) skills areas, EPA 608 and university learning outcomes · <i>docs/CURRICULUM_MAPPING.md</i></li>
+        <li><b>Accessibility conformance</b> — WCAG 2.1 AA statement, VPAT-style · <i>docs/ACCESSIBILITY_CONFORMANCE.md</i></li>
+        <li><b>Privacy &amp; security</b> — architecture, data handling, compliance posture · <i>docs/PRIVACY_SECURITY.md</i></li>
+        <li><b>LMS integration guide</b> — step-by-step SCORM import and gradebook behaviour · <i>docs/LMS_INTEGRATION_GUIDE.md</i></li>
+        <li><b>Product &amp; pricing overview</b> — including a term-length pilot playbook · <i>docs/SALES_OVERVIEW.md</i></li>
+      </ul>
+    </div>
+
+    <div class="learn-hero" style="margin-top:20px">
+      <h2>Run a pilot</h2>
+      <p>The fastest way to evaluate the platform is a one-term pilot with a single
+      class: import the SCORM package (or just share the link), assign two modules
+      and the Technician Quiz, and compare against your current materials. The
+      pilot playbook in <i>docs/SALES_OVERVIEW.md</i> has the checklist, success
+      metrics and a feedback template.</p>
+      <p class="module-blurb">Contact: open an issue on this repository, or replace this line with your
+      sales contact details before sharing the page.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Refrigeration Learning Platform · educational tool · simulator values are representative, for training not design.</span>
+  </footer>
+</body>
+</html>

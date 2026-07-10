@@ -37,6 +37,20 @@ sold to universities, TAFEs and other higher-education institutions.
     needs a database + auth provider; the file-based dashboard covers pilots.
   - **CoolProp-grade property data** (WASM) — an accuracy upgrade for
     university sales; current tables are honest and disclosed as approximate.
+- **Phase 4 — collateral & go-to-market assets done.**
+  - **"For institutions" landing page** (`about.html`): the pitch, feature
+    grid, deployment options, procurement-pack index, pilot invitation.
+  - **Procurement pack** in docs/: sales & pricing overview with a one-term
+    pilot playbook (SALES_OVERVIEW.md), WCAG 2.1 AA conformance statement
+    (ACCESSIBILITY_CONFORMANCE.md), privacy & security one-pager
+    (PRIVACY_SECURITY.md), LMS integration guide (LMS_INTEGRATION_GUIDE.md),
+    plus the existing curriculum mapping.
+  - **Sample cohort demo** on the instructor dashboard, so prospects see the
+    cohort view without real student data.
+  - Remaining Phase 4 work is **business, not code**: run the pilot
+    (playbook in SALES_OVERVIEW.md), validate pricing, add real contact
+    details to about.html and SALES_OVERVIEW.md, and commission the
+    independent accessibility audit before contractual commitments.
 
 ---
 

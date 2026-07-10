@@ -11,7 +11,9 @@ site with no build step.
 - **`learn.html`** — the course: lessons, quizzes, final exam & certificate,
   progress tracking, with deep links that open the simulator pre-configured.
 - **`teach.html`** — instructor dashboard: cohort progress from student
-  exports, fully client-side.
+  exports (with a sample-cohort demo), fully client-side.
+- **`about.html`** — "For institutions" landing page: pitch, deployment
+  options and the procurement pack.
 - **SCORM 1.2 export** — `npm run build:scorm` produces an LMS-importable
   package (Moodle, Canvas, Blackboard, D2L) with gradebook reporting.
 
@@ -121,6 +123,12 @@ regenerating it. It is evidence of course completion, not a licence.
 - **Curriculum mapping** — see `docs/CURRICULUM_MAPPING.md` for indicative
   mapping to the UEE training package (Cert III RAC), EPA 608 and typical
   university learning outcomes.
+- **Procurement pack** — `docs/` also contains the sales & pricing overview
+  with a one-term pilot playbook (`SALES_OVERVIEW.md`), a WCAG 2.1 AA
+  conformance statement (`ACCESSIBILITY_CONFORMANCE.md`), a privacy &
+  security one-pager (`PRIVACY_SECURITY.md`) and a step-by-step LMS
+  integration guide (`LMS_INTEGRATION_GUIDE.md`). The public-facing pitch
+  lives at `about.html`.
 
 ## Accuracy notes
 

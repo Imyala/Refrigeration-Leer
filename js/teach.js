@@ -120,4 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.files.length) handleFiles(e.target.files);
     e.target.value = "";
   });
+  document.getElementById("sampleBtn").addEventListener("click", () => {
+    students.length = 0;
+    RefrigDemo.buildSampleCohort(COURSE).forEach(s => students.push({
+      name: s.name,
+      exported: s.exported.slice(0, 10),
+      progress: s.progress,
+    }));
+    renderTable();
+    document.getElementById("teachStatus").textContent = "Sample cohort loaded — demonstration data, not real students.";
+  });
 });
