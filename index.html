@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Refrigeration Cycle Simulator</title>
-  <meta name="description" content="An interactive, animated vapour-compression refrigeration cycle simulator for learning how refrigerant flows and changes state." />
+  <meta name="description" content="An interactive refrigeration training tool: animated vapour-compression cycle, gauge manifold, fault diagnosis quiz and pressure-temperature trainer." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,10 +15,26 @@
       <p class="subtitle">Watch the refrigerant flow and change state through a vapour-compression cycle</p>
     </div>
     <div class="controls">
-      <label class="refrigerant-select">
+      <label class="select-group">
         <span>Refrigerant</span>
         <select id="refrigerantSelect"></select>
       </label>
+      <label class="select-group">
+        <span>Pressure</span>
+        <select id="pUnitSelect" aria-label="Pressure unit">
+          <option value="kPa">kPa</option>
+          <option value="bar">bar</option>
+          <option value="psi">psi</option>
+        </select>
+      </label>
+      <label class="select-group">
+        <span>Temperature</span>
+        <select id="tUnitSelect" aria-label="Temperature unit">
+          <option value="C">°C</option>
+          <option value="F">°F</option>
+        </select>
+      </label>
+      <button id="quizBtn" class="btn btn-quiz" type="button">Technician Quiz</button>
       <button id="tourBtn" class="btn btn-tour" type="button">Guided Tour</button>
       <button id="powerBtn" class="btn btn-stop" type="button">Stop Compressor</button>
     </div>
@@ -48,6 +65,25 @@
     <span id="faultText"></span>
   </div>
 
+  <!-- Technician mode: diagnose a hidden fault from the instruments -->
+  <section id="quizPanel" class="quiz-panel" hidden aria-label="Technician diagnosis quiz">
+    <div class="quiz-head">
+      <div>
+        <h2>Technician mode — diagnose the fault</h2>
+        <p id="quizScenario" class="quiz-scenario"></p>
+      </div>
+      <div class="quiz-score" id="quizScore"></div>
+    </div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-actions">
+      <button id="quizHintBtn" class="btn btn-ghost" type="button">Show field clues</button>
+      <button id="quizNextBtn" class="btn btn-tour" type="button" hidden>Next scenario</button>
+      <button id="quizEndBtn" class="btn btn-ghost" type="button">End quiz</button>
+    </div>
+    <div id="quizClues" class="quiz-clues" hidden></div>
+    <div id="quizFeedback" class="quiz-feedback" hidden></div>
+  </section>
+
   <main class="stage">
     <!-- Left column: schematic diagram + the component info directly beneath it -->
     <div class="main-col">
@@ -72,6 +108,14 @@
           <path id="seg-liquid"    d="M 620 195 L 620 405" data-segment="liquid" />
           <path id="seg-evapfeed"  d="M 595 430 L 255 430" data-segment="evapfeed" />
           <path id="seg-suction"   d="M 180 385 L 180 200" data-segment="suction" />
+        </g>
+
+        <!-- Text labels on each line, so state isn't conveyed by colour alone -->
+        <g class="pipe-labels" aria-hidden="true">
+          <text x="395" y="134">hot gas</text>
+          <text x="643" y="228" transform="rotate(90 643 228)">liquid</text>
+          <text x="425" y="416">flash mix</text>
+          <text x="157" y="292" transform="rotate(-90 157 292)">suction vapour</text>
         </g>
 
         <!-- Liquid receiver (sits on the liquid line) -->
@@ -134,8 +178,17 @@
       </div>
     </div>
 
-    <!-- Side: P-h diagram + performance -->
+    <!-- Side: gauges + P-h diagram + performance -->
     <aside class="side">
+      <div class="panel manifold-panel">
+        <div class="panel-head">
+          <h2>Gauge manifold</h2>
+          <span class="hint">gauge pressure</span>
+        </div>
+        <svg id="manifoldSvg" viewBox="0 0 360 200" role="img" aria-label="Low and high side pressure gauges"></svg>
+        <p class="ph-caption">Field gauges read pressure <em>above atmospheric</em>. The inner ring shows the saturation temperature at each pressure — the PT ring on a real gauge set. Needle vs. expected PT reading is how technicians judge a system.</p>
+      </div>
+
       <div class="panel ph-panel">
         <div class="panel-head">
           <h2>Pressure–Enthalpy (P–h) diagram</h2>
@@ -146,7 +199,7 @@
           <input type="checkbox" id="comparePh" checked />
           <span>Compare to <b>healthy</b> cycle (same speed &amp; load)</span>
         </label>
-        <p class="ph-caption">The moving dot shows where the refrigerant is in its cycle right now. Inside the dome = a mix of liquid &amp; vapour; left of it = liquid; right = vapour.</p>
+        <p class="ph-caption">The moving dot shows where the refrigerant is in its cycle right now. Inside the dome = a mix of liquid &amp; vapour; left of it = liquid; right = vapour. Chart pressures are absolute.</p>
       </div>
 
       <div class="panel perf-panel">
@@ -159,6 +212,33 @@
       </div>
     </aside>
   </main>
+
+  <!-- PT chart + target-pressure trainer -->
+  <section class="pt-section" aria-label="Pressure temperature trainer">
+    <div class="panel pt-panel">
+      <div class="panel-head">
+        <h2>Pressure–Temperature (PT) chart</h2>
+        <span class="hint" id="ptSource"></span>
+      </div>
+      <svg id="ptChart" viewBox="0 0 340 220" role="img" aria-label="Saturation pressure versus temperature chart"></svg>
+      <p class="ph-caption">While liquid and vapour coexist (inside the coils), pressure and temperature are locked together — this curve. Dots mark the current evaporating and condensing points. Below the dashed line the gauge reads vacuum.</p>
+    </div>
+    <div class="panel trainer-panel">
+      <div class="panel-head">
+        <h2>Target-pressure trainer</h2>
+        <span class="hint">gauge pressures</span>
+      </div>
+      <p id="ptQuestion" class="pt-question"></p>
+      <div class="pt-answer">
+        <input id="ptInput" type="number" step="any" inputmode="decimal" aria-label="Your answer" />
+        <span id="ptUnit" class="pt-unit"></span>
+        <button id="ptCheckBtn" class="btn btn-tour" type="button">Check</button>
+        <button id="ptNewBtn" class="btn btn-ghost" type="button">New question</button>
+      </div>
+      <div id="ptFeedback" class="pt-feedback" hidden></div>
+      <p class="perf-caption">Reading expected pressures straight off the PT relationship is how technicians judge whether a system is running correctly — practise until it's automatic.</p>
+    </div>
+  </section>
 
   <footer class="footer">
     <span>Educational tool · values are approximate, representative operating points.</span>
@@ -178,6 +258,12 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/units.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/gauges.js"></script>
+  <script src="js/pt.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

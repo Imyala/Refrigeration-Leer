@@ -45,8 +45,8 @@ body {
 .subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
 .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.refrigerant-select { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); gap: 4px; text-transform: uppercase; letter-spacing: .5px; }
-.refrigerant-select select {
+.select-group { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); gap: 4px; text-transform: uppercase; letter-spacing: .5px; }
+.select-group select {
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--line);
@@ -326,4 +326,125 @@ body {
   color: var(--muted);
   font-size: 12px;
   border-top: 1px solid var(--line);
+}
+
+/* ---------- Buttons: extra states ---------- */
+.btn-quiz { background: #7b5cd6; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Pipe state labels (state not by colour alone) ---------- */
+.pipe-labels text {
+  fill: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+/* ---------- Gauge manifold ---------- */
+#manifoldSvg { width: 100%; height: auto; }
+
+/* ---------- Technician quiz ---------- */
+.quiz-panel {
+  margin: 16px 24px 0;
+  background: linear-gradient(180deg, #221c38 0%, #171426 100%);
+  border: 1px solid #7b5cd6;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.quiz-panel[hidden] { display: none; }
+.quiz-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.quiz-head h2 { margin: 0 0 4px; font-size: 15px; color: #c9b8f5; }
+.quiz-scenario { margin: 0; font-size: 13px; color: var(--text); line-height: 1.5; }
+.quiz-score {
+  font-size: 13px; font-weight: 700; color: #c9b8f5;
+  background: #0c131b; border-radius: 20px; padding: 6px 12px; white-space: nowrap;
+}
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+.quiz-opt {
+  text-align: left;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.quiz-opt:hover:not(:disabled) { border-color: #7b5cd6; }
+.quiz-opt:disabled { cursor: default; opacity: .5; }
+.quiz-opt.correct { border-color: #2f9e57; background: rgba(47,158,87,.18); opacity: 1; }
+.quiz-opt.partial { border-color: #f5a623; background: rgba(245,166,35,.15); opacity: 1; }
+.quiz-opt.wrong   { border-color: #e0405a; background: rgba(224,64,90,.15); opacity: 1; }
+.quiz-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.quiz-clues, .quiz-feedback {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #0c131b;
+  border: 1px solid var(--line);
+}
+.quiz-clues ul { margin: 6px 0 0; padding-left: 18px; }
+.quiz-clues li { margin: 3px 0; }
+.quiz-feedback p { margin: 8px 0 0; }
+.quiz-feedback.good    { border-color: #2f9e57; }
+.quiz-feedback.partial { border-color: #f5a623; }
+.quiz-feedback.bad     { border-color: #e0405a; }
+.quiz-feedback .good { color: #6fe0a0; }
+.quiz-feedback .part { color: #f5a623; }
+.quiz-feedback .bad  { color: #ff8296; }
+
+/* While a quiz scenario is live, hide everything that reveals the answer:
+   the operating controls (incl. fault selector) and the performance panel. */
+body.quiz-active .sim-controls { display: none; }
+body.quiz-active .perf-panel { display: none; }
+
+/* ---------- PT chart + target-pressure trainer ---------- */
+.pt-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 1fr);
+  gap: 20px;
+  padding: 0 24px 20px;
+  align-items: start;
+}
+@media (max-width: 940px) {
+  .pt-section { grid-template-columns: 1fr; }
+}
+#ptChart { width: 100%; height: auto; }
+.pt-question { font-size: 14px; line-height: 1.6; margin: 4px 0 12px; }
+.pt-answer { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pt-answer input {
+  width: 130px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.pt-unit { color: var(--muted); font-size: 13px; min-width: 46px; }
+.pt-feedback {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #0c131b;
+  border: 1px solid var(--line);
+}
+.pt-feedback.good { border-color: #2f9e57; }
+.pt-feedback.bad  { border-color: #e0405a; }
+
+/* ---------- Accessibility ---------- */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .component.fault-flag .comp-box { animation: none; }
+  .btn { transition: none; }
 }

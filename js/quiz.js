@@ -1,0 +1,148 @@
+/* =========================================================================
+   Technician mode — the fault-diagnosis quiz.
+
+   A random fault (occasionally none), refrigerant and operating point are
+   applied secretly: the fault selector, banner, performance panel and the
+   warning pulses on the schematic are hidden, so the learner must read the
+   gauges, temperatures, superheat/subcool and the P–h cycle like a tech in
+   the field, then name the fault. Exact answer = 1 point; a fault from the
+   same signature "family" = half credit with a tip on telling them apart.
+   Browser-only; relies on state/refreshAll from app.js at call time.
+   ========================================================================= */
+"use strict";
+
+const Quiz = { active: false, answered: false, fault: null, count: 0, score: 0, streak: 0 };
+
+const QUIZ_FAMILY_HINTS = {
+  "cond-airflow": "A dirty coil and a failed fan give nearly the same gauge picture — in the field, look and listen: is the fan actually spinning, and is the coil matted with dirt?",
+  "feed-restriction": "A restricted drier and a starved TXV look almost identical on the gauges — feel where the temperature drop happens: across the drier means the drier; at the valve means the TXV.",
+};
+
+function quizSetControlsDisabled(disabled) {
+  ["refrigerantSelect", "tourBtn", "powerBtn"].forEach(id => {
+    document.getElementById(id).disabled = disabled;
+  });
+}
+
+function startQuiz() {
+  Quiz.active = true;
+  Quiz.count = 0; Quiz.score = 0; Quiz.streak = 0;
+  document.body.classList.add("quiz-active");
+  document.getElementById("quizPanel").hidden = false;
+  document.getElementById("quizBtn").textContent = "Exit Technician Mode";
+  quizSetControlsDisabled(true);
+  if (!state.running) setRunning(true);
+  quizNextScenario();
+  document.getElementById("quizPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function endQuiz() {
+  Quiz.active = false;
+  Quiz.answered = false;
+  document.body.classList.remove("quiz-active");
+  document.getElementById("quizPanel").hidden = true;
+  document.getElementById("quizBtn").textContent = "Technician Quiz";
+  quizSetControlsDisabled(false);
+  // back to a clean healthy state
+  state.fault = "none"; state.speed = 100; state.load = 100;
+  document.getElementById("faultSelect").value = "none";
+  quizSyncSliders();
+  refreshAll();
+}
+
+function quizSyncSliders() {
+  document.getElementById("speedSlider").value = state.speed;
+  document.getElementById("loadSlider").value = state.load;
+  document.getElementById("speedOut").textContent = state.speed + "%";
+  document.getElementById("loadOut").textContent = state.load + "%";
+}
+
+function quizNextScenario() {
+  const faultKeys = Object.keys(RefrigData.FAULTS).filter(k => k !== "none");
+  Quiz.fault = Math.random() < 0.14 ? "none" : faultKeys[Math.floor(Math.random() * faultKeys.length)];
+  Quiz.answered = false;
+  Quiz.count += 1;
+
+  const refKeys = Object.keys(RefrigData.REFRIGERANTS);
+  state.refrigerant = refKeys[Math.floor(Math.random() * refKeys.length)];
+  document.getElementById("refrigerantSelect").value = state.refrigerant;
+  state.speed = 60 + 5 * Math.floor(Math.random() * 17);   // 60..140 %
+  state.load  = 60 + 5 * Math.floor(Math.random() * 17);
+  state.fault = Quiz.fault;
+  quizSyncSliders();
+
+  document.getElementById("quizScenario").textContent =
+    `Scenario ${Quiz.count} — ${RefrigData.REFRIGERANTS[state.refrigerant].label} system · ` +
+    `compressor at ${state.speed}% · load ${state.load}%. ` +
+    `Read the gauges, temperatures, superheat/subcool and the P–h cycle, then pick the fault.`;
+
+  document.getElementById("quizClues").hidden = true;
+  document.getElementById("quizFeedback").hidden = true;
+  document.getElementById("quizNextBtn").hidden = true;
+  document.getElementById("quizHintBtn").hidden = false;
+  quizRenderOptions();
+  quizRenderScore();
+  refreshAll();
+}
+
+function quizRenderOptions() {
+  const wrap = document.getElementById("quizOptions");
+  wrap.innerHTML = "";
+  Object.entries(RefrigData.FAULTS).forEach(([key, f]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "quiz-opt";
+    b.dataset.key = key;
+    b.textContent = f.label;
+    b.addEventListener("click", () => quizAnswer(key));
+    wrap.appendChild(b);
+  });
+}
+
+function quizShowClues() {
+  const f = RefrigData.FAULTS[Quiz.fault];
+  const el = document.getElementById("quizClues");
+  el.innerHTML = `<b>Field clues for this system:</b><ul>${f.clues.map(c => `<li>${c}</li>`).join("")}</ul>`;
+  el.hidden = false;
+}
+
+function quizRenderScore() {
+  document.getElementById("quizScore").textContent =
+    `Score ${Quiz.score} / ${Quiz.count} · streak ${Quiz.streak}`;
+}
+
+function quizAnswer(key) {
+  if (Quiz.answered) return;
+  Quiz.answered = true;
+
+  const fActual = RefrigData.FAULTS[Quiz.fault];
+  const fPicked = RefrigData.FAULTS[key];
+  const exact  = key === Quiz.fault;
+  const family = !exact && fActual.family != null && fActual.family === fPicked.family;
+  Quiz.score += exact ? 1 : family ? 0.5 : 0;
+  Quiz.streak = exact ? Quiz.streak + 1 : 0;
+
+  document.querySelectorAll("#quizOptions .quiz-opt").forEach(b => {
+    b.disabled = true;
+    if (b.dataset.key === Quiz.fault) b.classList.add("correct");
+    else if (b.dataset.key === key) b.classList.add(family ? "partial" : "wrong");
+  });
+
+  const verdict = exact
+    ? `<b class="good">Correct!</b>`
+    : family
+      ? `<b class="part">Close — half credit.</b> ${QUIZ_FAMILY_HINTS[fActual.family] || ""}`
+      : `<b class="bad">Not this time.</b> It was <b>${fActual.label}</b>.`;
+  const diag = fActual.diag
+    ? `<p>${fActual.diag}</p>`
+    : `<p>The system was healthy — every reading sat where the PT relationship says it should. Always verify before condemning a part.</p>`;
+  const fb = document.getElementById("quizFeedback");
+  fb.innerHTML = `${verdict}${diag}<p><b>Field clues you'd look for:</b> ${fActual.clues.join(" · ")}</p>`;
+  fb.className = "quiz-feedback " + (exact ? "good" : family ? "partial" : "bad");
+  fb.hidden = false;
+
+  document.getElementById("quizNextBtn").hidden = false;
+  document.getElementById("quizHintBtn").hidden = true;
+  quizRenderScore();
+  renderFaultViz();   // reveal the warning pulses now that it's answered
+}

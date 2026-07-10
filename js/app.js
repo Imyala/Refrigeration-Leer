@@ -1,115 +1,15 @@
 /* =========================================================================
-   Refrigeration Cycle Simulator
-   -------------------------------------------------------------------------
-   A vapour-compression cycle visualised. Each refrigerant is backed by a
-   saturation table, so the P-h dome, saturation temperatures and cycle
-   enthalpies are all derived from data. Sliders (compressor speed, evaporator
-   load) and a fault selector drive an operating-point model so the whole
-   system — pressures, temps, flow, COP, capacity — responds live.
-
-   Property values are representative/approximate and meant for learning the
-   shape and behaviour of the cycle, not for engineering design.
+   Refrigeration Cycle Simulator — main UI.
+   Schematic animation, readouts, P–h diagram, component info cards, guided
+   tour and control wiring. The data lives in js/data.js, the thermodynamic
+   model in js/model.js, unit display in js/units.js; the gauge manifold,
+   PT trainer and technician quiz are in their own files.
    ========================================================================= */
+"use strict";
 
-/* ---- Saturation tables  [T(°C), P(bar abs), hf, hg (kJ/kg)] ---------------
-   Each table is internally consistent (its own enthalpy reference), so
-   differences within a fluid — and therefore COP — are meaningful.           */
-function toRows(arr) { return arr.map(([T, P, hf, hg]) => ({ T, P, hf, hg })); }
-
-const TABLES = {
-  R134a: toRows([
-    [-40,0.512,148.1,374.0],[-30,0.844,161.1,380.4],[-20,1.327,173.6,386.6],
-    [-10,2.007,186.7,392.7],[0,2.928,200.0,398.6],[10,4.146,213.6,404.2],
-    [20,5.717,227.5,409.3],[30,7.702,241.7,414.0],[40,10.166,256.4,418.0],
-    [50,13.179,271.6,421.2],[60,16.818,287.5,423.3],[70,21.168,304.3,424.1],
-    [80,26.332,322.4,422.9],[90,32.435,342.9,419.0],[100,39.724,369.0,408.0],
-  ]),
-  R410A: toRows([
-    [-40,1.76,137.5,400.0],[-30,2.72,153.0,405.0],[-20,4.00,169.0,410.0],
-    [-10,5.73,185.0,414.5],[0,8.00,200.0,421.0],[10,10.9,218.0,425.0],
-    [20,14.4,234.0,428.0],[30,18.8,251.0,430.0],[40,24.1,269.0,430.5],
-    [50,30.6,289.0,428.0],[60,38.3,311.0,421.0],
-  ]),
-  R22: toRows([
-    [-40,1.05,154.0,388.0],[-30,1.64,166.0,393.0],[-20,2.45,178.0,398.0],
-    [-10,3.55,190.0,402.0],[0,4.98,200.0,405.0],[10,6.81,213.0,409.0],
-    [20,9.10,224.0,412.0],[30,11.9,237.0,414.0],[40,15.3,250.0,416.0],
-    [50,19.4,264.0,416.0],[60,24.3,279.0,414.0],[70,30.2,296.0,409.0],
-  ]),
-  R404A: toRows([
-    [-40,1.32,150.0,358.0],[-30,2.05,165.0,364.0],[-20,3.05,177.0,369.0],
-    [-10,4.39,189.0,372.0],[0,6.12,200.0,375.0],[10,8.31,214.0,378.0],
-    [20,11.1,229.0,379.0],[30,14.4,245.0,379.0],[40,18.5,262.0,377.0],
-    [50,23.2,281.0,372.0],[60,28.8,302.0,362.0],
-  ]),
-};
-
-// Generic 1-D linear interpolation: look up `outKey` for a given value of `inKey`.
-function interpTable(table, inKey, x, outKey) {
-  const asc = table[0][inKey] < table[table.length - 1][inKey];
-  for (let i = 0; i < table.length - 1; i++) {
-    const a = table[i], b = table[i + 1];
-    const lo = Math.min(a[inKey], b[inKey]), hi = Math.max(a[inKey], b[inKey]);
-    if (x >= lo && x <= hi) {
-      const f = (x - a[inKey]) / (b[inKey] - a[inKey]);
-      return a[outKey] + f * (b[outKey] - a[outKey]);
-    }
-  }
-  const first = table[0], last = table[table.length - 1];
-  return x <= (asc ? first[inKey] : last[inKey])
-    ? (asc ? first : last)[outKey] : (asc ? last : first)[outKey];
-}
-
-const CP_VAP = 0.90;   // approx vapour specific heat (kJ/kg·K) for superheat
-const CP_LIQ = 1.40;   // approx liquid specific heat (kJ/kg·K) for subcool
-
-/* ---- Refrigerant base operating points ----------------------------------- */
-const REFRIGERANTS = {
-  R134a: { label: "R134a", pLow: 3.5,  pHigh: 16.0, tEvap: 6,  tCond: 58, tSuction: 12, tDischarge: 75, tLiquid: 52 },
-  R410A: { label: "R410A", pLow: 9.0,  pHigh: 30.0, tEvap: 6,  tCond: 50, tSuction: 12, tDischarge: 80, tLiquid: 45 },
-  R22:   { label: "R22",   pLow: 5.0,  pHigh: 19.5, tEvap: 5,  tCond: 50, tSuction: 11, tDischarge: 78, tLiquid: 44 },
-  R404A: { label: "R404A", pLow: 4.2,  pHigh: 20.0, tEvap: -10,tCond: 43, tSuction: -4, tDischarge: 78, tLiquid: 38 },
-};
-Object.keys(REFRIGERANTS).forEach(k => { REFRIGERANTS[k].satTable = TABLES[k]; });
-const BASE_FLOW = 20;  // L/min at 100% compressor speed
-
-/* ---- Fault library -------------------------------------------------------
-   Each fault perturbs the operating point (pressure multipliers, superheat /
-   subcool / discharge offsets) the way the real fault would, plus a diagnosis. */
-const FAULTS = {
-  none: { label: "Healthy", mLow: 1, mHigh: 1, dSuper: 0, dSub: 0, dDisch: 0, diag: null },
-  lowCharge: {
-    label: "Low refrigerant charge", mLow: 0.72, mHigh: 0.88, dSuper: 14, dSub: -8, dDisch: 8,
-    diag: "Undercharged. Both pressures sag, suction superheat runs high, and subcooling falls toward zero — there isn't enough liquid to fill the condenser. Capacity and COP drop.",
-  },
-  dirtyCondenser: {
-    label: "Dirty / blocked condenser", mLow: 1.06, mHigh: 1.40, dSuper: -1, dSub: 5, dDisch: 18,
-    diag: "The condenser can't reject its heat. Head pressure and discharge temperature climb, subcooling rises, and the compressor works much harder — COP falls.",
-  },
-  icedEvaporator: {
-    label: "Iced / starved evaporator", mLow: 0.60, mHigh: 0.92, dSuper: -7, dSub: 1, dDisch: -4,
-    diag: "Poor evaporator airflow. Suction pressure and coil temperature drop, superheat collapses (risking liquid floodback to the compressor), and capacity plummets.",
-  },
-  overcharge: {
-    label: "Overcharge", mLow: 1.08, mHigh: 1.22, dSuper: -4, dSub: 9, dDisch: 6,
-    diag: "Too much refrigerant. Head pressure and subcooling run high as liquid backs up into the condenser, raising compressor load and lowering efficiency.",
-  },
-};
-
-/* ---- How each fault looks on the schematic --------------------------------
-   condFront / evapFront: 0..1 position of the phase-change front inside the
-   condenser / evaporator coil (how far through the coil the refrigerant is
-   still hot-gas / still boiling-wet). liquidSpill / suctionSpill: 0..1 length
-   of the *wrong* state spilling into the next pipe (hot gas down the liquid
-   line; wet refrigerant up the suction line = floodback). flags: components to
-   mark with a warning pulse.                                                  */
-const VIZ = {
-  none:           { condFront: 0.55, evapFront: 0.65, liquidSpill: 0.00, suctionSpill: 0.00, flags: [] },
-  lowCharge:      { condFront: 0.80, evapFront: 0.30, liquidSpill: 0.38, suctionSpill: 0.00, flags: ["receiver", "evaporator"] },
-  dirtyCondenser: { condFront: 0.93, evapFront: 0.58, liquidSpill: 0.16, suctionSpill: 0.00, flags: ["condenser"] },
-  icedEvaporator: { condFront: 0.40, evapFront: 0.95, liquidSpill: 0.00, suctionSpill: 0.42, flags: ["evaporator", "compressor"] },
-  overcharge:     { condFront: 0.45, evapFront: 0.78, liquidSpill: 0.00, suctionSpill: 0.16, flags: ["condenser"] },
-};
+const { REFRIGERANTS, FAULTS, VIZ } = RefrigData;
+const { clamp, deriveAt, satTemp } = RefrigModel;
+const U = RefrigUnits;
 
 /* ---- State colours -------------------------------------------------------- */
 function getCss(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -149,57 +49,17 @@ const state = {
   showHealthy: true,
 };
 let current = null;
+const capRefs = {};   // per-refrigerant nominal capacity for the % readout
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const r1 = (v) => Math.round(v * 10) / 10;
 const r0 = (v) => Math.round(v);
 
-const satTemp = (base, p) => interpTable(base.satTable, "P", p, "T");
-
-/* ---- Derive a full operating point --------------------------------------- */
-function deriveAt(refKey, speed, load, faultKey) {
-  const base = REFRIGERANTS[refKey];
-  const s = speed / 100, L = load / 100;
-  const f = FAULTS[faultKey] || FAULTS.none;
-  const tbl = base.satTable;
-
-  let pLow  = base.pLow  * (1 + 0.30 * (L - 1) - 0.22 * (s - 1)) * f.mLow;
-  let pHigh = base.pHigh * (1 + 0.28 * (s - 1) + 0.08 * (L - 1)) * f.mHigh;
-  pLow  = clamp(pLow,  tbl[0].P + 0.05, base.pHigh * 0.85);
-  pHigh = clamp(pHigh, base.pLow * 1.4, tbl[tbl.length - 1].P - 0.5);
-
-  const tEvap = satTemp(base, pLow);
-  const tCond = satTemp(base, pHigh);
-  const superheat = clamp((base.tSuction - base.tEvap) + f.dSuper, 1, 60);
-  const subcool   = clamp((base.tCond   - base.tLiquid) + f.dSub, 0, 40);
-  const tSuction = tEvap + superheat;
-  const tLiquid  = tCond - subcool;
-
-  const ratio = pHigh / pLow, baseRatio = base.pHigh / base.pLow;
-  const tDischarge = tCond + (base.tDischarge - base.tCond) * (ratio / baseRatio) * (0.6 + 0.4 * s) + f.dDisch;
-  const flow = BASE_FLOW * s;
-
-  // Enthalpies straight from the table
-  const h3 = interpTable(tbl, "T", tLiquid, "hf");          // subcooled liquid ≈ hf(T)
-  const h4 = h3;                                            // throttling is isenthalpic
-  const h1 = interpTable(tbl, "T", tEvap, "hg") + CP_VAP * superheat;
-  const h2 = interpTable(tbl, "T", tCond, "hg") + CP_VAP * (tDischarge - tCond);
-
-  const effect  = h1 - h4;                  // refrigeration effect (kJ/kg)
-  const work    = Math.max(h2 - h1, 0.1);   // compressor work (kJ/kg)
-  const heatRej = h2 - h3;                  // heat rejected (kJ/kg)
-  const cop     = effect / work;
-  const capRaw  = effect * pLow * flow;     // capacity proxy (effect × density-proxy × flow)
-
-  return { base, pLow, pHigh, tEvap, tCond, tSuction, tDischarge, tLiquid,
-    superheat, subcool, ratio, flow, h1, h2, h3, h4, effect, work, heatRej, cop, capRaw };
-}
-
 function recompute() {
   current = deriveAt(state.refrigerant, state.speed, state.load, state.fault);
-  const base = current.base;
-  if (base._capRef == null) base._capRef = deriveAt(state.refrigerant, 100, 100, "none").capRaw;
-  current.capacityPct = current.capRaw / base._capRef * 100;
+  if (!(state.refrigerant in capRefs)) {
+    capRefs[state.refrigerant] = deriveAt(state.refrigerant, 100, 100, "none").capRaw;
+  }
+  current.capacityPct = current.capRaw / capRefs[state.refrigerant] * 100;
 }
 
 /* ========================================================================= */
@@ -210,8 +70,8 @@ const COMPONENTS = {
     title: "Compressor — the pump of the cycle",
     inState: stateChip(STATE_COLORS.vapor, "Low-pressure vapour"),
     outState: stateChip(STATE_COLORS.hotgas, "High-pressure hot gas"),
-    inVals: `${r1(c.pLow)} bar · ${r0(c.tSuction)}°C`,
-    outVals: `${r1(c.pHigh)} bar · ${r0(c.tDischarge)}°C`,
+    inVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tSuction)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tDischarge)}`,
     body: `Draws in cool, low-pressure superheated vapour from the suction line and
       squeezes it into a small, high-pressure, high-temperature gas. This is the only
       point where <b>work is added</b> to the system.`,
@@ -225,23 +85,23 @@ const COMPONENTS = {
     title: "Condenser — rejects heat to the surroundings",
     inState: stateChip(STATE_COLORS.hotgas, "High-pressure hot gas"),
     outState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
-    inVals: `${r1(c.pHigh)} bar · ${r0(c.tDischarge)}°C`,
-    outVals: `${r1(c.pHigh)} bar · ${r0(c.tLiquid)}°C`,
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tDischarge)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
     body: `A heat exchanger (usually fan-cooled) where the hot gas gives up its heat.
       The gas first <b>desuperheats</b>, then <b>condenses</b> at constant temperature
       from vapour into liquid, and finally <b>subcools</b> a little.`,
     points: [
       "Heat leaving = the heat absorbed in the evaporator <i>plus</i> the compressor work.",
-      `Condensing happens at constant pressure & temperature (~${r0(c.tCond)}°C now) — the latent-heat plateau.`,
-      `Subcooling ~${r0(c.subcool)} K below saturation guarantees a solid liquid feed to the metering device.`,
+      `Condensing happens at constant pressure & temperature (~${U.fmtT(c.tCond)} now) — the latent-heat plateau.`,
+      `Subcooling ~${U.fmtDT(c.subcool)} below saturation guarantees a solid liquid feed to the metering device.`,
     ],
   }),
   receiver: (c) => ({
     title: "Liquid receiver — the storage buffer",
     inState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
     outState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
-    inVals: `${r1(c.pHigh)} bar · ${r0(c.tLiquid)}°C`,
-    outVals: `${r1(c.pHigh)} bar · ${r0(c.tLiquid)}°C`,
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
     body: `A tank on the high-pressure liquid line holding a reserve of liquid
       refrigerant. It absorbs changes in charge as the load varies and makes sure a
       <b>solid column of liquid</b> (no flash gas) feeds the metering device.`,
@@ -255,14 +115,14 @@ const COMPONENTS = {
     title: "Metering device — the pressure divider",
     inState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
     outState: stateChip(STATE_COLORS.flash, "Low-pressure flash mix"),
-    inVals: `${r1(c.pHigh)} bar · ${r0(c.tLiquid)}°C`,
-    outVals: `${r1(c.pLow)} bar · ${r0(c.tEvap)}°C`,
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    outVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tEvap)}`,
     body: `A restriction (expansion valve or capillary tube) that splits the high and
       low sides. Liquid is <b>throttled</b> from high to low pressure. As pressure
       drops, some flash-boils, and that flashing chills the rest to evaporator
       temperature.`,
     points: [
-      `Pressure drops from ${r1(c.pHigh)} to ${r1(c.pLow)} bar across the valve.`,
+      `Pressure drops from ${U.fmtPGauge(c.pHigh)} to ${U.fmtPGauge(c.pLow)} across the valve.`,
       "Leaves as a cold, low-pressure mixture of liquid + a little vapour (the 'flash gas').",
       "Meters exactly the right amount of refrigerant into the evaporator for the load.",
     ],
@@ -271,15 +131,15 @@ const COMPONENTS = {
     title: "Evaporator — where the cooling happens",
     inState: stateChip(STATE_COLORS.flash, "Low-pressure flash mix"),
     outState: stateChip(STATE_COLORS.vapor, "Low-pressure vapour"),
-    inVals: `${r1(c.pLow)} bar · ${r0(c.tEvap)}°C`,
-    outVals: `${r1(c.pLow)} bar · ${r0(c.tSuction)}°C`,
+    inVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tEvap)}`,
+    outVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tSuction)}`,
     body: `A heat exchanger inside the space being cooled. The cold liquid <b>boils</b>,
       soaking up heat from the air (the useful refrigeration effect), then
       <b>superheats</b> slightly so only dry vapour returns to the compressor.`,
     points: [
-      `Boiling happens at constant pressure & temperature (~${r0(c.tEvap)}°C now) — absorbing latent heat.`,
+      `Boiling happens at constant pressure & temperature (~${U.fmtT(c.tEvap)} now) — absorbing latent heat.`,
       "Heat absorbed here is exactly what makes the room or box cold.",
-      `The last ~${r0(c.superheat)} K of superheat dry out the vapour to protect the compressor.`,
+      `The last ~${U.fmtDT(c.superheat)} of superheat dry out the vapour to protect the compressor.`,
     ],
   }),
 };
@@ -290,13 +150,13 @@ const COMPONENTS = {
 function renderReadouts() {
   const c = current;
   const rows = [
-    { label: "High Side",     value: `${r1(c.pHigh)} bar`,    cls: "amber" },
-    { label: "Low Side",      value: `${r1(c.pLow)} bar`,     cls: "cold" },
-    { label: "Condenser",     value: `${r0(c.tCond)}°C`,      cls: "hot" },
-    { label: "Evaporator",    value: `${r0(c.tEvap)}°C`,      cls: "cold" },
-    { label: "Discharge Gas", value: `${r0(c.tDischarge)}°C`, cls: "hot" },
-    { label: "Superheat",     value: `${r0(c.superheat)} K`,  cls: "" },
-    { label: "Subcool",       value: `${r0(c.subcool)} K`,    cls: "" },
+    { label: "High Side",     value: U.fmtPGauge(c.pHigh),    cls: "amber" },
+    { label: "Low Side",      value: U.fmtPGauge(c.pLow),     cls: "cold" },
+    { label: "Condenser",     value: U.fmtT(c.tCond),         cls: "hot" },
+    { label: "Evaporator",    value: U.fmtT(c.tEvap),         cls: "cold" },
+    { label: "Discharge Gas", value: U.fmtT(c.tDischarge),    cls: "hot" },
+    { label: "Superheat",     value: U.fmtDT(c.superheat),    cls: "" },
+    { label: "Subcool",       value: U.fmtDT(c.subcool),      cls: "" },
     { label: "Flow",          value: `${r0(c.flow)} L/min`,   cls: "" },
     { label: "Compressor",    value: state.running ? "RUNNING" : "OFF", cls: state.running ? "ok" : "" },
   ];
@@ -464,9 +324,10 @@ function renderFaultViz() {
   setSpill(viz.spillLiquid, v.liquidSpill);
   setSpill(viz.spillSuction, v.suctionSpill);
 
-  // warning pulse on affected components
+  // warning pulse on affected components (suppressed while a quiz scenario is live)
+  const flags = (Quiz.active && !Quiz.answered) ? [] : v.flags;
   document.querySelectorAll(".component").forEach(c =>
-    c.classList.toggle("fault-flag", v.flags.includes(c.dataset.component)));
+    c.classList.toggle("fault-flag", flags.includes(c.dataset.component)));
 }
 
 /* ========================================================================= */
@@ -487,7 +348,6 @@ const DOT_COLORS = [STATE_COLORS.hotgas, STATE_COLORS.liquid, STATE_COLORS.flash
 function renderPhChart() {
   const c = current, tbl = c.base.satTable;
   const svg = document.getElementById("phChart");
-  const NS = "http://www.w3.org/2000/svg";
   svg.innerHTML = "";
   const add = (tag, attrs, text) => {
     const el = document.createElementNS(NS, tag);
@@ -503,13 +363,17 @@ function renderPhChart() {
 
   add("line", { x1: ph.x0, y1: ph.y0, x2: ph.x0, y2: ph.y1, stroke: "#2a3b4d" });
   add("line", { x1: ph.x0, y1: ph.y1, x2: ph.x1, y2: ph.y1, stroke: "#2a3b4d" });
-  add("text", { x: 10, y: 14, fill: "#8aa0b3", "font-size": 10 }, "P (bar)");
+  add("text", { x: 6, y: 14, fill: "#8aa0b3", "font-size": 10 }, `P (${U.P_UNITS[U.prefs.p].label} abs)`);
   add("text", { x: ph.x1, y: 242, fill: "#8aa0b3", "font-size": 10, "text-anchor": "end" }, "h (kJ/kg) →");
 
+  const fmtTick = (bar) => {
+    const v = U.barTo(bar);
+    return String(v >= 100 ? Math.round(v) : Math.round(v * 10) / 10);
+  };
   ph.pTicks.forEach(p => {
     const y = pToY(p);
     add("line", { x1: ph.x0 - 3, y1: y, x2: ph.x0, y2: y, stroke: "#2a3b4d" });
-    add("text", { x: ph.x0 - 6, y: y + 3, fill: "#6f8294", "font-size": 9, "text-anchor": "end" }, String(p));
+    add("text", { x: ph.x0 - 6, y: y + 3, fill: "#6f8294", "font-size": 9, "text-anchor": "end" }, fmtTick(p));
   });
   const span = ph.hMax - ph.hMin;
   [0, 0.34, 0.67, 1].map(f => Math.round((ph.hMin + f * span) / 10) * 10).forEach(h => {
@@ -525,9 +389,11 @@ function renderPhChart() {
   dome += " Z";
   add("path", { d: dome, fill: "rgba(79,195,247,0.06)", stroke: "#3a5c72", "stroke-width": 1.1 });
 
-  // Healthy reference cycle (same speed & load, no fault) for comparison
-  const showCompare = state.showHealthy && state.fault !== "none";
-  document.getElementById("compareToggle").hidden = state.fault === "none";
+  // Healthy reference cycle (same speed & load, no fault) for comparison.
+  // Hidden while a quiz scenario is unanswered — it would give the game away.
+  const quizHide = Quiz.active && !Quiz.answered;
+  const showCompare = state.showHealthy && state.fault !== "none" && !quizHide;
+  document.getElementById("compareToggle").hidden = state.fault === "none" || quizHide;
   if (showCompare) {
     const h = deriveAt(state.refrigerant, state.speed, state.load, "none");
     const H = [
@@ -613,7 +479,7 @@ const TOUR = [
   { component: "evaporator", seg: "seg-suction", phaseT: 0.88, title: "5 · Evaporator",
     text: "Cold liquid boils inside the space being cooled, soaking up heat (this is the actual cooling, 4 → 1). It superheats slightly to dry out, then heads back to the compressor to start again." },
   { component: null, seg: null, phaseT: 0, title: "Full circle",
-    text: "That's one complete cycle. Heat went IN at the evaporator and OUT at the condenser; the compressor did the work to make it flow uphill. Try the sliders and fault selector to see how the cycle reshapes, or pick a different refrigerant." },
+    text: "That's one complete cycle. Heat went IN at the evaporator and OUT at the condenser; the compressor did the work to make it flow uphill. Try the sliders and fault selector to see how the cycle reshapes — then test yourself with the Technician Quiz." },
 ];
 
 function setTour(active) {
@@ -653,7 +519,7 @@ function setRunning(run) {
 function updateFaultBanner() {
   const f = FAULTS[state.fault];
   const banner = document.getElementById("faultBanner");
-  if (state.fault === "none" || !f.diag) { banner.hidden = true; return; }
+  if (Quiz.active || state.fault === "none" || !f.diag) { banner.hidden = true; return; }
   banner.hidden = false;
   document.getElementById("faultText").innerHTML = `<b>${f.label}.</b> ${f.diag}`;
 }
@@ -662,7 +528,9 @@ function refreshAll() {
   recompute();
   renderReadouts();
   renderPerf();
+  renderGauges(current);
   renderPhChart();
+  renderPtChart();
   renderFaultViz();
   updateFaultBanner();
   if (state.selected) showInfo(state.selected);
@@ -672,10 +540,12 @@ function refreshAll() {
 /* Animation loop                                                            */
 /* ========================================================================= */
 const BASE_SPEED = 2.2;
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 let currentSpeed = BASE_SPEED;
 let greyFactor = 0;           // 0 = full colour, 1 = grey (compressor off)
 function loop() {
-  const targetSpeed = (state.running && !state.tourActive) ? BASE_SPEED * (state.speed / 100) : 0;
+  const animate = state.running && !state.tourActive && !REDUCED_MOTION.matches;
+  const targetSpeed = animate ? BASE_SPEED * (state.speed / 100) : 0;
   currentSpeed += (targetSpeed - currentSpeed) * 0.05;
 
   // Fade pipes to grey when the compressor is off (no heat or cooling).
@@ -706,6 +576,19 @@ function init() {
   fsel.innerHTML = Object.keys(FAULTS).map(k => `<option value="${k}">${FAULTS[k].label}</option>`).join("");
   fsel.value = state.fault;
   fsel.addEventListener("change", () => { state.fault = fsel.value; refreshAll(); });
+
+  // Unit preferences
+  const pSel = document.getElementById("pUnitSelect");
+  const tSel = document.getElementById("tUnitSelect");
+  pSel.value = U.prefs.p;
+  tSel.value = U.prefs.t;
+  const onUnitChange = () => {
+    U.setPrefs(pSel.value, tSel.value);
+    refreshAll();
+    ptRenderQuestion();
+  };
+  pSel.addEventListener("change", onUnitChange);
+  tSel.addEventListener("change", onUnitChange);
 
   document.getElementById("comparePh").addEventListener("change", (e) => {
     state.showHealthy = e.target.checked;
@@ -754,16 +637,19 @@ function init() {
     else gotoTourStep(state.tourIndex + 1);
   });
 
+  // Technician quiz
+  document.getElementById("quizBtn").addEventListener("click", () => Quiz.active ? endQuiz() : startQuiz());
+  document.getElementById("quizHintBtn").addEventListener("click", quizShowClues);
+  document.getElementById("quizNextBtn").addEventListener("click", quizNextScenario);
+  document.getElementById("quizEndBtn").addEventListener("click", endQuiz);
+
   recompute();
-  renderReadouts();
-  renderPerf();
   renderLegend();
   buildParticles();
   setupFaultViz();
-  renderPhChart();
-  renderFaultViz();
-  updateFaultBanner();
+  refreshAll();
   setRunning(true);
+  initPtTrainer();
   requestAnimationFrame(loop);
 }
 
