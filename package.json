@@ -1,6 +1,6 @@
 {
   "name": "refrigeration-cycle-simulator",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Interactive refrigeration training tool: cycle simulator, gauge manifold, fault diagnosis quiz and PT trainer. Static site, no dependencies.",
   "scripts": {

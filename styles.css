@@ -724,6 +724,55 @@ body.quiz-active .perf-panel { display: none; }
 .practice-sched { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
 #practiceFeedback { margin: 12px 0; }
 
+/* ---------- Service Bay ---------- */
+.bay-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 20px;
+  padding: 20px 24px;
+  align-items: start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 940px) {
+  .bay-layout { grid-template-columns: 1fr; }
+}
+.bay-left, .bay-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+#bayScene { width: 100%; height: auto; display: block; background: #0c131b; border-radius: 12px; }
+.sb-click { cursor: pointer; }
+.sb-click:hover circle, .sb-click:hover rect, .sb-click:hover polygon { filter: brightness(1.5); }
+.sb-hiss { animation: sbhiss 0.7s ease-in-out infinite; }
+@keyframes sbhiss { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .sb-hiss { animation: none; } }
+
+.sb-valve-panel { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.sb-valve-panel:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+.sb-valve-panel h3 { margin: 0 0 8px; font-size: 14px; }
+.sb-valve-panel .btn { font-size: 12px; padding: 8px 12px; }
+.sb-spindle { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.sb-seg {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sb-seg:first-of-type { border-radius: 8px 0 0 8px; }
+.sb-seg:last-of-type { border-radius: 0 8px 8px 0; }
+.sb-seg.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+.sb-list { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; line-height: 2; }
+.sb-list li { color: var(--muted); }
+.sb-list li.done { color: #6fe0a0; }
+#bayChecklist h3 { margin: 0; font-size: 15px; }
+.sb-meter { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+.sb-meter.warnish { color: #f5a623; }
+.bay-coach .quiz-feedback p { margin: 0; }
+.sb-log { list-style: none; margin: 10px 0 0; padding: 0; font-size: 11.5px; line-height: 1.7; color: var(--muted); }
+.sb-log li { border-left: 2px solid var(--line); padding-left: 10px; margin: 4px 0; }
+.sb-log li.warn { border-left-color: #f5a623; }
+
 /* ---------- Learn: supportive quiz states ---------- */
 .quiz-note { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
 .quiz-q.learn { border-color: #f5a623; }

@@ -8,6 +8,8 @@ site with no build step.
 
 - **`index.html`** — the simulator: animated cycle, gauge manifold, technician
   quiz, PT trainer.
+- **`service.html`** — the Service Bay: a hands-on service-procedure trainer
+  (fit gauges, purge hoses, work the service valves).
 - **`learn.html`** — the course: lessons, quizzes, final exam & certificate,
   progress tracking, with deep links that open the simulator pre-configured.
 - **`teach.html`** — instructor dashboard: cohort progress from student
@@ -72,6 +74,36 @@ site with no build step.
 - **Accessibility** — pipe states are labelled with text (not colour alone),
   controls are keyboard-operable with visible focus, and animation respects
   `prefers-reduced-motion`.
+
+## The Service Bay (service.html)
+
+The simulator's hands-on sibling: instead of watching a system, the learner
+**works on one**. A running compressor with two stem-type service valves and
+a gauge manifold, where every step is the learner's own action:
+
+- **Remove/refit caps** — spindle caps and gauge-port caps, clickable on the
+  rig or via buttons.
+- **Connect hoses** — only onto an uncapped port, hand-tight, and they hold
+  air until purged.
+- **Work the spindles** — back-seat (port isolated), crack (pressure to the
+  gauge port), front-seat (line closed). The spindle cap must come off first.
+- **Purge hoses** — a brief puff at the manifold nut, only possible with
+  pressure behind the hose; skipping it leaves "air in hose" flagged.
+- **Take readings** — the gauges only read once hoses are on and valves
+  cracked; values come from the thermodynamic model with live PT saturation
+  temperatures.
+- **Realistic consequences** — cracking a bare open port vents refrigerant
+  (hissing, and a gram counter the Code of Practice would care about);
+  breaking a hose off a live port hisses; **front-seating the discharge on a
+  running compressor trips the HP cut-out**; front-seating the suction
+  demonstrates a pump-down.
+- **Pack up as found** — the job isn't complete until valves are
+  back-seated, hoses off and every cap refitted. The summary is honest about
+  grams lost and reframes mistakes as lessons banked.
+
+The procedure rules live in a pure, unit-tested state machine
+(`js/servicebay.js`); the UI (`js/service-ui.js`) renders the rig and wires
+the clicks.
 
 ## The course (learn.html)
 

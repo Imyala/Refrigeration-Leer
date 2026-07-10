@@ -1291,6 +1291,10 @@ compressor; 25 K superheat means a starving coil.
 > For blends with glide (R407C especially): use the **dew point** PT values
 > for superheat and the **bubble point** values for subcooling.
 
+Before any of these numbers exist, the gauges have to be *fitted* — caps off,
+hoses on, valves cracked off their back seats, hoses purged. Practise that
+whole sequence hands-on in the [Service Bay](service.html).
+
 !SIM[Read SH and SC live on the readout bar](r=R134a)
 `,
         quiz: [

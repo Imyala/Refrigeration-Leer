@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Bay — Refrigeration Simulator</title>
+  <meta name="description" content="Hands-on service procedure trainer: remove caps, connect and purge gauge hoses, back-seat and crack service valves, take readings and pack up clean — with realistic consequences for mistakes." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#bayMain">Skip to content</a>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Service Bay</h1>
+      <p class="subtitle">Fit the gauges yourself: caps, hoses, purging, back-seating — with real consequences</p>
+    </div>
+    <div class="controls">
+      <label class="select-group">
+        <span>Refrigerant</span>
+        <select id="bayRefrigerant"></select>
+      </label>
+      <button id="bayResetBtn" class="btn btn-ghost" type="button">Reset the job</button>
+      <a class="btn btn-tour" href="index.html">Cycle Simulator</a>
+      <a class="btn btn-learn" href="learn.html">Course</a>
+    </div>
+  </header>
+
+  <main id="bayMain" class="bay-layout">
+    <div class="bay-left">
+      <div class="panel bay-scene-panel">
+        <div class="panel-head">
+          <h2>The machine</h2>
+          <span class="hint">click the parts, or use the buttons</span>
+        </div>
+        <svg id="bayScene" viewBox="0 0 660 400" role="img" aria-label="Interactive service rig: a running compressor with suction and discharge stem-type service valves, and a gauge manifold below with low and high side gauges and hoses"></svg>
+        <p class="ph-caption">A stem-type service valve: <b>back-seated</b> (fully anticlockwise) isolates its gauge
+        port for normal running · <b>cracked</b> a turn off the back seat feeds system pressure to the port ·
+        <b>front-seated</b> (fully clockwise) closes the line itself. The procedure: caps off → hoses on →
+        crack → purge → read → pack up as found. Purge briefly and only with pressure behind the hose —
+        the Refrigerant Handling Code of Practice expects emissions kept to a practical minimum.</p>
+      </div>
+      <div id="bayCoach" class="bay-coach" aria-live="polite"></div>
+    </div>
+
+    <aside class="bay-right">
+      <div class="panel" id="bayChecklist"></div>
+      <div class="panel" id="bayControls"></div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Educational service-procedure trainer · behaviour is representative, for training not design. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/units.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/gauges.js"></script>
+  <script src="js/servicebay.js"></script>
+  <script src="js/service-ui.js"></script>
+</body>
+</html>

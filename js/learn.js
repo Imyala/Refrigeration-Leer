@@ -239,7 +239,9 @@ function renderHome() {
       Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
       demonstrations</b> in the simulator; if something doesn't click, mark it
       🚩 for your review list — and the <a href="#practice">🔁 Practice deck</a>
-      brings questions back at spaced intervals so it truly sticks.</p>
+      brings questions back at spaced intervals so it truly sticks. When you're
+      ready to get your hands dirty, the <a href="service.html">🔧 Service Bay</a>
+      has you fitting gauges, purging hoses and working the service valves yourself.</p>
       ${Srs.dueKeys().length ? `<p class="practice-due-note">🔁 <b>${Srs.dueKeys().length}</b> practice question${Srs.dueKeys().length === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
       <p class="align-note">Aligned to Australian practice: every lesson lists its references —
       the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
