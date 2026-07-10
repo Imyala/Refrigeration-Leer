@@ -115,6 +115,16 @@ Lessons embed **deep links** that open the simulator pre-configured
   warm, teaching-first feedback ("💡 Not this one — here's the idea…"),
   amber styling instead of red, a one-click fresh try, and encouraging
   progress messages. The exam and Technician Quiz keep the same tone.
+- **Spaced repetition (🔁 Practice)**: every question a learner checks in a
+  lesson quiz becomes a card in their practice deck, scheduled Anki-style
+  (simplified SM-2 in `js/srs.js`): a correct answer pushes the next review
+  further out (1 day → 3 days → interval × ease, capped at 6 months); a miss
+  brings it back tomorrow and lowers the card's ease. In a session, missed
+  cards requeue until answered correctly, answer order is shuffled to defeat
+  position memory, and a "Reread the lesson" link is offered on misses. Due
+  counts appear in the sidebar and on the course home; when nothing is due,
+  the learner is told that waiting *is* the method — with an optional
+  "practise ahead". Deliberately calm: no streaks, points or badges.
 
 Lesson content is authored in a small markdown subset (`js/md.js`) directly
 inside `js/course1.js` / `js/course2.js` — add a lesson by adding an object

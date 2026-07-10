@@ -76,6 +76,41 @@ const Flags = {
   },
 };
 
+/* ---- Spaced-repetition practice deck ------------------------------------------ */
+function questionByKey(key) {
+  const [m, l, qi] = key.split("/");
+  const mod = COURSE.find(x => x.id === m);
+  const les = mod && mod.lessons.find(x => x.id === l);
+  const q = les && les.quiz[parseInt(qi, 10)];
+  return q ? { mod, les, q } : null;
+}
+
+const Srs = {
+  KEY: "refrigSim.srs",
+  cards: {},
+  load() {
+    try { this.cards = JSON.parse(localStorage.getItem(this.KEY) || "{}"); }
+    catch (e) { this.cards = {}; }
+    // drop cards whose question no longer exists (content updates)
+    for (const k of Object.keys(this.cards)) if (!questionByKey(k)) delete this.cards[k];
+  },
+  save() {
+    try { localStorage.setItem(this.KEY, JSON.stringify(this.cards)); }
+    catch (e) { /* storage unavailable */ }
+  },
+  record(key, correct) {
+    this.cards[key] = RefrigSrs.grade(this.cards[key], correct, Date.now());
+    this.save();
+  },
+  dueKeys() { return RefrigSrs.dueKeys(this.cards, Date.now()); },
+  aheadKeys(limit) { return RefrigSrs.aheadKeys(this.cards, Date.now(), limit); },
+  total() { return Object.keys(this.cards).length; },
+  nextDueText() {
+    const t = RefrigSrs.nextDue(this.cards, Date.now());
+    return t ? RefrigSrs.describeWhen(t, Date.now()) : null;
+  },
+};
+
 const NAME_KEY = "refrigSim.learnerName";
 function getLearnerName() {
   try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; }
@@ -109,6 +144,7 @@ function route() {
   const { m, l } = parseHash();
   if (m === "exam") renderExam();
   else if (m === "review") renderReview();
+  else if (m === "practice") renderPractice();
   else {
     const mod = COURSE.find(x => x.id === m);
     if (!mod) renderHome();
@@ -152,6 +188,10 @@ function renderSidebar() {
     <a class="nav-mod nav-review ${m === "review" ? "active" : ""}" href="#review" ${m === "review" ? 'aria-current="page"' : ""}>
       <span>🚩 My review list</span>
       <span class="nav-count">${Flags.set.size}</span>
+    </a>
+    <a class="nav-mod nav-practice ${m === "practice" ? "active" : ""}" href="#practice" ${m === "practice" ? 'aria-current="page"' : ""}>
+      <span>🔁 Practice</span>
+      <span class="nav-count ${Srs.dueKeys().length ? "due" : ""}">${Srs.dueKeys().length ? Srs.dueKeys().length + " due" : (Srs.total() ? "✓" : "—")}</span>
     </a>`;
 }
 
@@ -170,8 +210,10 @@ function renderHome() {
       lesson complete, then sit the final exam for a certificate.</p>
       <p>Written for every learner — from first-year apprentices to career changers.
       Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
-      demonstrations</b> in the simulator; and if something doesn't click, mark it
-      🚩 and it waits on your review list.</p>
+      demonstrations</b> in the simulator; if something doesn't click, mark it
+      🚩 for your review list — and the <a href="#practice">🔁 Practice deck</a>
+      brings questions back at spaced intervals so it truly sticks.</p>
+      ${Srs.dueKeys().length ? `<p class="practice-due-note">🔁 <b>${Srs.dueKeys().length}</b> practice question${Srs.dueKeys().length === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
       <p class="align-note">Aligned to Australian practice: every lesson lists its references —
       the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
       (3000, 5149, 4836) and the ARAC manuals (Boyle, Vols 1 &amp; 2, pub. AIRAH) —
@@ -284,6 +326,9 @@ function renderLesson(mod, les) {
         <button id="quizRetryBtn" class="btn btn-ghost" type="button" hidden>Fresh try</button>
         <span id="quizResult" class="quiz-result" aria-live="polite"></span>
       </div>
+      <p class="quiz-note">Checked questions join your <a href="#practice">🔁 Practice deck</a> and
+      come back at growing intervals — a few minutes a day beats cramming, and it's how this
+      really sticks.</p>
     </section>
     <nav class="lesson-nav">
       ${prev ? `<a class="btn btn-ghost" href="#${prev.mod.id}/${prev.les.id}">← ${prev.les.title}</a>` : "<span></span>"}
@@ -372,9 +417,11 @@ function markQuiz(container, questions) {
   if (answers.some(a => a === null)) return { incomplete: true };
 
   let score = 0;
+  const results = [];
   fields.forEach((f, qi) => {
     const q = questions[qi];
     const right = answers[qi] === q.answer;
+    results.push(right);
     if (right) score++;
     f.classList.remove("correct", "learn");
     f.classList.add(right ? "correct" : "learn");
@@ -384,7 +431,7 @@ function markQuiz(container, questions) {
       : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain}`;
     ex.hidden = false;
   });
-  return { incomplete: false, score };
+  return { incomplete: false, score, results };
 }
 
 function checkQuiz(mod, les) {
@@ -398,6 +445,8 @@ function checkQuiz(mod, les) {
   const total = les.quiz.length;
   const passed = marked.score >= Math.ceil(total * 2 / 3);
   Progress.record(mod.id, les.id, marked.score, total);
+  // every checked question joins (or updates) the spaced-repetition deck
+  marked.results.forEach((right, qi) => Srs.record(`${mod.id}/${les.id}/${qi}`, right));
   result.innerHTML = passed
     ? (marked.score === total
         ? `${marked.score}/${total} — perfect. <b>Lesson complete ✓</b>`
@@ -589,11 +638,166 @@ function importProgress(e) {
   e.target.value = "";
 }
 
+/* ---- Practice (spaced repetition) sessions ------------------------------------ */
+const PRACTICE = { active: false, queue: [], pos: 0, firstTry: null, ahead: false };
+
+function startPractice(keys, ahead) {
+  const shuffled = [...keys];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  PRACTICE.active = true;
+  PRACTICE.queue = shuffled;
+  PRACTICE.pos = 0;
+  PRACTICE.firstTry = {};
+  PRACTICE.ahead = !!ahead;
+  renderPractice();
+}
+
+function endPractice() {
+  PRACTICE.active = false;
+  PRACTICE.queue = [];
+  PRACTICE.firstTry = null;
+}
+
+function renderPractice() {
+  const main = document.getElementById("learnMain");
+  if (!PRACTICE.active) { renderPracticeHome(main); return; }
+  if (PRACTICE.pos >= PRACTICE.queue.length) { renderPracticeSummary(main); return; }
+  renderPracticeCard(main);
+}
+
+function renderPracticeHome(main) {
+  const due = Srs.dueKeys();
+  const total = Srs.total();
+  const nextTxt = Srs.nextDueText();
+  const mins = Math.max(1, Math.round(due.length * 0.5));
+
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>Practice</span></div>
+    <h2>🔁 Practice — spaced repetition</h2>
+    <div class="learn-hero">
+      <p>Questions you've met in lesson quizzes come back here just before you'd
+      naturally forget them — after a day, then a few days, then weeks. Get one
+      right and it retreats further into the future; miss one and it returns
+      tomorrow. A few minutes a day is all it takes, and it's the difference
+      between <i>recognising</i> the material and <i>knowing</i> it.</p>
+      <div class="practice-stats">
+        <div class="p-stat"><b>${due.length}</b><span>due now</span></div>
+        <div class="p-stat"><b>${total}</b><span>in your deck</span></div>
+        <div class="p-stat"><b>${due.length ? "~" + mins + " min" : (nextTxt || "—")}</b><span>${due.length ? "today's review" : "next review"}</span></div>
+      </div>
+      <div class="quiz-controls">
+        ${due.length
+          ? `<button id="practiceStartBtn" class="btn btn-tour" type="button">Start today's review (${due.length})</button>`
+          : total
+            ? `<span class="quiz-status">All caught up ✓ — nothing is due. Coming back ${nextTxt || "soon"} is exactly how this works.</span>
+               <button id="practiceAheadBtn" class="btn btn-ghost" type="button">Practise ahead anyway</button>`
+            : `<span class="module-blurb">Your deck is empty — finish any lesson quiz and its questions join automatically.</span>
+               <a class="btn btn-tour" href="#fundamentals/heat-and-temperature">Start the first lesson</a>`}
+      </div>
+    </div>`;
+
+  const startBtn = document.getElementById("practiceStartBtn");
+  if (startBtn) startBtn.addEventListener("click", () => startPractice(Srs.dueKeys(), false));
+  const aheadBtn = document.getElementById("practiceAheadBtn");
+  if (aheadBtn) aheadBtn.addEventListener("click", () => startPractice(Srs.aheadKeys(10), true));
+}
+
+function renderPracticeCard(main) {
+  const key = PRACTICE.queue[PRACTICE.pos];
+  const found = questionByKey(key);
+  if (!found) { PRACTICE.pos++; renderPractice(); return; }
+  const { mod, les, q } = found;
+
+  // shuffle option display order, remembering the mapping to original indexes
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  const remaining = PRACTICE.queue.length - PRACTICE.pos;
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <a href="#practice">Practice</a> › <span>${PRACTICE.ahead ? "practising ahead" : "today's review"}</span></div>
+    <div class="practice-progress">${remaining} card${remaining === 1 ? "" : "s"} to go</div>
+    <section class="lesson-quiz practice-card" aria-label="Practice question">
+      <p class="practice-src">${mod.title} › ${les.title}</p>
+      <h3 class="practice-q">${q.q}</h3>
+      <div class="quiz-options practice-options">
+        ${order.map(oi => `<button class="quiz-opt" data-orig="${oi}" type="button">${q.options[oi]}</button>`).join("")}
+      </div>
+      <div id="practiceFeedback" class="quiz-explain" hidden></div>
+      <div class="quiz-controls">
+        <button id="practiceNextBtn" class="btn btn-tour" type="button" hidden>Next</button>
+        <a class="btn btn-ghost" href="#${mod.id}/${les.id}" target="_blank" rel="noopener" id="practiceLessonLink" hidden>Reread the lesson ↗</a>
+        <button id="practiceStopBtn" class="btn btn-ghost" type="button">Finish for now</button>
+      </div>
+    </section>`;
+
+  main.querySelectorAll(".practice-options .quiz-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const picked = parseInt(btn.dataset.orig, 10);
+      const right = picked === q.answer;
+
+      // scheduling counts the FIRST attempt in this session only
+      if (!(key in PRACTICE.firstTry)) {
+        PRACTICE.firstTry[key] = right;
+        Srs.record(key, right);
+      }
+      if (!right) PRACTICE.queue.push(key);   // requeue until answered correctly
+
+      main.querySelectorAll(".practice-options .quiz-opt").forEach(b => {
+        b.disabled = true;
+        const orig = parseInt(b.dataset.orig, 10);
+        if (orig === q.answer) b.classList.add("correct");
+        else if (orig === picked) b.classList.add("partial");
+      });
+      const fb = document.getElementById("practiceFeedback");
+      fb.innerHTML = right
+        ? `<b>✓ Got it.</b> ${q.explain} <span class="practice-sched">This one retreats ${RefrigSrs.describeWhen(Srs.cards[key].due, Date.now())}.</span>`
+        : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain} <span class="practice-sched">It'll come around again shortly, and tomorrow too — that's the method, not a penalty.</span>`;
+      fb.hidden = false;
+      document.getElementById("practiceNextBtn").hidden = false;
+      if (!right) document.getElementById("practiceLessonLink").hidden = false;
+      document.getElementById("practiceNextBtn").focus();
+    });
+  });
+  document.getElementById("practiceNextBtn").addEventListener("click", () => { PRACTICE.pos++; renderPractice(); });
+  document.getElementById("practiceStopBtn").addEventListener("click", () => { endPractice(); renderPractice(); renderSidebar(); });
+}
+
+function renderPracticeSummary(main) {
+  const tried = Object.keys(PRACTICE.firstTry).length;
+  const rightFirst = Object.values(PRACTICE.firstTry).filter(Boolean).length;
+  const back = tried - rightFirst;
+  const nextTxt = Srs.nextDueText();
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>Practice</span></div>
+    <h2>Session done ✓</h2>
+    <div class="learn-hero">
+      <p>You worked through <b>${tried}</b> question${tried === 1 ? "" : "s"} —
+      <b>${rightFirst}</b> right first go${back ? `, and <b>${back}</b> will visit again tomorrow to finish the job` : ""}.
+      ${back ? "Seeing a card again sooner isn't a setback — it's the schedule doing its work." : "Everything retreated further into the future — exactly what knowing it looks like."}</p>
+      <p class="module-blurb">${nextTxt ? `Next review due ${nextTxt}.` : ""} Come back when it's due — short and regular beats long and rare.</p>
+      <div class="quiz-controls">
+        <a class="btn btn-tour" href="#">Back to the course</a>
+        ${Srs.aheadKeys(10).length ? `<button id="practiceMoreBtn" class="btn btn-ghost" type="button">Practise ahead a little more</button>` : ""}
+      </div>
+    </div>`;
+  endPractice();
+  const more = document.getElementById("practiceMoreBtn");
+  if (more) more.addEventListener("click", () => startPractice(Srs.aheadKeys(10), true));
+  renderSidebar();
+}
+
 /* ---- Boot ------------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   RefrigScorm.Scorm.init();
   Progress.load();
   Flags.load();
+  Srs.load();
   buildFlat();
   window.addEventListener("hashchange", route);
   route();
