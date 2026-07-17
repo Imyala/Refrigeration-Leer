@@ -541,6 +541,16 @@ function refreshAll() {
 /* ========================================================================= */
 const BASE_SPEED = 2.2;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+const PREVENT_SCROLL_FOCUS = (() => {
+  let supported = false;
+  try {
+    const probe = document.createElement("button");
+    probe.focus(Object.defineProperty({}, "preventScroll", {
+      get() { supported = true; return true; }
+    }));
+  } catch (e) { /* old browsers ignore this option */ }
+  return supported;
+})();
 let currentSpeed = BASE_SPEED;
 let greyFactor = 0;           // 0 = full colour, 1 = grey (compressor off)
 function loop() {
@@ -573,8 +583,8 @@ function focusSectionSoon(el) {
   if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      try { el.focus({ preventScroll: true }); }
-      catch (e) { el.focus(); }
+      if (PREVENT_SCROLL_FOCUS) el.focus({ preventScroll: true });
+      else el.focus();
     });
   });
 }
