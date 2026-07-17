@@ -21,6 +21,7 @@ const QUIZ_FAMILY_HINTS = {
 function quizFocusSoon(el) {
   if (!el) return;
   requestAnimationFrame(() => {
+    // Wait one extra frame so freshly-rendered options/buttons are focusable.
     requestAnimationFrame(() => {
       try { el.focus({ preventScroll: true }); }
       catch (e) { el.focus(); }

@@ -568,6 +568,8 @@ function loop() {
 /* ========================================================================= */
 function focusSectionSoon(el) {
   if (!el) return;
+  // tabindex=-1 keeps the section out of the normal tab order while allowing
+  // programmatic focus after we scroll it into view.
   if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
