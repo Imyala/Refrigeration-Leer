@@ -17,6 +17,27 @@ const QUIZ_FAMILY_HINTS = {
   "cond-airflow": "A dirty coil and a failed fan give nearly the same gauge picture — in the field, look and listen: is the fan actually spinning, and is the coil matted with dirt?",
   "feed-restriction": "A restricted drier and a starved TXV look almost identical on the gauges — feel where the temperature drop happens: across the drier means the drier; at the valve means the TXV.",
 };
+const QUIZ_PREVENT_SCROLL_FOCUS = (() => {
+  let supported = false;
+  try {
+    const probe = document.createElement("button");
+    probe.focus(Object.defineProperty({}, "preventScroll", {
+      get() { supported = true; return true; }
+    }));
+  } catch (e) { /* old browsers ignore this option */ }
+  return supported;
+})();
+
+function quizFocusSoon(el) {
+  if (!el) return;
+  requestAnimationFrame(() => {
+    // Wait one extra frame so freshly-rendered options/buttons are focusable.
+    requestAnimationFrame(() => {
+      if (QUIZ_PREVENT_SCROLL_FOCUS) el.focus({ preventScroll: true });
+      else el.focus();
+    });
+  });
+}
 
 function quizSetControlsDisabled(disabled) {
   ["refrigerantSelect", "tourBtn", "powerBtn"].forEach(id => {
@@ -34,6 +55,7 @@ function startQuiz() {
   if (!state.running) setRunning(true);
   quizNextScenario();
   document.getElementById("quizPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  quizFocusSoon(document.querySelector("#quizOptions .quiz-opt"));
 }
 
 function endQuiz() {
@@ -165,4 +187,5 @@ function quizAnswer(key) {
   document.getElementById("quizHintBtn").hidden = true;
   quizRenderScore();
   renderFaultViz();   // reveal the warning pulses now that it's answered
+  quizFocusSoon(document.getElementById("quizNextBtn"));
 }

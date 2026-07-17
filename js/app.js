@@ -541,6 +541,16 @@ function refreshAll() {
 /* ========================================================================= */
 const BASE_SPEED = 2.2;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+const PREVENT_SCROLL_FOCUS = (() => {
+  let supported = false;
+  try {
+    const probe = document.createElement("button");
+    probe.focus(Object.defineProperty({}, "preventScroll", {
+      get() { supported = true; return true; }
+    }));
+  } catch (e) { /* old browsers ignore this option */ }
+  return supported;
+})();
 let currentSpeed = BASE_SPEED;
 let greyFactor = 0;           // 0 = full colour, 1 = grey (compressor off)
 function loop() {
@@ -566,6 +576,19 @@ function loop() {
 /* ========================================================================= */
 /* Wiring                                                                    */
 /* ========================================================================= */
+function focusSectionSoon(el) {
+  if (!el) return;
+  // tabindex=-1 keeps the section out of the normal tab order while allowing
+  // programmatic focus after we scroll it into view.
+  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (PREVENT_SCROLL_FOCUS) el.focus({ preventScroll: true });
+      else el.focus();
+    });
+  });
+}
+
 function init() {
   // Deep links (used by the Learn course): index.html?r=R404A&fault=lowCharge
   // &speed=120&load=80, plus quiz=1 / tour=1 / view=pt.
@@ -633,8 +656,10 @@ function init() {
 
   const onPick = (key) => {
     showInfo(key);
+    const panel = document.getElementById("infoPanel");
     // bring the info panel (just under the diagram) into view on small screens
-    document.getElementById("infoPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    focusSectionSoon(panel);
   };
   document.querySelectorAll(".component").forEach(c => {
     c.addEventListener("click", () => onPick(c.dataset.component));
@@ -670,7 +695,9 @@ function init() {
   if (urlq.get("quiz") === "1") startQuiz();
   else if (urlq.get("tour") === "1") setTour(true);
   if (urlq.get("view") === "pt") {
-    document.querySelector(".pt-section").scrollIntoView({ behavior: "smooth" });
+    const ptSection = document.querySelector(".pt-section");
+    ptSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    focusSectionSoon(ptSection);
   }
 }
 
