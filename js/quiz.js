@@ -18,6 +18,16 @@ const QUIZ_FAMILY_HINTS = {
   "feed-restriction": "A restricted drier and a starved TXV look almost identical on the gauges — feel where the temperature drop happens: across the drier means the drier; at the valve means the TXV.",
 };
 
+function quizFocusSoon(el) {
+  if (!el) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try { el.focus({ preventScroll: true }); }
+      catch (e) { el.focus(); }
+    });
+  });
+}
+
 function quizSetControlsDisabled(disabled) {
   ["refrigerantSelect", "tourBtn", "powerBtn"].forEach(id => {
     document.getElementById(id).disabled = disabled;
@@ -34,6 +44,7 @@ function startQuiz() {
   if (!state.running) setRunning(true);
   quizNextScenario();
   document.getElementById("quizPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  quizFocusSoon(document.querySelector("#quizOptions .quiz-opt"));
 }
 
 function endQuiz() {
@@ -165,4 +176,5 @@ function quizAnswer(key) {
   document.getElementById("quizHintBtn").hidden = true;
   quizRenderScore();
   renderFaultViz();   // reveal the warning pulses now that it's answered
+  quizFocusSoon(document.getElementById("quizNextBtn"));
 }
