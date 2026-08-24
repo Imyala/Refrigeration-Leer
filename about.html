@@ -10,15 +10,32 @@
 </head>
 <body class="learn-page">
   <a class="skip-link" href="#aboutMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="sim">Simulator</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="index.html?quiz=1" data-nav="quiz">Technician Quiz</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about" aria-current="page">For institutions</a></li>
+    </ul>
+  </nav>
   <header class="topbar">
     <div class="title-block">
       <h1>Refrigeration Learning Platform</h1>
       <p class="subtitle">For TAFEs, universities, RTOs and training departments</p>
     </div>
     <div class="controls">
-      <a class="btn btn-tour" href="index.html">Try the Simulator</a>
-      <a class="btn btn-learn" href="learn.html">Start the Course</a>
-      <a class="btn btn-ghost" href="teach.html">Instructor Dashboard</a>
+      <a class="btn btn-tour" href="index.html">Try the simulator</a>
+      <a class="btn btn-learn" href="learn.html">Start the course</a>
     </div>
   </header>
 
@@ -139,5 +156,6 @@
   <footer class="footer">
     <span>Refrigeration Learning Platform · educational tool · simulator values are representative, for training not design.</span>
   </footer>
+  <script src="js/nav.js" defer></script>
 </body>
 </html>

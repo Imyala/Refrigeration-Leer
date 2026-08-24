@@ -10,6 +10,24 @@
 </head>
 <body>
   <a class="skip-link" href="#mainStage">Skip to main content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="sim" aria-current="page">Simulator</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="index.html?quiz=1" data-nav="quiz">Technician Quiz</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
   <header class="topbar">
     <div class="title-block">
       <h1>Refrigeration Cycle Simulator</h1>
@@ -35,40 +53,22 @@
           <option value="F">°F</option>
         </select>
       </label>
-      <a class="btn btn-learn" href="learn.html">Learn</a>
-      <a class="btn btn-ghost" href="service.html">Service Bay</a>
       <button id="quizBtn" class="btn btn-quiz" type="button">Technician Quiz</button>
       <button id="tourBtn" class="btn btn-tour" type="button">Guided Tour</button>
       <button id="powerBtn" class="btn btn-stop" type="button">Stop Compressor</button>
     </div>
   </header>
 
-  <section class="page-overview" aria-label="How to use the simulator">
-    <div class="overview-copy">
-      <span class="status-pill">Interactive refrigeration training</span>
-      <h2>See the cycle, read the instruments, and connect the theory to real diagnostics.</h2>
-      <p>Use the simulator to follow the refrigerant around the system, compare gauge behaviour against the P–h and PT views, then switch into hidden-fault practice when you are ready to diagnose like a technician.</p>
-    </div>
-    <div class="overview-grid">
-      <a class="overview-card" href="learn.html">
-        <span class="status-pill">Theory</span>
-        <h3>Move into the full course</h3>
-        <p>Step through fundamentals, components, fault-finding, repair procedures, and safety with quizzes and saved progress.</p>
-        <span class="card-link">Open the course →</span>
-      </a>
-      <a class="overview-card" href="service.html">
-        <span class="status-pill">Hands-on</span>
-        <h3>Practise service procedure</h3>
-        <p>Remove caps, connect hoses, purge correctly, crack the valves, and pack the rig up as found.</p>
-        <span class="card-link">Open Service Bay →</span>
-      </a>
-      <a class="overview-card" href="index.html?quiz=1">
-        <span class="status-pill">Diagnosis</span>
-        <h3>Jump into Technician Quiz</h3>
-        <p>Hide the answer, randomise the operating point, and learn to read the symptoms before condemning a part.</p>
-        <span class="card-link">Start quiz mode →</span>
-      </a>
-    </div>
+  <section class="quickstart" aria-label="How to use the simulator">
+    <h2 class="quickstart-title">New here? Three things to try</h2>
+    <ol class="quickstart-steps">
+      <li><b>Click a component</b> in the diagram — the panel underneath explains
+        what it does to the refrigerant, and how it changes state.</li>
+      <li><b>Move the sliders</b> and watch the gauges, the P–h dot and the
+        performance figures all respond together.</li>
+      <li><b>Simulate a fault</b>, learn its gauge signature, then switch to
+        <b>Technician Quiz</b> to diagnose one you can't see.</li>
+    </ol>
   </section>
 
   <section class="readouts" id="readouts" aria-label="Live system readings"></section>
@@ -290,6 +290,7 @@
     </div>
   </div>
 
+  <script src="js/nav.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>

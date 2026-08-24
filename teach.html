@@ -10,14 +10,28 @@
 </head>
 <body class="learn-page">
   <a class="skip-link" href="#teachMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="sim">Simulator</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="index.html?quiz=1" data-nav="quiz">Technician Quiz</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach" aria-current="page">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
   <header class="topbar">
     <div class="title-block">
       <h1>Instructor Dashboard</h1>
       <p class="subtitle">Cohort progress for the refrigeration course — everything stays on this computer</p>
-    </div>
-    <div class="controls">
-      <a class="btn btn-learn" href="learn.html">Open Course</a>
-      <a class="btn btn-tour" href="index.html">Open Simulator</a>
     </div>
   </header>
 
@@ -44,6 +58,7 @@
     <span>Educational course · instructor view · no data leaves this browser.</span>
   </footer>
 
+  <script src="js/nav.js" defer></script>
   <script src="js/md.js"></script>
   <script src="js/course1.js"></script>
   <script src="js/course2.js"></script>

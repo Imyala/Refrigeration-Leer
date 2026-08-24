@@ -27,12 +27,24 @@ test("SCORM package builds with a valid manifest and zip", () => {
   }
 
   // every script a packaged HTML file references must itself be packaged —
-  // a missing script would 404 inside the LMS
+  // a missing script would 404 inside the LMS. Match any attribute order, so a
+  // tag like <script src="js/nav.js" defer> is checked too.
   const pkgDir = path.join(ROOT, "dist", "scorm");
-  for (const html of ["learn.html", "index.html", "teach.html"]) {
+  const pages = ["learn.html", "index.html", "teach.html", "service.html", "about.html"];
+  for (const html of pages) {
     const src = fs.readFileSync(path.join(pkgDir, html), "utf8");
-    for (const [, scriptSrc] of src.matchAll(/<script src="([^"]+)"><\/script>/g)) {
+    for (const [, scriptSrc] of src.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) {
       assert.ok(fs.existsSync(path.join(pkgDir, scriptSrc)), `${html} references packaged script: ${scriptSrc}`);
+    }
+  }
+
+  // ...and so must every page the navigation links to, or the learner hits a
+  // dead link inside the LMS
+  for (const html of pages) {
+    const src = fs.readFileSync(path.join(pkgDir, html), "utf8");
+    for (const [, href] of src.matchAll(/<a\b[^>]*\bhref="([^"#?][^"]*?)(?:[?#][^"]*)?"/g)) {
+      if (/^(https?:|mailto:|data:)/.test(href)) continue;
+      assert.ok(fs.existsSync(path.join(pkgDir, href)), `${html} links to packaged page: ${href}`);
     }
   }
 });

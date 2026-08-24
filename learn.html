@@ -10,42 +10,31 @@
 </head>
 <body class="learn-page">
   <a class="skip-link" href="#learnMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="sim">Simulator</a></li>
+      <li><a href="learn.html" data-nav="learn" aria-current="page">Course</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="index.html?quiz=1" data-nav="quiz">Technician Quiz</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
   <header class="topbar">
     <div class="title-block">
       <h1>Refrigeration Course</h1>
       <p class="subtitle">From first principles to fault-finding — learn, then practise in the simulator</p>
     </div>
-    <div class="controls">
-      <a class="btn btn-tour" href="index.html">Open Simulator</a>
-      <a class="btn btn-quiz" href="index.html?quiz=1">Technician Quiz</a>
-      <a class="btn btn-ghost" href="about.html">For institutions</a>
-    </div>
   </header>
 
-  <section class="page-overview" aria-label="Course overview">
-    <div class="overview-copy">
-      <span class="status-pill">Structured theory training</span>
-      <h2>Build the fundamentals first, then reinforce them with guided practice.</h2>
-      <p>The course now presents a clearer training path: learn the theory, launch directly into the matching simulator state, and keep weak areas fresh with spaced review and exam practice.</p>
-    </div>
-    <div class="overview-grid">
-      <div class="overview-card">
-        <span class="status-pill">Coverage</span>
-        <h3>10 modules · 28 lessons</h3>
-        <p>Heat, pressure, the cycle, components, refrigerants, diagnosis, repair procedures, electrical work, and safety.</p>
-      </div>
-      <div class="overview-card">
-        <span class="status-pill">Practice</span>
-        <h3>Quiz, revisit, retain</h3>
-        <p>Lesson quizzes feed a practice deck so confusing topics come back later instead of being forgotten after one read-through.</p>
-      </div>
-      <div class="overview-card">
-        <span class="status-pill">Assessment</span>
-        <h3>Exam and certificate built in</h3>
-        <p>Finish with a full-course exam, keep the best score, and generate a printable certificate of completion.</p>
-      </div>
-    </div>
-  </section>
 
   <div class="learn-layout">
     <nav id="courseNav" class="course-nav" aria-label="Course modules"></nav>
@@ -56,6 +45,7 @@
     <span>Educational course · progress is saved in this browser.</span>
   </footer>
 
+  <script src="js/nav.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/figures.js"></script>

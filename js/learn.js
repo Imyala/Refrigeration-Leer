@@ -189,25 +189,59 @@ function route() {
   main.focus({ preventScroll: true });
 }
 
-/* ---- Sidebar ---------------------------------------------------------------- */
-function renderSidebar() {
+/* ---- Sidebar ----------------------------------------------------------------
+   The module list is the main way around the course, so it does three things:
+   filters as you type, expands the lessons of whichever module you are in (so a
+   lesson is one click away, not two), and shows progress against each entry. */
+let navFilter = "";
+
+function navMatches(text) {
+  return !navFilter || text.toLowerCase().includes(navFilter.toLowerCase());
+}
+
+function navLessonList(mod) {
+  const lessons = navFilter
+    ? mod.lessons.filter(l => navMatches(l.title) || navMatches(mod.title))
+    : mod.lessons;
+  if (!lessons.length) return "";
+  const { m, l: curLes } = parseHash();
+  return `<ul class="nav-lessons">
+    ${lessons.map(les => {
+      const done = lessonDone(mod, les);
+      const here = m === mod.id && curLes === les.id;
+      return `<li><a class="nav-les ${here ? "active" : ""} ${done ? "done" : ""}"
+        href="#${mod.id}/${les.id}" ${here ? 'aria-current="page"' : ""}>
+        <span class="nav-les-mark" aria-hidden="true">${done ? "✓" : "•"}</span>
+        <span>${les.title}</span>
+      </a></li>`;
+    }).join("")}
+  </ul>`;
+}
+
+function renderNavList() {
+  const list = document.getElementById("navList");
+  if (!list) return;
   const { m } = parseHash();
-  const nav = document.getElementById("courseNav");
   const overall = `${totalDone()}/${totalLessons()}`;
   const exam = Progress.get("exam", "final");
-  nav.innerHTML = `
-    <a class="nav-home ${!m ? "active" : ""}" href="#" ${!m ? 'aria-current="page"' : ""}>
-      <span>Course overview</span><span class="nav-count">${overall}</span>
-    </a>
-    ${COURSE.map(mod => {
-      const done = moduleDoneCount(mod);
-      const all = done === mod.lessons.length;
-      const active = m === mod.id;
-      return `<a class="nav-mod ${active ? "active" : ""}" href="#${mod.id}" ${active ? 'aria-current="page"' : ""}>
+  const filtering = !!navFilter;
+
+  const modules = COURSE.map(mod => {
+    const lessonHit = mod.lessons.some(l => navMatches(l.title));
+    if (filtering && !navMatches(mod.title) && !lessonHit) return "";
+    const done = moduleDoneCount(mod);
+    const all = done === mod.lessons.length;
+    const active = m === mod.id;
+    // Expand the module you are in, and every module a filter matched.
+    const expanded = active || filtering;
+    return `<a class="nav-mod ${active ? "active" : ""}" href="#${mod.id}" ${active ? 'aria-current="page"' : ""}>
         <span>${mod.title}</span>
         <span class="nav-count ${all ? "all" : ""}">${all ? "✓" : done + "/" + mod.lessons.length}</span>
-      </a>`;
-    }).join("")}
+      </a>
+      ${expanded ? navLessonList(mod) : ""}`;
+  }).join("");
+
+  const extras = filtering ? "" : `
     <a class="nav-mod nav-exam ${m === "exam" ? "active" : ""}" href="#exam" ${m === "exam" ? 'aria-current="page"' : ""}>
       <span>Final exam &amp; certificate</span>
       <span class="nav-count ${exam && exam.done ? "all" : ""}">${exam ? (exam.done ? "✓" : exam.best + "/" + exam.total) : "—"}</span>
@@ -220,6 +254,34 @@ function renderSidebar() {
       <span>🔁 Practice</span>
       <span class="nav-count ${Srs.dueKeys().length ? "due" : ""}">${Srs.dueKeys().length ? Srs.dueKeys().length + " due" : (Srs.total() ? "✓" : "—")}</span>
     </a>`;
+
+  list.innerHTML = `
+    ${filtering ? "" : `<a class="nav-home ${!m ? "active" : ""}" href="#" ${!m ? 'aria-current="page"' : ""}>
+      <span>Course overview</span><span class="nav-count">${overall}</span>
+    </a>`}
+    ${modules || `<p class="nav-empty">No lesson matches “${RefrigMd.esc(navFilter)}”.</p>`}
+    ${extras}`;
+}
+
+function renderSidebar() {
+  const nav = document.getElementById("courseNav");
+  // Build the filter box once; re-rendering it would drop what is being typed.
+  if (!nav.querySelector(".nav-filter")) {
+    nav.innerHTML = `
+      <input class="nav-filter" id="navFilter" type="search" autocomplete="off"
+             placeholder="Filter modules &amp; lessons…" aria-label="Filter modules and lessons" />
+      <div id="navList" class="nav-list"></div>`;
+    nav.querySelector("#navFilter").addEventListener("input", (e) => {
+      navFilter = e.target.value.trim();
+      renderNavList();
+    });
+  }
+  renderNavList();
+}
+
+/* The lesson to pick up next: the first one not yet completed. */
+function nextUpLesson() {
+  return FLAT.find(f => !lessonDone(f.mod, f.les)) || null;
 }
 
 /* ---- Views ------------------------------------------------------------------ */
@@ -251,6 +313,20 @@ function renderHome() {
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
       </div>
+      ${(() => {
+        const up = nextUpLesson();
+        if (!up) {
+          return `<div class="continue-line">
+            <a class="btn btn-tour continue-btn" href="#exam">All ${total} lessons done — sit the final exam →</a>
+          </div>`;
+        }
+        return `<div class="continue-line">
+          <a class="btn btn-tour continue-btn" href="#${up.mod.id}/${up.les.id}">
+            ${done ? "Continue" : "Start the course"} → ${up.les.title}
+          </a>
+          <span class="continue-meta">${up.mod.title} · ~${up.les.minutes} min</span>
+        </div>`;
+      })()}
       <div class="hero-actions">
         <label class="name-field">Your name
           <input id="learnerName" value="${RefrigMd.esc(getLearnerName())}" placeholder="used on exports &amp; certificate" />

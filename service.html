@@ -10,6 +10,24 @@
 </head>
 <body class="learn-page">
   <a class="skip-link" href="#bayMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="sim">Simulator</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="service.html" data-nav="service" aria-current="page">Service Bay</a></li>
+      <li><a href="index.html?quiz=1" data-nav="quiz">Technician Quiz</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
   <header class="topbar">
     <div class="title-block">
       <h1>Service Bay</h1>
@@ -21,34 +39,19 @@
         <select id="bayRefrigerant"></select>
       </label>
       <button id="bayResetBtn" class="btn btn-ghost" type="button">Reset the job</button>
-      <a class="btn btn-tour" href="index.html">Cycle Simulator</a>
-      <a class="btn btn-learn" href="learn.html">Course</a>
     </div>
   </header>
 
-  <section class="page-overview" aria-label="Service Bay overview">
-    <div class="overview-copy">
-      <span class="status-pill">Procedure training</span>
-      <h2>Practise the service sequence in the right order, with the same consequences a learner would expect in the field.</h2>
-      <p>The Service Bay now reads more like a guided station: uncover the ports, connect the hoses, purge with pressure behind them, take your readings, and leave the machine exactly as you found it.</p>
-    </div>
-    <div class="overview-grid">
-      <div class="overview-card">
-        <span class="status-pill">1</span>
-        <h3>Expose and connect</h3>
-        <p>Remove the right caps first, then connect hoses only to ports that are actually available.</p>
-      </div>
-      <div class="overview-card">
-        <span class="status-pill">2</span>
-        <h3>Purge and read safely</h3>
-        <p>Crack the valve off the back seat, purge only when there is pressure behind the hose, and watch the gauges respond.</p>
-      </div>
-      <div class="overview-card">
-        <span class="status-pill">3</span>
-        <h3>Pack up as found</h3>
-        <p>Back-seat the valves, refit the caps, and check that you leave no venting, loose hose, or unfinished job behind.</p>
-      </div>
-    </div>
+  <section class="quickstart" aria-label="The service sequence">
+    <h2 class="quickstart-title">The sequence — in this order, every time</h2>
+    <ol class="quickstart-steps">
+      <li><b>Expose and connect.</b> Remove the right caps first, then connect
+        hoses only to ports that are actually available.</li>
+      <li><b>Purge and read.</b> Crack the valve off the back seat, purge only
+        with pressure behind the hose, and watch the gauges respond.</li>
+      <li><b>Pack up as found.</b> Back-seat the valves, refit the caps, and
+        leave no venting, loose hose or unfinished job behind.</li>
+    </ol>
   </section>
 
   <main id="bayMain" class="bay-layout">
@@ -79,6 +82,7 @@
       <a class="footer-link" href="about.html">For institutions</a></span>
   </footer>
 
+  <script src="js/nav.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>
