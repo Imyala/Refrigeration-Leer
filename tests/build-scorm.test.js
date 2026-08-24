@@ -30,7 +30,7 @@ test("SCORM package builds with a valid manifest and zip", () => {
   // a missing script would 404 inside the LMS. Match any attribute order, so a
   // tag like <script src="js/nav.js" defer> is checked too.
   const pkgDir = path.join(ROOT, "dist", "scorm");
-  const pages = ["learn.html", "index.html", "teach.html", "service.html", "about.html"];
+  const pages = ["learn.html", "index.html", "simulator.html", "teach.html", "service.html", "about.html"];
   for (const html of pages) {
     const src = fs.readFileSync(path.join(pkgDir, html), "utf8");
     for (const [, scriptSrc] of src.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) {

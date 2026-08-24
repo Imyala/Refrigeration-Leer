@@ -10,14 +10,15 @@ const ROOT = path.join(__dirname, "..");
 
 // page -> the nav entry that page should mark as current
 const PAGES = {
-  "index.html": "sim",
+  "index.html": "home",
   "learn.html": "learn",
+  "simulator.html": "sim",
   "service.html": "service",
   "teach.html": "teach",
   "about.html": "about",
 };
 
-const EXPECTED_ORDER = ["sim", "learn", "service", "quiz", "teach", "about"];
+const EXPECTED_ORDER = ["home", "learn", "sim", "service", "teach", "about"];
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const navOf = (src) => {
@@ -43,7 +44,7 @@ test("each page marks exactly one nav entry as the current page", () => {
 });
 
 test("every nav target exists on disk", () => {
-  const nav = navOf(read("index.html"));
+  const nav = navOf(read("simulator.html"));
   const hrefs = [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
   assert.ok(hrefs.length >= EXPECTED_ORDER.length, "nav has hrefs");
   for (const href of hrefs) {
@@ -71,10 +72,10 @@ test("the mobile menu button is wired to the link list", () => {
 
 test("cross-page links live in the nav, not duplicated in the page toolbar", () => {
   // .controls is for page-scoped tools; site navigation belongs to .sitenav.
-  for (const page of ["index.html", "learn.html", "service.html", "teach.html"]) {
+  for (const page of ["simulator.html", "learn.html", "service.html", "teach.html"]) {
     const src = read(page);
     const m = src.match(/<div class="controls">[\s\S]*?<\/div>\s*<\/header>/);
     if (!m) continue; // page has no toolbar at all
-    assert.doesNotMatch(m[0], /href="(learn|service|teach|about)\.html"/, `${page} toolbar has no nav links`);
+    assert.doesNotMatch(m[0], /href="(index|learn|simulator|service|teach|about)\.html"/, `${page} toolbar has no nav links`);
   }
 });

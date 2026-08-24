@@ -46,7 +46,7 @@ const SEGMENTS = [
 const state = {
   running: true, refrigerant: "R134a", speed: 100, load: 100, fault: "none",
   dashOffset: 0, phaseT: 0, selected: null, tourActive: false, tourIndex: 0,
-  showHealthy: true,
+  showHealthy: true, level: 1,
 };
 let current = null;
 const capRefs = {};   // per-refrigerant nominal capacity for the % readout
@@ -155,13 +155,13 @@ function renderReadouts() {
     { label: "Condenser",     value: U.fmtT(c.tCond),         cls: "hot" },
     { label: "Evaporator",    value: U.fmtT(c.tEvap),         cls: "cold" },
     { label: "Discharge Gas", value: U.fmtT(c.tDischarge),    cls: "hot" },
-    { label: "Superheat",     value: U.fmtDT(c.superheat),    cls: "" },
-    { label: "Subcool",       value: U.fmtDT(c.subcool),      cls: "" },
+    { label: "Superheat",     value: U.fmtDT(c.superheat),    cls: "", level: 2 },
+    { label: "Subcool",       value: U.fmtDT(c.subcool),      cls: "", level: 2 },
     { label: "Flow",          value: `${r0(c.flow)} L/min`,   cls: "" },
     { label: "Compressor",    value: state.running ? "RUNNING" : "OFF", cls: state.running ? "ok" : "" },
   ];
   document.getElementById("readouts").innerHTML = rows.map(row => `
-    <div class="readout"><div class="label">${row.label}</div>
+    <div class="readout"${row.level ? ` data-level="${row.level}"` : ""}><div class="label">${row.label}</div>
       <div class="value ${row.cls}">${row.value}</div></div>`).join("");
 }
 
@@ -589,6 +589,55 @@ function focusSectionSoon(el) {
   });
 }
 
+/* ---- Detail level ----------------------------------------------------------
+   The simulator is the densest screen in the program, so it opens showing just
+   the cycle. Gauges and the full instrument set are one click away, and the
+   choice is remembered. Deep links from a lesson raise the level they need. */
+const LEVEL_KEY = "refrigSim.simLevel";
+const MAX_LEVEL = 3;
+/* What each level is showing now, and what the next one would add. */
+const LEVEL_STEPS = {
+  1: { showing: "Showing the cycle on its own.", adds: "add the gauge manifold" },
+  2: { showing: "Showing the cycle and the gauges.", adds: "add the P–h diagram, performance figures and PT trainer" },
+};
+
+function readLevel() {
+  try {
+    const n = parseInt(localStorage.getItem(LEVEL_KEY), 10);
+    return n >= 1 && n <= MAX_LEVEL ? n : 1;
+  } catch (e) { return 1; }
+}
+
+function applyLevel(level) {
+  state.level = level;
+  document.body.classList.remove("sim-level-1", "sim-level-2", "sim-level-3");
+  document.body.classList.add("sim-level-" + level);
+  document.querySelectorAll(".level-btn").forEach(b => {
+    b.setAttribute("aria-pressed", String(+b.dataset.level === level));
+  });
+  const hint = document.getElementById("levelHint");
+  if (hint) {
+    const step = LEVEL_STEPS[level];
+    hint.hidden = !step;
+    if (step) {
+      hint.innerHTML = `${step.showing} When you are ready, ` +
+        `<button type="button" class="level-more">${step.adds}</button>.`;
+    }
+  }
+}
+
+function setLevel(level, remember) {
+  const lv = Math.min(MAX_LEVEL, Math.max(1, level | 0));
+  applyLevel(lv);
+  if (remember !== false) {
+    try { localStorage.setItem(LEVEL_KEY, String(lv)); } catch (e) { /* storage unavailable */ }
+  }
+  // Charts are laid out from their container size, so redraw what just appeared.
+  renderPhChart();
+  renderPtChart();
+  updateMovingDot();
+}
+
 function init() {
   // Deep links (used by the Learn course): index.html?r=R404A&fault=lowCharge
   // &speed=120&load=80, plus quiz=1 / tour=1 / view=pt.
@@ -666,6 +715,22 @@ function init() {
     c.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(c.dataset.component); }
     });
+  });
+
+  // Detail level: stored preference, unless the link asks for more.
+  let level = readLevel();
+  const uLevel = parseInt(urlq.get("level"), 10);
+  if (uLevel >= 1 && uLevel <= MAX_LEVEL) level = uLevel;
+  // These deep links are meaningless without the panels they point at.
+  if (urlq.get("view") === "pt") level = Math.max(level, 3);
+  applyLevel(level);
+  document.querySelectorAll(".level-btn").forEach(b => {
+    b.addEventListener("click", () => setLevel(+b.dataset.level, true));
+  });
+  document.addEventListener("click", (e) => {
+    if (e.target.classList && e.target.classList.contains("level-more")) {
+      setLevel(state.level + 1, true);
+    }
   });
 
   document.getElementById("tourBtn").addEventListener("click", () => setTour(true));

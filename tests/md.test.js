@@ -42,7 +42,7 @@ test("tables render with header row and skip the separator", () => {
 test("!SIM directive renders a simulator link with params", () => {
   const html = MD.render("!SIM[Try it](fault=lowCharge&r=R134a)");
   assert.match(html, /class="sim-link"/);
-  assert.match(html, /href="index\.html\?fault=lowCharge&amp;r=R134a"/);
+  assert.match(html, /href="simulator\.html\?fault=lowCharge&amp;r=R134a"/);
   assert.match(html, /Try it/);
 });
 

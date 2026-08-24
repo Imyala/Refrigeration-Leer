@@ -1322,3 +1322,240 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 #aboutMain .module-card h3 { color: var(--accent); }
 #aboutMain .module-card p { font-size: 13px; }
 #aboutMain .table-wrap { overflow-x: auto; }
+
+/* ========================================================================= */
+/* Start here — the program front door                                       */
+/* ========================================================================= */
+.home-main { max-width: var(--maxw); margin: 0 auto; padding: 8px 0 0; }
+
+.home-hero {
+  padding: 34px 32px 30px;
+  border: 1px solid rgba(125, 154, 181, 0.15);
+  border-radius: 24px;
+  background:
+    radial-gradient(680px 320px at 12% 0%, rgba(79, 195, 247, .13), transparent 62%),
+    linear-gradient(140deg, rgba(30, 46, 63, 0.95), rgba(14, 22, 32, 0.95));
+  box-shadow: var(--shadow-lg);
+}
+.home-eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+.home-hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(28px, 3.4vw, 42px);
+  line-height: 1.12;
+  letter-spacing: -.01em;
+  color: #f5fbff;
+  text-wrap: balance;
+}
+.home-lede {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #b6c9da;
+}
+.home-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+.home-start { font-size: 16px; padding: 14px 26px; }
+.home-cta-note { font-size: 12.5px; color: var(--muted); }
+.home-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.home-progress[hidden] { display: none; }
+
+.home-section-title {
+  margin: 34px 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.home-section-note { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+
+/* ---- The five stages ---- */
+.stage-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.stage-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px 24px;
+  border: 1px solid rgba(125, 154, 181, 0.14);
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--panel) 0%, #111b26 100%);
+  box-shadow: var(--shadow-md);
+}
+.stage-card.started { border-color: rgba(79, 195, 247, .4); }
+.stage-card.complete { border-color: rgba(47, 158, 87, .45); }
+.stage-n {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(79, 195, 247, .12);
+  border: 1px solid rgba(79, 195, 247, .32);
+  color: var(--accent-2);
+  font-size: 22px;
+  font-weight: 700;
+}
+.stage-card.complete .stage-n {
+  background: rgba(47, 158, 87, .14);
+  border-color: rgba(47, 158, 87, .45);
+  color: #6fe0a0;
+}
+.stage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.stage-head h3 { margin: 0; font-size: 19px; color: var(--text); }
+.stage-status {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.stage-status.done { color: #6fe0a0; }
+.stage-status.going { color: var(--accent-2); }
+.stage-blurb { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: var(--muted); max-width: 74ch; }
+.stage-modules { margin: 10px 0 0; font-size: 12px; color: #7d93a8; line-height: 1.6; }
+.stage-modules span {
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: 10px;
+  color: #61758a;
+  margin-right: 6px;
+}
+.stage-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+.stage-go { font-size: 14px; }
+.stage-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(125, 154, 181, 0.3);
+  text-decoration: none;
+  min-width: 0;
+}
+.stage-tool:hover { border-color: var(--accent); background: rgba(79, 195, 247, .06); }
+.stage-tool-label { font-size: 13px; font-weight: 600; color: var(--accent); }
+.stage-tool-note { font-size: 11.5px; color: var(--muted); }
+.stage-final .stage-n { background: rgba(123, 92, 214, .16); border-color: rgba(123, 92, 214, .45); color: #c9b8f5; }
+
+/* ---- Tools, for people who already know the program ---- */
+.tool-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.tool-card {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid rgba(125, 154, 181, 0.14);
+  border-radius: 16px;
+  background: var(--panel);
+  text-decoration: none;
+  transition: border-color .18s ease, transform .18s ease;
+}
+.tool-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.tool-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+.tool-card p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .home-hero { padding: 26px 20px 24px; }
+  .stage-card { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
+  .stage-n { width: 44px; height: 44px; font-size: 18px; border-radius: 13px; }
+  .stage-actions { align-items: stretch; flex-direction: column; }
+}
+
+/* ========================================================================= */
+/* Simulator detail levels                                                   */
+/* ========================================================================= */
+.level-switch {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 154, 181, 0.22);
+  background: rgba(11, 18, 27, 0.7);
+}
+.level-switch-label {
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 10px 0 8px;
+}
+.level-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 13px;
+  border-radius: 9px;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.level-btn:hover { color: var(--text); }
+.level-btn[aria-pressed="true"] {
+  background: rgba(79, 195, 247, .16);
+  color: var(--accent-2);
+  box-shadow: inset 0 0 0 1px rgba(79, 195, 247, .35);
+}
+
+/* Panels declare the level they belong to; anything above the current level
+   is simply not in the page for this learner yet. */
+.sim-level-1 [data-level="2"]:not(.level-btn),
+.sim-level-1 [data-level="3"]:not(.level-btn),
+.sim-level-2 [data-level="3"]:not(.level-btn) { display: none; }
+
+/* With no side panels, drop the dead column but keep the schematic a sane size */
+.sim-level-1 .side { display: none; }
+.sim-level-1 .stage { grid-template-columns: minmax(0, 1fr); }
+.sim-level-1 .diagram-wrap { max-width: 880px; margin-left: auto; margin-right: auto; }
+
+
+.level-hint {
+  max-width: var(--maxw);
+  margin: 16px auto 0;
+  padding: 12px 18px;
+  border: 1px dashed rgba(125, 154, 181, 0.28);
+  border-radius: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.level-hint[hidden] { display: none; }
+.level-more {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.level-more:hover { color: var(--accent-2); }
+
+@media (max-width: 640px) {
+  .level-switch { width: 100%; justify-content: space-between; }
+  .level-btn { flex: 1; padding: 8px 6px; }
+}

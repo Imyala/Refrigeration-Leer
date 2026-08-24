@@ -39,7 +39,7 @@
 
       const sim = line.match(/^!SIM\[([^\]]*)\]\(([^)]*)\)\s*$/);
       if (sim) {
-        out.push(`<a class="sim-link" href="index.html?${esc(sim[2])}" target="_blank" rel="noopener">▶ ${inline(sim[1])}</a>`);
+        out.push(`<a class="sim-link" href="simulator.html?${esc(sim[2])}" target="_blank" rel="noopener">▶ ${inline(sim[1])}</a>`);
         i++; continue;
       }
 
