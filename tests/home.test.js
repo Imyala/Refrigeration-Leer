@@ -7,7 +7,13 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
-const COURSE = require("../js/course1.js").concat(require("../js/course2.js"));
+/* Every course content file, so a module added later is still checked against
+   the pathway rather than silently falling outside it. */
+const COURSE = fs
+  .readdirSync(path.join(ROOT, "js"))
+  .filter((f) => /^course\d+\.js$/.test(f))
+  .sort()
+  .flatMap((f) => require(path.join(ROOT, "js", f)));
 const homeSrc = fs.readFileSync(path.join(ROOT, "js", "home.js"), "utf8");
 
 // pull the stage table out of home.js without running its browser-only code

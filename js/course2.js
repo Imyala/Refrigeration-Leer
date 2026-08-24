@@ -446,6 +446,21 @@ and re-measure.
 > was low — on a system whose real problem was an iced coil, a blocked
 > drier, or a leak that will simply drain the top-up too. Verify, then act.
 
+
+## What the Code says
+
+!CITE[cop:2:9.5]
+
+Your diagnostic routine has a legal counterpart. An in-service leak inspection
+is a **visual inspection**, then a **diagnostic analysis** of operating
+parameters, then a **leak inspection** of common leakage points.
+
+!CITE[cop:2:9.5.2]
+
+And this is the clause that connects a gauge reading to an obligation:
+**where diagnostic analysis indicates a low refrigerant charge, a leak
+tightness test must be performed.** You may not simply top it up — Module 11
+explains why that is prohibited conduct.
 `,
         quiz: [
           {
@@ -655,7 +670,7 @@ more for your gauge-reading than any chapter of theory.
         minutes: 7,
         simple: "Before opening any system, the refrigerant comes out into a bottle — never into the sky (that's illegal, and it's your licence on the line). The recovery machine is basically a vacuum cleaner for refrigerant. The golden rule: a cylinder is FULL at 80% by weight, because liquid expands as it warms — an overfilled bottle in the sun is a bomb. So everything gets weighed, always.",
         refs: [
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Part 2, systems other than self-contained low charge",
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
           "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
         ],
@@ -705,6 +720,28 @@ back through the supplier for reclaim or destruction — never into the air.
 > warm one with a flame to speed it up. Warm water is the hottest thing that
 > should ever touch a refrigerant cylinder.
 
+
+## What the Code says
+
+!CITE[cop:2:12.2]
+
+Recovery is not just good practice — it is the clause your licence is measured
+against. All scheduled refrigerant removed from equipment must be recovered
+and then recycled, reclaimed or disposed of. Recover into an appropriately
+labelled cylinder of a suitable pressure rating — **never a flexible bag** —
+and recover the **entire charge, vapour as well as liquid**.
+
+!CITE[cop:2:12.2.3]
+
+The cylinder must be **in date** against its most recent test station stamp,
+and A2L/A2 refrigerant needs A2L/A2-specific cylinders.
+
+!CITE[cop:2:12.3]
+
+Know the difference you will be asked for: **recycled** refrigerant is re-used
+with or without some cleaning; **reclaimed** refrigerant has been reprocessed
+at a specialist facility to the AHRI 700 specification. Module 11 works through
+all of this clause by clause.
 `,
         quiz: [
           {
@@ -748,7 +785,7 @@ back through the supplier for reclaim or destruction — never into the air.
         minutes: 8,
         simple: "After a repair the pipes hold air and invisible moisture — both poison for the system. A vacuum pump pulls the pressure down so far that water literally boils away at room temperature. Then the micron gauge plays lie detector while you watch: creeps up and keeps going = a leak; rises then levels off = still wet, keep pulling; stays put = clean, dry, and ready to charge.",
         refs: [
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Part 2, systems other than self-contained low charge",
           "ARC technical resource — Evacuation: stationary refrigeration and air-conditioning systems (arcltd.org.au)",
         ],
         content: `
@@ -796,6 +833,31 @@ nitrogen sweeps water vapour out far faster than a pump alone.
 > Time spent evacuating is bought back in compressor life. The five-minute
 > "vacuum" that stops at 5,000 microns leaves the acid factory installed.
 
+
+## What the Code says
+
+!CITE[cop:2:5.4]
+
+The Code recognises exactly **two** methods: **deep evacuation** and **triple
+evacuation** using oxygen-free nitrogen. Refrigerant must be recovered and the
+system fully depressurised first.
+
+!CITE[cop:2:5.4.1]
+
+Deep evacuation: at least **500 microns / 67 Pa absolute**, isolate the pump,
+stand **60 minutes** below **600 microns / 80 Pa**.
+
+!CITE[cop:2:5.4.2]
+
+Triple evacuation: two pulls to at least 4,500 microns each broken and purged
+with OFN, then a third to 500 microns held the same way. Use it for large,
+complex, or long-open systems.
+
+!CITE[cop:2:5.3]
+
+And the measurement matters: depth of vacuum must be read on a **dedicated
+vacuum gauge**, not the service manifold. Module 11 covers the drop test and
+the sub-zero moisture trap.
 `,
         quiz: [
           {
@@ -834,7 +896,7 @@ nitrogen sweeps water vapour out far faster than a pump alone.
         minutes: 8,
         simple: "There are three honest ways to put refrigerant in: weigh it in (best — the nameplate tells you exactly how much), or fine-tune while watching superheat (fixed-orifice systems) or subcooling (TXV systems). Blends must leave the cylinder as liquid or the mixture changes. Add a little, wait for it to settle, re-read, repeat. Charging by 'that feels cold enough' is guessing, not technique.",
         refs: [
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Part 2, systems other than self-contained low charge",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 2, Boyle — pub. AIRAH — charging methods and system commissioning",
         ],
         content: `
@@ -874,6 +936,26 @@ high = overcharged.
 > on the unit.
 
 !SIM[Watch SH and SC respond as conditions change](r=R410A)
+
+## What the Code says
+
+!CITE[cop:2:6.4]
+
+**Refrigerant must be weighed into and weighed out of the system**, and the
+system must not be overfilled. Charging to a known mass is the Code's stated
+most accurate method.
+
+!CITE[cop:2:6.3]
+
+Before opening the cylinder valve fully, leak-test the hoses: crack the valve
+to pressurise them, close it, and check.
+
+!CITE[cop:2:6.5]
+
+Never connect a cylinder to a system or another cylinder at **higher pressure
+or higher temperature** — back flow contaminates or overfills the cylinder,
+and an overfilled cylinder can develop enough pressure to burst. Module 11 has
+the full charging clause set.
 `,
         quiz: [
           {
@@ -917,7 +999,7 @@ high = overcharged.
         minutes: 8,
         simple: "Every 'top-up' escaped through a hole — so find the hole: follow oil stains, spray bubbles, use the sniffer or UV dye. Pressure-test with nitrogen ONLY: never air (it brings moisture) and never oxygen (it can explode on contact with oil). When brazing, run a gentle nitrogen flow through the pipe so the inside doesn't grow black flakes that later choke the valves. Then: test, vacuum, weigh the charge in.",
         refs: [
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Part 2 — systems other than self-contained low charge (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Part 2, systems other than self-contained low charge",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — tubing, brazing and welding practice",
         ],
         content: `
@@ -957,6 +1039,31 @@ Then tag the unit with what was done. Skipping straight from "brazed it" to
 "gassed it" leaves nitrogen, air or moisture sealed inside — tomorrow's
 mystery fault.
 
+
+## What the Code says
+
+!CITE[cop:2:4.9]
+
+Every section built on site must be **leak tightness tested before it is
+charged**, and **scheduled refrigerant must never be used as the test pressure
+medium** — the test gas is oxygen-free nitrogen.
+
+!CITE[cop:2:4.9.2]
+
+Test at commissioning; after the system is moved, altered or changes use;
+after repair; after a change of refrigerant type; when a leak or low charge is
+known or suspected; and after standstill longer than two years.
+
+!CITE[cop:2:4.9.6]
+
+Hold the pressure **24 hours** for a commissioning test, **1 hour** for a
+repair or component replacement.
+
+!CITE[cop:2:4.9.8]
+
+Repairs must never be made with the system pressurised, and the test is
+repeated afterwards. Module 11 covers test pressures, detector sensitivity and
+acceptance criteria.
 `,
         quiz: [
           {
@@ -1011,7 +1118,7 @@ mystery fault.
         minutes: 7,
         simple: "Refrigerant is safe inside the pipes. Loose in a room, it can silently push the air out at floor level (it's heavier than air and has no smell), freeze skin on contact, or — with the newer flammable types — find a spark. So: ventilate, wear gloves and glasses, keep cylinders cool, upright and capped, and read the safety data sheet before the emergency, not during it.",
         refs: [
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Parts 1 & 2",
           "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
           "Safety data sheets (SDS) for the specific refrigerant; state/territory WHS regulations",
         ],
@@ -1054,6 +1161,26 @@ ignition source within the work zone before opening the circuit.
 > authority — exposure limits, first aid, fire behaviour. Know where to find
 > it before the day you need it at speed.
 
+
+## What the Code says
+
+!CITE[cop:2:13.1]
+
+Refrigerants are hazardous chemicals classified under the **GHS** — a separate
+system from the AS/NZS ISO 817 safety classification. Each has a **Safety Data
+Sheet**, which should be readily available and read **before** handling.
+Asphyxiation and freeze burns are named risks.
+
+!CITE[cop:2:13.4.3]
+
+Never exceed a cylinder's **marked maximum gross weight**, and never use a
+cylinder that is not marked with one. Cylinders must **not be heated by flame,
+radiant heat or uncontrolled contact heat**.
+
+!CITE[cop:2:13.6.2]
+
+Store to AS/NZS 4332 — secured, signed, and within the quantity limits in
+local legislation. Module 11 covers safe fill capacity and transport class.
 `,
         quiz: [
           {

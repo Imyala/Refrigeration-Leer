@@ -889,7 +889,7 @@ long or safely without them.
         simple: "Refrigerant names work like number plates — the number tells you the family. The old chlorine ones (R12, R22) chewed the ozone layer and are gone. Today's HFCs (R134a, R410A) are ozone-safe but strong greenhouse gases, so they're being wound down too. The new crowd: mildly flammable synthetics like R32, and naturals like propane, CO2 and ammonia. Blends (the R4xx ones) are cocktails — charge them as liquid so the recipe stays right.",
         refs: [
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerants: families, blends and natural refrigerants",
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Parts 1 & 2",
         ],
         content: `
 Hundreds of fluids have been used as refrigerants. The R-number system tames
@@ -969,7 +969,7 @@ called **temperature glide**. Practical consequences:
         refs: [
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
           "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Parts 1 & 2",
         ],
         content: `
 Two numbers decided the fate of every refrigerant of the last forty years —
@@ -1017,6 +1017,22 @@ cannot buy fluorocarbon refrigerant without one. In the US it is EPA Section
 > Leak-checking is not bureaucracy: a system that needs regular top-ups is
 > both an environmental offence in progress and an unsolved service fault.
 
+
+## What the Code says
+
+!CITE[cop:2:1.2.1]
+
+The prohibition is broader than "do not vent". The Code names these as conduct
+resulting in discharge: venting directly or indirectly; **charging equipment
+with known or suspected leaks**; flushing pipework with refrigerant; **using
+refrigerant as the pressure medium for leak testing**; and using it to clean
+coils.
+
+!CITE[cop:2:1.2.2]
+
+And a system must not be charged with a **higher-GWP refrigerant than it was
+designed for**, unless the design refrigerant was an ozone-depleting HCFC.
+Module 11 works through both prohibitions and what they mean on the job.
 `,
         quiz: [
           {
@@ -1062,7 +1078,7 @@ cannot buy fluorocarbon refrigerant without one. In the US it is EPA Section
         refs: [
           "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
           "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — refrigerant safety groups and handling",
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Parts 1 & 2",
         ],
         content: `
 As GWP limits push out the old HFCs, their replacements bring new hazards —
@@ -1093,6 +1109,27 @@ safety classification tells you which, at a glance.
 > system smells of hydrocarbons or the label says A2L/A3, control ignition
 > sources *before* connecting anything. The gauges do not care — you should.
 
+
+## What the Code says
+
+!CITE[cop:2:1.2.3]
+
+All refrigerants used in RAC equipment **must be classified to AS/NZS ISO
+817** — the letter for toxicity, the numeral for flammability.
+
+!CITE[cop:2:1.2.4]
+
+Flammable refrigerants are **A2L, A2, A3 and B2L**; of the scheduled
+refrigerants, the flammable ones are currently A2L (common) and A2 (uncommon).
+
+> **Lubricant/refrigerant mixtures may be flammable even where the refrigerant
+> is classified non-flammable.**
+
+!CITE[cop:2:12.2.2]
+
+And the practical consequence: A2L/A2 are generally **not compatible with A1
+vacuum pumps, recovery units and cylinders**. Module 11 covers the class
+criteria, blend dual-classifications and the tooling rules.
 `,
         quiz: [
           {
@@ -1127,7 +1164,7 @@ safety classification tells you which, at a glance.
         simple: "Think of the Australian rules as layers. The LAW says you need a licence and must never vent refrigerant. The CODE OF PRACTICE is the how-to rulebook your licence expects you to follow. The STANDARDS (like AS/NZS 3000 for wiring) are the engineering fine print. And the ARAC volumes are the trade's textbooks. You don't memorise them all — you learn which book answers which question, and you always use the current edition.",
         refs: [
           "Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) and its Regulations",
-          "Australia & New Zealand Refrigerant Handling Code of Practice, Parts 1 & 2 (ARC/ARCtick, current edition)",
+          "Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition (AIRAH) — Parts 1 & 2",
           "ARC licensing information — arctick.org (Refrigerant Handling Licences & Refrigerant Trading Authorisations)",
           "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
           "AS/NZS 3000 Wiring Rules (Standards Australia) — topic-level reference only; consult the current edition",
@@ -1170,9 +1207,15 @@ how-to that licence holders are expected to work to:
 - **Part 1 — self-contained low charge systems** (small hermetic equipment).
 - **Part 2 — everything else**: stationary and transport systems generally — recovery, evacuation, charging, leak testing, brazing practice and record keeping.
 
-First published in 2007 and since updated (a revised edition was released in
-the mid-2020s) — **always work to the current edition**, because equipment,
-refrigerants (A2Ls especially) and methods have moved.
+First published in 2007, and now in its **2025 edition** (published by AIRAH),
+which is the edition this course is written against. Always confirm you are
+working to the current edition — equipment, refrigerants (A2Ls especially) and
+methods have moved, and the 2025 edition rewrote the leak-inspection,
+leak-detection and leak-testing guidance in particular.
+
+**Module 11 of this course teaches the Code clause by clause** — scope and
+legal status, licensing, the discharge prohibitions, leak testing, evacuation,
+charging, recovery and cylinder handling.
 
 ## The standards around the trade
 

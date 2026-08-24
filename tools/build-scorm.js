@@ -39,6 +39,8 @@ const FILES = [
   "js/exam.js",
   "js/course1.js",
   "js/course2.js",
+  "js/course3.js",
+  "js/refdocs.js",
   "js/learn.js",
   "js/teach.js",
   "js/demo.js",

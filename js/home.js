@@ -51,6 +51,14 @@
       tool: { label: "Service Bay", href: "service.html" },
       toolNote: "Fit the gauges yourself, in the right order, with real consequences.",
     },
+    {
+      n: 6,
+      title: "Work to the Code",
+      modules: ["code-of-practice"],
+      blurb: "The Refrigerant Handling Code of Practice clause by clause: what it covers and who it binds, the discharge prohibitions, and the required procedure for leak testing, evacuation, charging, recovery and cylinder handling.",
+      tool: { label: "Reference library", href: "learn.html#reference/cop" },
+      toolNote: "Document structure and the clause index the lessons cite.",
+    },
   ];
 
   const PROGRESS_KEY = "refrigSim.progress";
@@ -164,8 +172,8 @@
         <div class="stage-n" aria-hidden="true">✓</div>
         <div class="stage-body">
           <div class="stage-head"><h3>Final exam &amp; certificate</h3></div>
-          <p class="stage-blurb">Twenty questions drawn from the whole program, 80% to pass,
-          and a printable certificate of completion.</p>
+          <p class="stage-blurb">Questions drawn at random from every module of the program,
+          80% to pass, and a printable certificate of completion.</p>
           <div class="stage-actions">
             <a class="btn btn-ghost stage-go" href="learn.html#exam">Open the exam</a>
           </div>

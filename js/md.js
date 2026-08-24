@@ -3,8 +3,9 @@
 
    Supported: ## / ### headings, paragraphs, - and 1. lists, | tables,
    > callouts (>! for warning callouts), **bold**, *italic*, [links](url),
-   and a custom !SIM[label](params) directive that renders a button opening
-   the simulator pre-configured via URL params.
+   a custom !SIM[label](params) directive that renders a button opening the
+   simulator pre-configured via URL params, and !CITE[doc:part:clause] which
+   renders a citation linking to the lesson that teaches that clause.
 
    Loaded as a plain script in the browser (exposes `RefrigMd`) and
    require()-able in Node for the test suite. Content is trusted (authored
@@ -17,8 +18,29 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  /* Reference lookup: available as a global in the browser, required in Node. */
+  function refdocs() {
+    if (typeof module !== "undefined" && typeof require !== "undefined") {
+      try { return require("./refdocs.js"); } catch (e) { return null; }
+    }
+    return root.REFDOCS || null;
+  }
+
+  /* !CITE[cop:2:4.9] -> a linked clause citation, or plain text if unknown. */
+  function citation(ref) {
+    const R = refdocs();
+    const c = R && R.clause(ref);
+    if (!c) return '<span class="cite cite-missing">' + esc(ref) + "</span>";
+    const title = esc(c.title);
+    const label = esc(R.label(ref));
+    return '<a class="cite" href="#' + esc(c.doc.module) + "/" + esc(c.lesson) + '"' +
+      ' title="' + title + '">' + label + " — " + title + "</a>";
+  }
+
   function inline(s) {
     let out = esc(s);
+    // Citations are resolved before span markup so their markup is not escaped.
+    out = out.replace(/!CITE\[([a-z0-9]+:[a-z0-9]+:[0-9.]+)\]/gi, (m, ref) => citation(ref));
     out = out.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
     out = out.replace(/\*([^*]+)\*/g, "<i>$1</i>");
     out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');

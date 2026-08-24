@@ -12,7 +12,7 @@ sold to universities, TAFEs and other higher-education institutions.
 - **Phase 1 — done.** Technician diagnosis quiz, virtual gauge manifold with PT
   rings, PT chart + target-pressure trainer, kPa/bar/psi + °C/°F units, fault
   library grown to 10, accessibility pass, code modularised with tests + CI.
-- **Phase 2 — done.** Structured course (`learn.html`): 10 modules / 28 lessons
+- **Phase 2 — done.** Structured course (`learn.html`): 11 modules / 39 lessons
   with per-lesson quizzes, explanations, saved progress, and simulator deep
   links; content authored in a markdown subset with validation tests.
 - **Phase 3 — static-feasible parts done.**

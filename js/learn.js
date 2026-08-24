@@ -172,6 +172,7 @@ function route() {
   if (m === "exam") renderExam();
   else if (m === "review") renderReview();
   else if (m === "practice") renderPractice();
+  else if (m === "reference") renderReference(l);
   else {
     const mod = COURSE.find(x => x.id === m);
     if (!mod) renderHome();
@@ -249,6 +250,10 @@ function renderNavList() {
     <a class="nav-mod nav-review ${m === "review" ? "active" : ""}" href="#review" ${m === "review" ? 'aria-current="page"' : ""}>
       <span>🚩 My review list</span>
       <span class="nav-count">${Flags.set.size}</span>
+    </a>
+    <a class="nav-mod nav-reference ${m === "reference" ? "active" : ""}" href="#reference" ${m === "reference" ? 'aria-current="page"' : ""}>
+      <span>📕 Reference library</span>
+      <span class="nav-count">${(window.REFDOCS ? window.REFDOCS.docs.length : 0)}</span>
     </a>
     <a class="nav-mod nav-practice ${m === "practice" ? "active" : ""}" href="#practice" ${m === "practice" ? 'aria-current="page"' : ""}>
       <span>🔁 Practice</span>
@@ -353,7 +358,7 @@ function renderHome() {
       }).join("")}
       <a class="module-card exam-card" href="#exam">
         <h3>Final exam &amp; certificate</h3>
-        <p>Twenty questions drawn from the whole course — two per module. Score 80% to pass and generate a printable certificate of completion.</p>
+        <p>${COURSE.length * EXAM.perModule} questions drawn from the whole course — ${EXAM.perModule} per module. Score ${Math.round(EXAM.passPct * 100)}% to pass and generate a printable certificate of completion.</p>
         <span class="module-meta">${(() => {
           const e = Progress.get("exam", "final");
           return e ? (e.done ? "passed ✓ · best " + e.best + "/" + e.total : "best " + e.best + "/" + e.total) : "not attempted";
@@ -452,6 +457,107 @@ function renderLesson(mod, les) {
     renderLesson(mod, les);
     renderSidebar();
   });
+}
+
+/* ---- Reference library --------------------------------------------------------
+   The documents the course teaches to. Rendered from js/refdocs.js, so adding
+   a new document there makes it appear here with no changes to this file. */
+function renderReference(docId) {
+  const main = document.getElementById("learnMain");
+  const R = window.REFDOCS;
+  if (!R || !R.docs.length) {
+    main.innerHTML = `<div class="crumbs"><a href="#">Course</a> › <span>Reference library</span></div>
+      <div class="learn-hero"><p>No reference documents are loaded.</p></div>`;
+    return;
+  }
+
+  const doc = docId ? R.byId(docId) : null;
+  if (!doc) return renderReferenceIndex(R);
+
+  // Group the clause index by the lesson that teaches it.
+  const byLesson = {};
+  for (const [key, c] of Object.entries(doc.clauses)) {
+    (byLesson[c.lesson] = byLesson[c.lesson] || []).push({ key, c });
+  }
+  const mod = COURSE.find(m => m.id === doc.module);
+  const lessonTitle = (id) => {
+    const les = mod && mod.lessons.find(l => l.id === id);
+    return les ? les.title : id;
+  };
+  const sortNum = (k) => k.split(":")[1].split(".").map(n => String(n).padStart(3, "0")).join(".");
+
+  main.innerHTML = `
+    <div class="crumbs">
+      <a href="#">Course</a> › <a href="#reference">Reference library</a> › <span>${RefrigMd.esc(doc.short)}</span>
+    </div>
+    <div class="learn-hero">
+      <h2>${RefrigMd.esc(doc.title)}</h2>
+      <p class="doc-meta">${RefrigMd.esc(doc.edition)} · ${RefrigMd.esc(doc.publisher)}${doc.isbn ? " · ISBN " + RefrigMd.esc(doc.isbn) : ""}</p>
+      <p>${RefrigMd.esc(doc.blurb)}</p>
+      ${mod ? `<div class="hero-actions"><a class="btn btn-tour" href="#${doc.module}">Study this document — ${mod.lessons.length} lessons</a></div>` : ""}
+    </div>
+
+    <h3 class="review-heading">What each Part covers</h3>
+    <div class="module-grid">
+      ${doc.parts.map(p => `<div class="module-card doc-part">
+        <h3>Part ${RefrigMd.esc(p.id)} — ${RefrigMd.esc(p.title)}</h3>
+        <p>${RefrigMd.esc(p.scope)}</p>
+        <span class="module-meta">${p.chapters.length} chapters</span>
+      </div>`).join("")}
+    </div>
+
+    <h3 class="review-heading">Structure</h3>
+    <p class="module-blurb">The Parts are numbered independently — they share chapters 1 to 4 in
+    substance and then diverge, so Part 1 §5 and Part 2 §5 are different chapters. Always quote
+    the Part with the clause.</p>
+    <div class="doc-structure">
+      ${doc.parts.map(p => `<div class="doc-part-toc">
+        <h4>Part ${RefrigMd.esc(p.id)}</h4>
+        <ol>${p.chapters.map(ch => `<li>${RefrigMd.esc(ch)}</li>`).join("")}</ol>
+      </div>`).join("")}
+    </div>
+    ${doc.appendices ? `<p class="module-blurb">Appendices: ${doc.appendices.map(a =>
+      `<b>${RefrigMd.esc(a.id)}</b> ${RefrigMd.esc(a.title)}`).join(" · ")}</p>` : ""}
+
+    <h3 class="review-heading">Clause index</h3>
+    <p class="module-blurb">The clauses this course teaches and cites, grouped by the lesson
+    that covers them. Summaries paraphrase the requirement — the Code itself is the authority.</p>
+    ${Object.keys(byLesson).sort().map(lesId => `
+      <section class="clause-group">
+        <h4><a href="#${doc.module}/${lesId}">${RefrigMd.esc(lessonTitle(lesId))}</a></h4>
+        <dl class="clause-list">
+          ${byLesson[lesId].sort((a, b) => sortNum(a.key).localeCompare(sortNum(b.key))).map(({ key, c }) => {
+            const part = key.split(":")[0], num = key.split(":")[1];
+            const where = part === "both" ? "Pt 1 &amp; 2" : "Pt " + part;
+            return `<dt><span class="clause-num">${where} §${RefrigMd.esc(num)}</span> ${RefrigMd.esc(c.title)}</dt>
+              <dd>${RefrigMd.esc(c.summary)}</dd>`;
+          }).join("")}
+        </dl>
+      </section>`).join("")}
+
+    <aside class="lesson-refs" aria-label="Source acknowledgement">
+      <h3>Source &amp; acknowledgement</h3>
+      <p>${RefrigMd.esc(doc.acknowledgement)}</p>
+    </aside>`;
+}
+
+function renderReferenceIndex(R) {
+  const main = document.getElementById("learnMain");
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>Reference library</span></div>
+    <h2>📕 Reference library</h2>
+    <p class="module-blurb">The authoritative documents this course teaches to. Open one to see
+    how it is structured, what each Part covers, and the clause index the lessons cite.</p>
+    <div class="module-grid">
+      ${R.docs.map(d => {
+        const mod = COURSE.find(m => m.id === d.module);
+        return `<a class="module-card" href="#reference/${d.id}">
+          <h3>${RefrigMd.esc(d.short)}</h3>
+          <p>${RefrigMd.esc(d.title)} — ${RefrigMd.esc(d.edition)}.</p>
+          <span class="module-meta">${d.parts.length} parts · ${Object.keys(d.clauses).length} clauses indexed${mod ? " · " + mod.lessons.length + " lessons" : ""}</span>
+        </a>`;
+      }).join("")}
+    </div>`;
 }
 
 /* ---- Review list -------------------------------------------------------------- */

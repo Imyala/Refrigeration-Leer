@@ -2,7 +2,16 @@ const test = require("node:test");
 const assert = require("node:assert");
 const MD = require("../js/md.js");
 const D = require("../js/data.js");
-const COURSE = [...require("../js/course1.js"), ...require("../js/course2.js")];
+const fs = require("fs");
+const path = require("path");
+
+/* Load every course content file, so a new module file is covered the day it
+   lands rather than the day someone remembers to update this list. */
+const COURSE = fs
+  .readdirSync(path.join(__dirname, "..", "js"))
+  .filter((f) => /^course\d+\.js$/.test(f))
+  .sort()
+  .flatMap((f) => require("../js/" + f));
 
 test("course has a substantial number of modules and lessons", () => {
   assert.ok(COURSE.length >= 8, `modules: ${COURSE.length}`);
@@ -62,7 +71,7 @@ test("every quiz question is well-formed with a valid answer index", () => {
 });
 
 test("every !SIM deep link uses valid parameters", () => {
-  const validKeys = new Set(["r", "fault", "speed", "load", "quiz", "tour", "view"]);
+  const validKeys = new Set(["r", "fault", "speed", "load", "quiz", "tour", "view", "level"]);
   for (const mod of COURSE) {
     for (const les of mod.lessons) {
       const links = [...les.content.matchAll(/!SIM\[[^\]]*\]\(([^)]*)\)/g)];
@@ -77,9 +86,46 @@ test("every !SIM deep link uses valid parameters", () => {
             assert.ok(n >= 50 && n <= 150, `${mod.id}/${les.id}: ${k}=${v} out of range`);
           }
           if (k === "quiz" || k === "tour") assert.strictEqual(v, "1", `${mod.id}/${les.id}: ${k} must be 1`);
+          if (k === "level") {
+            const n = parseInt(v, 10);
+            assert.ok(n >= 1 && n <= 3, `${mod.id}/${les.id}: level=${v} out of range`);
+          }
           if (k === "view") assert.strictEqual(v, "pt", `${mod.id}/${les.id}: view must be pt`);
         }
       }
+    }
+  }
+});
+
+test("published course sizes match the actual course", () => {
+  // These numbers are quoted to institutions on about.html. They drifted once
+  // already when a module was added, so pin them to the real course.
+  const modules = COURSE.length;
+  const lessons = COURSE.reduce((n, m) => n + m.lessons.length, 0);
+  const about = fs.readFileSync(path.join(__dirname, "..", "about.html"), "utf8");
+
+  const moduleClaims = [...about.matchAll(/(\d+)-module/g)].map((m) => Number(m[1]));
+  assert.ok(moduleClaims.length, "about.html states a module count");
+  for (const claimed of moduleClaims) {
+    assert.strictEqual(claimed, modules, `about.html claims ${claimed} modules, course has ${modules}`);
+  }
+
+  const lessonClaims = [...about.matchAll(/(\d+) lessons\b/g)].map((m) => Number(m[1]));
+  assert.ok(lessonClaims.length, "about.html states a lesson count");
+  for (const claimed of lessonClaims) {
+    assert.strictEqual(claimed, lessons, `about.html claims ${claimed} lessons, course has ${lessons}`);
+  }
+});
+
+test("the course teaches and cites the reference documents it ships", () => {
+  const R = require("../js/refdocs.js");
+  for (const doc of R.docs) {
+    const mod = COURSE.find((m) => m.id === doc.module);
+    assert.ok(mod, `${doc.id}: taught by module ${doc.module}`);
+    assert.ok(mod.lessons.length >= 3, `${doc.id}: module has real depth (${mod.lessons.length} lessons)`);
+    // and every lesson in that module must carry at least one clause citation
+    for (const les of mod.lessons) {
+      assert.match(les.content, /!CITE\[/, `${mod.id}/${les.id}: cites at least one clause`);
     }
   }
 });

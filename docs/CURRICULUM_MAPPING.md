@@ -1,6 +1,6 @@
 # Curriculum Mapping
 
-How the course's ten modules relate to formal training frameworks. This
+How the course's eleven modules relate to formal training frameworks. This
 mapping is **indicative** — it is a sales and planning aid, not a compliance
 document. Training organisations must validate coverage against the current
 version of their training package / certification scheme; unit codes change

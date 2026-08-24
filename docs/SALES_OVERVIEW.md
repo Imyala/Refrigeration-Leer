@@ -21,7 +21,7 @@ Students get too few diagnostic repetitions before they meet a real customer.
   Quiz** mode: the fault is hidden and the student must diagnose from the
   instruments — unlimited scored repetitions of the exact skill employers
   want.
-- **Structured course** — 10 modules / 28 lessons (fundamentals → cycle →
+- **Structured course** — 11 modules / 39 lessons (fundamentals → cycle →
   components → refrigerants → superheat/subcooling → system types →
   electrical → diagnosis → repair procedures → safety), each with a checked
   quiz; lessons deep-link the simulator into the scenario being taught.

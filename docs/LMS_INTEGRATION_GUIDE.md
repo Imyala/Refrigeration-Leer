@@ -45,7 +45,7 @@ major LMSes.
 
 | SCORM field | Value |
 |-------------|-------|
-| `cmi.core.lesson_status` | `incomplete` → `completed` (all 28 lessons passed) → `passed` (lessons complete **and** final exam ≥ 80%) |
+| `cmi.core.lesson_status` | `incomplete` → `completed` (all 39 lessons passed) → `passed` (lessons complete **and** final exam ≥ 80%) |
 | `cmi.core.score.raw` (0–100) | The **final-exam best score in %** once the exam has been attempted; before that, the % of lessons completed |
 | `cmi.suspend_data` | The learner's full lesson/exam progress (compact text, well under the 4,096-char SCORM 1.2 limit) |
 
