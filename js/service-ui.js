@@ -76,93 +76,184 @@ function sbReset() {
   sbRender();
 }
 
-/* ---- SVG scene -------------------------------------------------------------- */
+/* ---- SVG scene --------------------------------------------------------------
+   The rig is drawn as the machine actually stands in front of you: a running
+   condensing unit with a stem-type service valve bolted to each side of the
+   compressor, and a gauge manifold on the floor below it with its hoses run
+   up to the two gauge ports. Everything the learner can act on is drawn where
+   it is on the real thing — spindle cap on top of the stem, gauge-port cap on
+   the side stub — so clicking the picture teaches the layout as well as the
+   procedure. Geometry is in one place, below, because every label position on
+   a drawing this dense depends on the ones around it. */
+const SB_GEO = {
+  compressor: { x: 345, y: 112, w: 170, h: 92 },
+  centreY: 158,                       // the axis the valves and pipework sit on
+  suctionX: 205, dischargeX: 655,
+  frame: { x: 62, y: 42, w: 736, h: 214 },
+  manifold: { x: 270, y: 378, w: 320, h: 58 },
+  gaugeY: 328, gaugeR: 64, lowX: 340, highX: 520,
+};
+
+/* Where the spindle stem sits for each position: back-seated is fully out
+   (anticlockwise), front-seated is fully screwed in. */
+const SB_STEM_TOP = { back: 98, crack: 106, front: 117 };
+
 function sbValveSvg(side, x) {
+  const G = SB_GEO;
   const v = SB.state.valves[side];
   const col = side === "suction" ? SB_COL.vap : SB_COL.hot;
-  const label = side === "suction" ? "SUCTION SERVICE VALVE" : "DISCHARGE SERVICE VALVE";
+  const cy = G.centreY;
+  const left = side === "suction";
+  const name = left ? "SUCTION SERVICE VALVE" : "DISCHARGE SERVICE VALVE";
   const stateTxt = { back: "BACK-SEATED", crack: "CRACKED", front: "FRONT-SEATED" }[v.spindle];
+  const stateCol = v.spindle === "back" ? SB_COL.mut : v.spindle === "crack" ? SB_COL.good : SB_COL.liq;
   const leak = SB.state.leaks[side];
+  const stemTop = SB_STEM_TOP[v.spindle];
+  const capY = stemTop - 15;          // centre of the spindle cap / stem head
+  const angle = { back: 0, crack: 40, front: 90 }[v.spindle];
+
+  /* The pipe the valve is in: system line on the outer side, compressor
+     flange on the inner side. */
+  const outerX = left ? G.frame.x + 8 : G.frame.x + G.frame.w - 8;
+  const innerX = left ? G.compressor.x : G.compressor.x + G.compressor.w;
+  const bodyEdge = left ? x + 40 : x - 40;
+  const outerEdge = left ? x - 40 : x + 40;
 
   return `
   <g data-side="${side}">
-    <line x1="${x - 95}" y1="120" x2="${x + 95}" y2="120" stroke="${col}" stroke-width="7" opacity=".85"/>
-    <rect x="${x - 34}" y="96" width="68" height="48" rx="8" fill="#16212e" stroke="${col}" stroke-width="2.5"/>
-    <text x="${x}" y="86" fill="${SB_COL.txt}" font-size="10" text-anchor="middle" letter-spacing="1">${label}</text>
+    <line x1="${outerX}" y1="${cy}" x2="${outerEdge}" y2="${cy}" stroke="${col}" stroke-width="8" stroke-linecap="round" opacity=".9" class="sb-flow"/>
+    <line x1="${bodyEdge}" y1="${cy}" x2="${innerX}" y2="${cy}" stroke="${col}" stroke-width="8" stroke-linecap="round" opacity=".9" class="sb-flow"/>
+    <text x="${outerX}" y="${cy - 16}" fill="${SB_COL.mut}" font-size="8.5" letter-spacing=".6"
+          text-anchor="${left ? "start" : "end"}">${left ? "FROM EVAPORATOR" : "TO CONDENSER"}</text>
 
-    <!-- spindle stem + cap -->
-    <rect x="${x - 6}" y="${v.spindle === "back" ? 62 : v.spindle === "crack" ? 68 : 74}" width="12" height="${v.spindle === "back" ? 34 : v.spindle === "crack" ? 28 : 22}" fill="${SB_COL.mut}"/>
+    <!-- valve body, with the bolt flange that holds it to the compressor -->
+    <rect x="${x - 40}" y="${cy - 23}" width="80" height="46" rx="7" fill="#1b2836" stroke="${col}" stroke-width="2.5"/>
+    <rect x="${left ? x + 34 : x - 44}" y="${cy - 17}" width="10" height="34" rx="3" fill="#22303f" stroke="${SB_COL.line}" stroke-width="1.5"/>
+    <text x="${x}" y="58" fill="${SB_COL.txt}" font-size="10.5" text-anchor="middle" letter-spacing="1">${name}</text>
+
+    <!-- spindle: stem out of the bonnet, cap over it until it is removed -->
+    <rect x="${x - 11}" y="${cy - 33}" width="22" height="12" rx="3" fill="#22303f" stroke="${SB_COL.line}" stroke-width="1.5"/>
+    <rect x="${x - 6}" y="${stemTop}" width="12" height="${cy - 29 - stemTop}" fill="${SB_COL.mut}" rx="2"/>
     ${v.spindleCap
-      ? `<g class="sb-click" data-act="spindleCap" data-side="${side}"><polygon points="${x - 16},62 ${x - 8},52 ${x + 8},52 ${x + 16},62 ${x + 8},72 ${x - 8},72" fill="#22303f" stroke="${SB_COL.mut}" stroke-width="2"/><title>Spindle cap — click to remove</title></g>`
-      : `<g class="sb-click" data-act="spindle-cycle" data-side="${side}"><circle cx="${x}" cy="58" r="11" fill="none" stroke="${SB_COL.txt}" stroke-width="2.5"/><line x1="${x - 8}" y1="58" x2="${x + 8}" y2="58" stroke="${SB_COL.txt}" stroke-width="2.5" transform="rotate(${v.spindle === "back" ? 0 : v.spindle === "crack" ? 45 : 90} ${x} 58)"/><title>Spindle stem — click to turn</title></g>`}
+      ? `<g class="sb-click" data-act="spindleCap" data-side="${side}">
+           <polygon points="${x - 17},${capY} ${x - 8},${capY - 11} ${x + 8},${capY - 11} ${x + 17},${capY} ${x + 8},${capY + 11} ${x - 8},${capY + 11}"
+                    fill="#25333f" stroke="${SB_COL.mut}" stroke-width="2"/>
+           <title>Spindle cap on — click to remove it</title></g>`
+      : `<g class="sb-click" data-act="spindle-cycle" data-side="${side}">
+           <circle cx="${x}" cy="${capY}" r="13" fill="#101a24" stroke="${SB_COL.txt}" stroke-width="2.5"/>
+           <line x1="${x - 9}" y1="${capY}" x2="${x + 9}" y2="${capY}" stroke="${SB_COL.txt}" stroke-width="2.5"
+                 transform="rotate(${angle} ${x} ${capY})"/>
+           <title>Valve stem — click to turn it to the next position</title></g>`}
 
-    <!-- service port + cap -->
-    <rect x="${x - 8}" y="144" width="16" height="18" fill="#22303f" stroke="${col}" stroke-width="2"/>
+    <!-- gauge port on the side stub, and whatever is on it -->
+    <rect x="${x - 9}" y="${cy + 23}" width="18" height="20" fill="#22303f" stroke="${col}" stroke-width="2"/>
+    <rect x="${x - 14}" y="${cy + 43}" width="28" height="7" rx="2" fill="#22303f" stroke="${col}" stroke-width="2"/>
     ${v.portCap
-      ? `<g class="sb-click" data-act="portCap" data-side="${side}"><rect x="${x - 11}" y="160" width="22" height="12" rx="3" fill="#22303f" stroke="${SB_COL.mut}" stroke-width="2"/><title>Gauge-port cap — click to remove</title></g>`
-      : v.hose ? "" : `<g class="sb-click" data-act="hose" data-side="${side}"><circle cx="${x}" cy="168" r="8" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="3 2"/><title>Open port — click to connect the hose</title></g>`}
+      ? `<g class="sb-click" data-act="portCap" data-side="${side}">
+           <rect x="${x - 13}" y="${cy + 50}" width="26" height="14" rx="4" fill="#25333f" stroke="${SB_COL.mut}" stroke-width="2"/>
+           <title>Gauge-port cap on — click to remove it</title></g>`
+      : v.hose ? "" : `<g class="sb-click" data-act="hose" data-side="${side}">
+           <circle cx="${x}" cy="${cy + 58}" r="9" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="3 3"/>
+           <title>Open gauge port — click to connect the hose</title></g>`}
 
     ${leak ? `<g class="sb-hiss">
-      <path d="M ${x + 12} 166 q 8 -4 16 -2" stroke="${SB_COL.bad}" stroke-width="2" fill="none"/>
-      <path d="M ${x + 12} 172 q 10 0 18 4" stroke="${SB_COL.bad}" stroke-width="2" fill="none"/>
-      <text x="${x + 40}" y="174" fill="${SB_COL.bad}" font-size="10">HISSSS…</text></g>` : ""}
+      <path d="M ${x + 16} ${cy + 46} q 9 -5 18 -3" stroke="${SB_COL.bad}" stroke-width="2" fill="none"/>
+      <path d="M ${x + 16} ${cy + 54} q 11 0 20 5" stroke="${SB_COL.bad}" stroke-width="2" fill="none"/>
+      <text x="${x + 42}" y="${cy + 40}" fill="${SB_COL.bad}" font-size="10" font-weight="700">HISSSS…</text></g>` : ""}
 
-    <text x="${x}" y="196" fill="${v.spindle === "back" ? SB_COL.mut : v.spindle === "crack" ? SB_COL.good : SB_COL.liq}" font-size="10" text-anchor="middle" font-weight="700">${stateTxt}</text>
+    <text x="${left ? x - 46 : x + 46}" y="${cy + 58}" fill="${stateCol}" font-size="10.5" font-weight="700"
+          text-anchor="${left ? "end" : "start"}">${stateTxt}</text>
   </g>`;
 }
 
 function sbHoseSvg(side, portX, manifoldX) {
+  const G = SB_GEO;
   const v = SB.state.valves[side];
   if (!v.hose) return "";
   const col = side === "suction" ? SB_COL.vap : SB_COL.hot;
+  const y0 = G.centreY + 50;
+  /* A hose hangs down off the port and sweeps in to the manifold rather than
+     cutting across the drawing in a straight line. */
+  const d = `M ${portX} ${y0} C ${portX} ${y0 + 96}, ${portX} ${y0 + 152}, ${manifoldX} 406`;
   return `
-    <path d="M ${portX} 170 C ${portX} 250, ${manifoldX} 260, ${manifoldX} 316" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" opacity=".9"/>
-    ${v.purged ? "" : `<path d="M ${portX} 170 C ${portX} 250, ${manifoldX} 260, ${manifoldX} 316" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 8" opacity=".55"><title>Air still in this hose — purge it</title></path>
-    <text x="${(portX + manifoldX) / 2 + (side === "suction" ? -8 : 8)}" y="250" fill="${SB_COL.mut}" font-size="9" text-anchor="middle">air in hose</text>`}`;
+    <path d="${d}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" opacity=".92"/>
+    <circle cx="${portX}" cy="${y0}" r="6" fill="#25333f" stroke="${col}" stroke-width="2"/>
+    ${v.purged ? "" : `
+    <path d="${d}" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="5 9" opacity=".6"><title>Air still in this hose — purge it</title></path>
+    <text x="${portX + (side === "suction" ? -38 : 38)}" y="332" fill="${SB_COL.mut}" font-size="9.5" text-anchor="middle">air in hose</text>`}`;
+}
+
+function sbManifoldSvg() {
+  const G = SB_GEO, s = SB.state, M = G.manifold;
+  const cx = M.x + M.w / 2;
+  const knob = (kx) => `
+    <circle cx="${kx}" cy="${M.y + 36}" r="11" fill="#25333f" stroke="${SB_COL.line}" stroke-width="2"/>
+    <line x1="${kx - 7}" y1="${M.y + 36}" x2="${kx + 7}" y2="${M.y + 36}" stroke="${SB_COL.mut}" stroke-width="2"/>`;
+
+  return `
+    <rect x="${M.x}" y="${M.y}" width="${M.w}" height="${M.h}" rx="10" fill="#16212e" stroke="${SB_COL.line}" stroke-width="2"/>
+    <rect x="${M.x - 14}" y="${M.y + 23}" width="14" height="10" rx="2" fill="#22303f" stroke="${SB_COL.vap}" stroke-width="2"/>
+    <rect x="${M.x + M.w}" y="${M.y + 23}" width="14" height="10" rx="2" fill="#22303f" stroke="${SB_COL.hot}" stroke-width="2"/>
+    ${knob(M.x + 28)}${knob(M.x + M.w - 28)}
+    <rect x="${cx - 9}" y="${M.y + M.h}" width="18" height="22" rx="3" fill="#22303f" stroke="${SB_COL.line}" stroke-width="2"/>
+    <text x="${cx}" y="${M.y + 30}" fill="${SB_COL.mut}" font-size="9.5" text-anchor="middle" letter-spacing=".8">GAUGE MANIFOLD</text>
+    <text x="${cx}" y="${M.y + 46}" fill="${s.zeroChecked ? SB_COL.good : SB_COL.mut}" font-size="9" text-anchor="middle">${s.zeroChecked ? "✓ proved at zero" : "not proved yet"}</text>
+    <text x="${cx}" y="494" fill="${SB_COL.mut}" font-size="9" text-anchor="middle">centre port — charging &amp; vacuum · outer ring reads pressure, inner ring the saturation temperature</text>`;
 }
 
 function sbRenderScene() {
   const svg = document.getElementById("bayScene");
+  if (!svg) return;
+  const G = SB_GEO, C = G.compressor;
   const s = SB.state;
   const base = RefrigData.REFRIGERANTS[SB.refrigerant];
 
   svg.innerHTML = `
-    <rect x="255" y="60" width="150" height="70" rx="10" fill="#16212e" stroke="${SB_COL.line}" stroke-width="2"/>
-    <text x="330" y="90" fill="${SB_COL.txt}" font-size="11" text-anchor="middle">COMPRESSOR</text>
-    <text x="330" y="108" fill="${s.tripped ? SB_COL.bad : SB_COL.good}" font-size="10" text-anchor="middle" font-weight="700">${s.tripped ? "TRIPPED — HP CUT-OUT" : "RUNNING"}</text>
-    ${sbValveSvg("suction", 130)}
-    ${sbValveSvg("discharge", 530)}
-    ${sbHoseSvg("suction", 130, 240)}
-    ${sbHoseSvg("discharge", 530, 420)}
-    <rect x="205" y="316" width="250" height="52" rx="10" fill="#16212e" stroke="${SB_COL.line}" stroke-width="2"/>
-    <text x="330" y="341" fill="${SB_COL.mut}" font-size="10" text-anchor="middle" letter-spacing="1">GAUGE MANIFOLD</text>
-    <text x="330" y="358" fill="${s.zeroChecked ? SB_COL.good : SB_COL.mut}" font-size="9.5" text-anchor="middle">${s.zeroChecked ? "✓ gauges proved at zero" : "gauges not proved yet"}</text>`;
+    <rect x="${G.frame.x}" y="${G.frame.y}" width="${G.frame.w}" height="${G.frame.h}" rx="16"
+          fill="rgba(255,255,255,.015)" stroke="${SB_COL.line}" stroke-width="1.5" stroke-dasharray="6 6"/>
+    <text x="${C.x + C.w / 2}" y="${G.frame.y + G.frame.h - 12}" fill="${SB_COL.mut}" font-size="9.5"
+          text-anchor="middle" letter-spacing="1">CONDENSING UNIT</text>
 
-  // gauges (reuses the generic dial from gauges.js)
+    <rect x="${C.x}" y="${C.y}" width="${C.w}" height="${C.h}" rx="12" fill="#16212e" stroke="${s.tripped ? SB_COL.bad : SB_COL.line}" stroke-width="2.5"/>
+    <circle cx="${C.x + C.w / 2}" cy="${C.y + 30}" r="16" fill="none" stroke="${s.tripped ? SB_COL.bad : SB_COL.hot}" stroke-width="2.5"/>
+    <text x="${C.x + C.w / 2}" y="${C.y + 62}" fill="${SB_COL.txt}" font-size="11" text-anchor="middle" letter-spacing="1">COMPRESSOR</text>
+    <text x="${C.x + C.w / 2}" y="${C.y + 80}" fill="${s.tripped ? SB_COL.bad : SB_COL.good}" font-size="10" text-anchor="middle" font-weight="700">${s.tripped ? "TRIPPED — HP CUT-OUT" : "RUNNING"}</text>
+
+    ${sbValveSvg("suction", G.suctionX)}
+    ${sbValveSvg("discharge", G.dischargeX)}
+    ${sbHoseSvg("suction", G.suctionX, G.manifold.x - 16)}
+    ${sbHoseSvg("discharge", G.dischargeX, G.manifold.x + G.manifold.w + 16)}
+    ${sbManifoldSvg()}`;
+
+  // gauges (the same dial the simulator's manifold draws, at rig scale)
   const step = { kPa: 200, bar: 2, psi: 50 }[RefrigUnits.prefs.p];
   const niceMax = (bar) => Math.max(step, Math.ceil(RefrigUnits.barTo(bar) / step) * step);
   const rLow = RefrigService.reading(s, "suction", SB.pressures);
   const rHigh = RefrigService.reading(s, "discharge", SB.pressures);
 
-  drawGauge(svg, 240, 258, 52, {
-    base, pAbs: rLow == null ? RefrigUnits.ATM_BAR : rLow, color: SB_COL.vap, title: "LOW",
+  drawGauge(svg, G.lowX, G.gaugeY, G.gaugeR, {
+    base, pAbs: rLow == null ? RefrigUnits.ATM_BAR : rLow, color: SB_COL.vap,
     max: niceMax(base.pLow * 2.6 - RefrigUnits.ATM_BAR),
   });
-  drawGauge(svg, 420, 258, 52, {
-    base, pAbs: rHigh == null ? RefrigUnits.ATM_BAR : rHigh, color: SB_COL.hot, title: "HIGH",
+  drawGauge(svg, G.highX, G.gaugeY, G.gaugeR, {
+    base, pAbs: rHigh == null ? RefrigUnits.ATM_BAR : rHigh, color: SB_COL.hot,
     max: niceMax(base.pHigh * 1.9 - RefrigUnits.ATM_BAR),
   });
 
-  const add = (x, txt, col) => {
+  const add = (x, y, txt, col, size, weight) => {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x); t.setAttribute("y", 392);
-    t.setAttribute("fill", col); t.setAttribute("font-size", "11");
-    t.setAttribute("font-weight", "700"); t.setAttribute("text-anchor", "middle");
+    t.setAttribute("x", x); t.setAttribute("y", y);
+    t.setAttribute("fill", col); t.setAttribute("font-size", size || 11);
+    t.setAttribute("font-weight", weight || "700"); t.setAttribute("text-anchor", "middle");
     t.textContent = txt;
     svg.appendChild(t);
   };
-  add(240, rLow == null ? "no reading" : `${RefrigUnits.fmtPGauge(rLow)} · sat ${RefrigUnits.fmtT(RefrigModel.satTemp(base, rLow))}`, rLow == null ? SB_COL.mut : SB_COL.txt);
-  add(420, rHigh == null ? "no reading" : `${RefrigUnits.fmtPGauge(rHigh)} · sat ${RefrigUnits.fmtT(RefrigModel.satTemp(base, rHigh))}`, rHigh == null ? SB_COL.mut : SB_COL.txt);
+  add(G.lowX, 456, "LOW SIDE", SB_COL.vap, 9.5);
+  add(G.highX, 456, "HIGH SIDE", SB_COL.hot, 9.5);
+  add(G.lowX, 474, rLow == null ? "no reading" : `${RefrigUnits.fmtPGauge(rLow)} · sat ${RefrigUnits.fmtT(RefrigModel.satTemp(base, rLow))}`,
+      rLow == null ? SB_COL.mut : SB_COL.txt, 11.5);
+  add(G.highX, 474, rHigh == null ? "no reading" : `${RefrigUnits.fmtPGauge(rHigh)} · sat ${RefrigUnits.fmtT(RefrigModel.satTemp(base, rHigh))}`,
+      rHigh == null ? SB_COL.mut : SB_COL.txt, 11.5);
 
   // clickable overlays
   svg.querySelectorAll(".sb-click").forEach(g => {

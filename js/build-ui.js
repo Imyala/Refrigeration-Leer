@@ -204,113 +204,303 @@ function renderPalette() {
   document.getElementById("buildPalette").innerHTML = html;
 }
 
-/* ---- Rendering: the loop ------------------------------------------------ */
-function slotHtml(index) {
-  return `<span class="drop-slot" data-slot="${index}" aria-hidden="true"></span>`;
+/* ---- Rendering: the loop ------------------------------------------------
+   The circuit is DRAWN, not listed. Four anchors sit at the corners of a
+   rectangle, the four runs of pipe are the four sides, and every accessory
+   sits on the run it is piped into — which is the whole point: a learner who
+   reads a circuit as a list never works out why an accessory belongs where it
+   does, and one who follows the refrigerant round the drawing does.
+
+   The pipes, run names and the high/low side split are drawn in SVG; the
+   components and the drop targets are HTML on top of it, so dragging,
+   keyboard editing and focus all keep working exactly as they do anywhere
+   else on the page. Geometry is computed once, in loopGeometry(), and both
+   layers read the same numbers. */
+const DRAW = {
+  pad: 24,
+  anchorW: 150, anchorH: 64,
+  chipW: 142, chipH: 44,
+  gap: 14,
+  /* Room left between two parts on the same run: enough for the flow arrow
+     that sits in the join, which is also the drop target. */
+  join: 30,
+  minSpanH: 480, minSpanV: 268,
+};
+
+/* Which edge of the rectangle each run is drawn on, in flow order, and which
+   way the refrigerant is travelling along it. */
+const EDGES = [
+  { zone: "discharge", from: 0, to: 1, axis: "x", dir: "right" },
+  { zone: "liquid",    from: 1, to: 2, axis: "y", dir: "down" },
+  { zone: "distrib",   from: 2, to: 3, axis: "x", dir: "left" },
+  { zone: "suction",   from: 3, to: 0, axis: "y", dir: "up" },
+];
+
+/* Split the sequence into what sits at each corner and what sits on each run.
+   With the four anchors in flow order the engine's zone map decides it; until
+   then there are no named runs, so the parts are simply spread round the
+   rectangle in the order they were placed — the drawing still shows a loop,
+   it just cannot say which run is which. */
+function loopEdges(seq, zm) {
+  if (zm) {
+    return {
+      corners: [zm.iComp, zm.iCond, zm.iMet, zm.iEvap],
+      runs: [
+        range(zm.iComp + 1, zm.iCond),
+        range(zm.iCond + 1, zm.iMet),
+        range(zm.iMet + 1, zm.iEvap),
+        range(zm.iEvap + 1, seq.length),
+      ],
+      zoned: true,
+    };
+  }
+  const rest = range(1, seq.length);
+  const per = Math.ceil(rest.length / 4);
+  const runs = [0, 1, 2, 3].map((k) => rest.slice(k * per, (k + 1) * per));
+  /* The last run has to end where the loop closes, so its trailing slot is
+     the end of the sequence whatever the chunking did. */
+  return { corners: [0, null, null, null], runs, zoned: false };
 }
 
-function cardHtml(i, opts) {
+function range(from, to) {
+  const out = [];
+  for (let i = from; i < to; i++) out.push(i);
+  return out;
+}
+
+function loopGeometry(seq, zm) {
+  const D = DRAW;
+  const { corners, runs, zoned } = loopEdges(seq, zm);
+
+  /* The four main components are drawn as bigger boxes wherever they are —
+     including while they are still in the wrong order — so the spacing has to
+     be worked out from the real size of each part, not from an average. */
+  const isBig = (i) => { const c = comp(seq[i]); return !!(c && c.anchor); };
+  const sizeOf = (i, horiz) => isBig(i)
+    ? (horiz ? D.anchorW : D.anchorH)
+    : (horiz ? D.chipW : D.chipH);
+  const runExtent = (k, horiz) => {
+    const n = runs[k].length;
+    return n ? runs[k].reduce((a, i) => a + sizeOf(i, horiz), 0) + (n - 1) * D.join : 0;
+  };
+  const cornerHalf = (k, horiz) => corners[k] == null ? 0 : (horiz ? D.anchorW : D.anchorH) / 2;
+  const edgeNeed = (k, horiz) =>
+    cornerHalf(EDGES[k].from, horiz) + cornerHalf(EDGES[k].to, horiz) + runExtent(k, horiz) + 2 * D.join;
+
+  const spanH = Math.max(D.minSpanH, edgeNeed(0, true), edgeNeed(2, true));
+  const spanV = Math.max(D.minSpanV, edgeNeed(1, false), edgeNeed(3, false));
+
+  const x0 = D.pad + D.anchorW / 2, y0 = D.pad + D.anchorH / 2;
+  const x1 = x0 + spanH, y1 = y0 + spanV;
+  const pts = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+
+  const items = [];   // {i, x, y, big}
+  const slots = [];   // {at, x, y, dir}
+
+  corners.forEach((i, k) => {
+    if (i != null) items.push({ i, x: pts[k].x, y: pts[k].y, big: true });
+  });
+
+  EDGES.forEach((e, k) => {
+    const a = pts[e.from], b = pts[e.to];
+    const horiz = e.axis === "x";
+    const a0 = horiz ? a.x : a.y, b0 = horiz ? b.x : b.y;
+    const sign = b0 > a0 ? 1 : -1;
+    const start = a0 + sign * (cornerHalf(e.from, horiz) + D.join);
+    const stop = b0 - sign * (cornerHalf(e.to, horiz) + D.join);
+    const place = (v) => (horiz ? { x: v, y: a.y } : { x: a.x, y: v });
+    const list = runs[k];
+    const n = list.length;
+
+    /* Where a drop on an empty run lands: immediately after whatever the run
+       starts from — its own anchor, or the last part placed before it. */
+    const emptyIndex = () => {
+      if (corners[k] != null) return corners[k] + 1;
+      for (let j = k - 1; j >= 0; j--) {
+        if (runs[j].length) return runs[j][runs[j].length - 1] + 1;
+        if (corners[j] != null) return corners[j] + 1;
+      }
+      return 1;
+    };
+
+    if (!n) {
+      slots.push(Object.assign({ at: emptyIndex(), dir: e.dir }, place((start + stop) / 2)));
+      return;
+    }
+
+    /* Parts are laid along the run in flow order and the group is centred on
+       it, so a run with one part in it reads as that part in the middle of a
+       length of pipe rather than crowded up against an anchor. */
+    const sizes = list.map((i) => sizeOf(i, horiz));
+    const total = runExtent(k, horiz);
+    let cursor = (start + stop) / 2 - sign * total / 2;
+    list.forEach((i, j) => {
+      const centre = cursor + sign * sizes[j] / 2;
+      items.push(Object.assign({ i, big: isBig(i) }, place(centre)));
+      slots.push(Object.assign({ at: i, dir: e.dir }, place(centre - sign * (sizes[j] / 2 + D.join / 2))));
+      if (j === n - 1) {
+        slots.push(Object.assign({ at: i + 1, dir: e.dir }, place(centre + sign * (sizes[j] / 2 + D.join / 2))));
+      }
+      cursor += sign * (sizes[j] + D.join);
+    });
+  });
+
+  return {
+    corners, runs, zoned, pts, spanH, spanV,
+    w: x1 + D.anchorW / 2 + D.pad,
+    h: y1 + D.anchorH / 2 + D.pad,
+    items, slots,
+  };
+}
+
+/* ---- The drawn layer ---------------------------------------------------- */
+function loopSvg(geo) {
+  const D = DRAW;
+  const [tl, tr, br, bl] = geo.pts;
+  const pipe = (a, b, zone) => `
+    <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="pipe-base"/>
+    <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="pipe-flow ${geo.zoned ? "run-" + zone : "run-none"}"/>`;
+
+  /* The run's name, and what the refrigerant actually is along it — the
+     second line is the half of the answer a learner is asked for out loud. */
+  const runName = (zone, x, y, rotate) => {
+    const z = RC.ZONES[zone];
+    const state = z.desc.split(",")[0];
+    /* Both lines rotate about the same point, so the second line stacks
+       alongside the first in the rotated frame instead of on top of it. */
+    const t = rotate ? ` transform="rotate(${rotate} ${x} ${y})"` : "";
+    return `<g class="run-label"${t}>
+      <text x="${x}" y="${y}" class="run-name run-${zone}">${esc(z.label.toUpperCase())}</text>
+      <text x="${x}" y="${y + 15}" class="run-state">${esc(state)}</text>
+    </g>`;
+  };
+
+  const labels = geo.zoned ? `
+    <line x1="${tl.x}" y1="${tl.y}" x2="${br.x}" y2="${br.y}" class="side-split"/>
+    <text x="${tl.x + geo.spanH * 0.66}" y="${tl.y + geo.spanV * 0.34}" class="side-tag high">HIGH SIDE</text>
+    <text x="${tl.x + geo.spanH * 0.34}" y="${tl.y + geo.spanV * 0.70}" class="side-tag low">LOW SIDE</text>
+    ${runName("discharge", (tl.x + tr.x) / 2, tl.y + 52)}
+    ${runName("liquid", tr.x - (D.chipW / 2 + 22), (tr.y + br.y) / 2, 90)}
+    ${runName("distrib", (br.x + bl.x) / 2, br.y - 42)}
+    ${runName("suction", bl.x + (D.chipW / 2 + 22), (bl.y + tl.y) / 2, -90)}` : "";
+
+  return `<svg class="loop-svg" viewBox="0 0 ${geo.w} ${geo.h}" width="${geo.w}" height="${geo.h}" aria-hidden="true" focusable="false">
+      ${pipe(tl, tr, "discharge")}${pipe(tr, br, "liquid")}${pipe(br, bl, "distrib")}${pipe(bl, tl, "suction")}
+      ${labels}
+    </svg>`;
+}
+
+/* ---- The interactive layer ---------------------------------------------- */
+function slotHtml(slot) {
+  return `<span class="drop-slot dir-${slot.dir}" data-slot="${slot.at}"
+    style="left:${slot.x}px;top:${slot.y}px" aria-hidden="true"></span>`;
+}
+
+function chipHtml(item, opts) {
+  const i = item.i;
   const id = BUILD.seq[i];
   const c = comp(id);
   if (!c) return "";
+  const D = DRAW;
   const sev = opts.sev || null;
-  const selected = BUILD.selected === i;
-  const flash = BUILD.flash && BUILD.flash.kind === "loop" && BUILD.flash.key === i;
   const fixed = i === 0;
+  const w = item.big ? D.anchorW : D.chipW;
+  const h = item.big ? D.anchorH : D.chipH;
   const cls = [
-    fixed ? "loop-node-card is-anchor-fixed" : (opts.node ? "loop-node-card" : "loop-card"),
+    "cx", item.big ? "cx-anchor" : "cx-part",
     sev ? "sev-" + sev : "",
-    selected ? "is-selected" : "",
-    flash ? "is-flash" : "",
+    BUILD.selected === i ? "is-selected" : "",
+    BUILD.flash && BUILD.flash.kind === "loop" && BUILD.flash.key === i ? "is-flash" : "",
+    opts.toolsBelow ? "tools-below" : "",
   ].filter(Boolean).join(" ");
 
-  const sub = fixed
-    ? "fixed start of the loop"
-    : (opts.node ? "main component" : (opts.zoneLabel || "not in a recognised run"));
-
-  const flagged = sev === "error" || sev === "warning"
-    ? `<span class="card-flag ${sev}">${sev === "error" ? "Error" : "Check"}</span>` : "";
+  const where = fixed ? "the fixed start of the loop"
+    : opts.zoneLabel ? "in the " + opts.zoneLabel
+    : "in this loop";
+  const flag = sev === "error" || sev === "warning"
+    ? `<span class="cx-flag ${sev}" title="${sev === "error" ? "Error" : "Worth checking"}" aria-hidden="true">!</span>` : "";
 
   const tools = fixed ? "" : `
-      <span class="card-tools">
-        <button type="button" class="card-tool" data-up="${i}" data-fk="up:${i}"
-                title="Move ${esc(c.label)} earlier in the flow"
-                aria-label="Move ${esc(c.label)} earlier in the flow"${i <= 1 ? " disabled" : ""}>▲</button>
-        <button type="button" class="card-tool" data-down="${i}" data-fk="down:${i}"
-                title="Move ${esc(c.label)} later in the flow"
-                aria-label="Move ${esc(c.label)} later in the flow"${i >= BUILD.seq.length - 1 ? " disabled" : ""}>▼</button>
-        <button type="button" class="card-tool is-remove" data-remove="${i}" data-fk="rm:${i}"
-                title="Remove ${esc(c.label)} from the loop"
-                aria-label="Remove ${esc(c.label)} from the loop">×</button>
-      </span>`;
+    <span class="cx-tools">
+      <button type="button" class="card-tool" data-up="${i}" data-fk="up:${i}"
+              aria-label="Move ${esc(c.label)} earlier in the flow"${i <= 1 ? " disabled" : ""}>▲</button>
+      <button type="button" class="card-tool" data-down="${i}" data-fk="down:${i}"
+              aria-label="Move ${esc(c.label)} later in the flow"${i >= BUILD.seq.length - 1 ? " disabled" : ""}>▼</button>
+      <button type="button" class="card-tool is-remove" data-remove="${i}" data-fk="rm:${i}"
+              aria-label="Remove ${esc(c.label)} from the loop">×</button>
+    </span>`;
 
-  return `<div class="${cls}" data-card="${i}"${fixed ? "" : ' draggable="true"'}>
-      <button type="button" class="card-main" data-detail="${i}" data-fk="card:${i}"
-              aria-pressed="${selected ? "true" : "false"}">
-        <span class="card-icon" aria-hidden="true">${esc(c.icon)}</span>
-        <span class="card-text">
-          <span class="card-label">${esc(c.label)}</span>
-          <span class="card-sub">${esc(sub)}</span>
-        </span>
+  return `<div class="${cls}" data-card="${i}"${fixed ? "" : ' draggable="true"'}
+      style="left:${item.x - w / 2}px;top:${item.y - h / 2}px;width:${w}px;height:${h}px">
+      <button type="button" class="cx-main" data-detail="${i}" data-fk="card:${i}"
+              aria-pressed="${BUILD.selected === i ? "true" : "false"}"
+              aria-label="${esc(c.label)}, ${esc(where)}${sev ? " — " + (sev === "error" ? "error" : "check this") : ""}">
+        <span class="cx-icon" aria-hidden="true">${esc(c.icon)}</span>
+        <span class="cx-label">${esc(item.big ? c.label : (c.short || c.label))}</span>
       </button>
-      ${flagged}${tools}
+      ${flag}${tools}
     </div>`;
 }
 
-function runHtml(row, worst) {
-  const z = row.zone ? RC.ZONES[row.zone] : null;
-  const items = [];
-  for (let i = row.from; i < row.to; i++) {
-    items.push(slotHtml(i));
-    items.push(cardHtml(i, { sev: worst[i], zoneLabel: z ? "in the " + z.label : "" }));
-  }
-  items.push(slotHtml(row.to));
-
-  const empty = row.to <= row.from;
-  return `<div class="loop-run ${row.zone ? "run-" + row.zone : "run-none"}">
-      <div class="loop-run-head">
-        <span class="loop-run-name">${z ? esc(z.label) : "components in this loop"}</span>
-        ${z ? `<span class="loop-run-desc">${esc(z.desc)}</span>` : ""}
-      </div>
-      <div class="loop-run-body">
-        ${items.join("")}
-        ${empty ? `<span class="loop-run-empty">nothing fitted here — the refrigerant runs straight through</span>` : ""}
-      </div>
-    </div>`;
+/* The stage is drawn at its natural size and scaled to whatever width the
+   column gives it, so the pipes, the parts and the drop targets can never
+   drift apart — and the drawing still fits a laptop screen. */
+function fitStage() {
+  const wrap = document.getElementById("loopWrap");
+  const stage = document.getElementById("loopTrack");
+  if (!wrap || !stage || !stage.dataset) return;
+  const w = Number(stage.dataset.w) || 0;
+  const h = Number(stage.dataset.h) || 0;
+  const avail = wrap.clientWidth || 0;
+  if (!w || !h || !avail) return;
+  /* Grow into a wide column as happily as it shrinks into a narrow one —
+     stacked on a laptop or a tablet the drawing gets the whole width. The
+     stage scales from its top-left corner, so any room left over after that
+     is put back as a margin rather than left hanging off one side. */
+  const scale = Math.min(1.25, Math.max(0.5, avail / w));
+  stage.style.transform = "scale(" + scale + ")";
+  stage.style.marginLeft = Math.max(0, Math.round((avail - w * scale) / 2)) + "px";
+  wrap.style.height = Math.round(h * scale) + "px";
 }
 
 function renderLoop(res) {
   const host = document.getElementById("buildLoop");
   const zm = res.zones;
-  const plan = loopPlan(BUILD.seq, zm);
   const worst = severityByIndex(res);
+  const geo = loopGeometry(BUILD.seq, zm);
 
   document.getElementById("buildCount").textContent =
     BUILD.seq.length === 1 ? "compressor only" : BUILD.seq.length + " components";
 
-  if (plan.empty) {
-    host.innerHTML = `<p class="loop-empty">The loop is empty. Add a compressor from the
-      palette to start the circuit — every circuit is read from the compressor round.</p>`;
-    return;
-  }
-
   /* The runs only mean something once the engine can tell them apart, so an
      out-of-order circuit is drawn plain rather than coloured with a guess. */
-  const note = plan.unzoned ? `<p class="loop-note"><b>The runs are not coloured yet.</b>
+  const note = geo.zoned ? "" : `<p class="loop-note"><b>The runs are not coloured yet.</b>
     The four main components — compressor, condenser, metering device, evaporator — have to be
     in flow order before there is a discharge line, a liquid line and a suction line to colour.
-    Put them in that order and the runs will appear.</p>` : "";
+    Put them in that order and the pipework will come to life.</p>`;
 
-  const rows = plan.rows.map((row) => row.kind === "node"
-    ? `<div class="loop-node">${cardHtml(row.i, { node: true, sev: worst[row.i] })}</div>`
-    : runHtml(row, worst)).join("");
+  /* Zone labels for the aria text, keyed by sequence index. */
+  const zoneOf = {};
+  if (zm) BUILD.seq.forEach((_, i) => { if (zm.zones[i]) zoneOf[i] = RC.ZONES[zm.zones[i]].label; });
+
+  const chips = geo.items
+    .slice()
+    .sort((a, b) => a.i - b.i)          // DOM order follows the refrigerant
+    .map((item) => chipHtml(item, {
+      sev: worst[item.i],
+      zoneLabel: zoneOf[item.i],
+      toolsBelow: Math.abs(item.y - geo.pts[0].y) < 1,
+    })).join("");
 
   host.innerHTML = `${note}
-    <div class="loop${plan.unzoned ? " is-unzoned" : ""}" id="loopTrack">
-      <span class="loop-return" aria-hidden="true"></span>
-      <span class="loop-return-tag" aria-hidden="true">back to the compressor</span>
-      ${rows}
+    <div class="loop-wrap" id="loopWrap">
+      <div class="loop-stage" id="loopTrack"
+           data-w="${geo.w}" data-h="${geo.h}" style="width:${geo.w}px;height:${geo.h}px">
+        ${loopSvg(geo)}
+        <div class="loop-parts">${geo.slots.map(slotHtml).join("")}${chips}</div>
+      </div>
     </div>`;
+  fitStage();
 }
 
 /* ---- Rendering: analysis ------------------------------------------------ */
@@ -532,32 +722,21 @@ function clearSlots() {
   document.querySelectorAll(".drop-slot.is-on").forEach((s) => s.classList.remove("is-on"));
 }
 
-/* A drop lands in a slot. Cards are targets too, so that dropping onto the
-   left or right half of a component means "before" or "after" it — which is
-   what people expect, and it makes the targets far bigger than a 26px gap. */
+/* A drop lands in the join it is nearest to. On a drawing that is the only
+   rule that behaves the way people expect: you aim at a piece of pipe, not at
+   a 26px gap between two boxes, and it works the same whether the run is
+   horizontal or vertical. */
 function slotFor(e) {
-  const el = e.target.closest ? e.target.closest(".drop-slot, .loop-card, .loop-node-card, .loop-run-body") : null;
-  if (!el) return null;
-  if (el.classList.contains("drop-slot")) return el;
-  if (el.classList.contains("loop-run-body")) return el.querySelector(".drop-slot");
-  const rect = el.getBoundingClientRect();
-  const before = e.clientX < rect.left + rect.width / 2;
-
-  if (el.classList.contains("loop-node-card")) {
-    const node = el.closest(".loop-node");
-    const prev = node && node.previousElementSibling;
-    const next = node && node.nextElementSibling;
-    const run = before ? (prev || next) : (next || prev);
-    if (!run || !run.classList.contains("loop-run")) return null;
-    const slots = run.querySelectorAll(".drop-slot");
-    if (!slots.length) return null;
-    return run === prev ? slots[slots.length - 1] : slots[0];
-  }
-
-  const cand = before ? el.previousElementSibling : el.nextElementSibling;
-  if (cand && cand.classList.contains("drop-slot")) return cand;
-  const parent = el.closest(".loop-run-body");
-  return parent ? parent.querySelector(".drop-slot") : null;
+  const slots = document.querySelectorAll(".drop-slot");
+  let best = null, bestD = Infinity;
+  slots.forEach((s) => {
+    const r = s.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    const d = dx * dx + dy * dy;
+    if (d < bestD) { bestD = d; best = s; }
+  });
+  return best;
 }
 
 function wireDragTargets() {
@@ -687,4 +866,14 @@ document.addEventListener("DOMContentLoaded", () => {
   wireDragSources();
   wireDragTargets();
   render();
+
+  /* The drawing is scaled to the column it is in, so it has to be re-fitted
+     when that column changes width. */
+  if (window.addEventListener) {
+    let pending = null;
+    window.addEventListener("resize", () => {
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(fitStage, 120);
+    });
+  }
 });

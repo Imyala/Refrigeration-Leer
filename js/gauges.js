@@ -28,19 +28,25 @@ function gaugeArc(cx, cy, radius) {
   return `M ${sx} ${sy} A ${radius} ${radius} 0 1 1 ${ex} ${ey}`;
 }
 
+/* Every radius and type size on the face is a fraction of the dial radius.
+   The manifold on the simulator draws at r=76 and the Service Bay rig draws
+   the same dial much smaller; with fixed offsets the inner PT ring collapsed
+   into the hub at anything under about r=70 and the two scales printed on top
+   of each other. Proportional geometry gives the same face at any size. */
 function drawGauge(svg, cx, cy, r, opts) {
   const U = RefrigUnits, M = RefrigModel;
   const g = gaugeAdd(svg, "g", {});
+  const fs = (frac, min) => Math.max(min || 6, Math.round(r * frac * 10) / 10);
 
-  gaugeAdd(g, "circle", { cx, cy, r, fill: "#0b1219", stroke: opts.color, "stroke-width": 2.5 });
+  gaugeAdd(g, "circle", { cx, cy, r, fill: "#0b1219", stroke: opts.color, "stroke-width": Math.max(1.6, r * 0.033) });
 
   // Two scales share this dial, so they need to read as two separate rings:
   // pressure on the outside, saturation temperature on a smaller inner ring
-  // with its own arc. They used to sit 13px apart and collide.
-  const rPress = r - 21;
-  const rSat   = r - 40;
+  // with its own arc.
+  const rPress = r * 0.724;
+  const rSat   = r * 0.474;
   gaugeAdd(g, "path", {
-    d: gaugeArc(cx, cy, rSat + 9), fill: "none",
+    d: gaugeArc(cx, cy, rSat + r * 0.118), fill: "none",
     stroke: opts.color, "stroke-width": 1, opacity: 0.28,
   });
 
@@ -48,12 +54,12 @@ function drawGauge(svg, cx, cy, r, opts) {
   for (let i = 0; i <= ticks; i++) {
     const frac = i / ticks;
     const v = opts.max * frac;
-    const [x1, y1] = gaugePoint(cx, cy, r - 3, frac);
-    const [x2, y2] = gaugePoint(cx, cy, r - 10, frac);
+    const [x1, y1] = gaugePoint(cx, cy, r * 0.96, frac);
+    const [x2, y2] = gaugePoint(cx, cy, r * 0.87, frac);
     gaugeAdd(g, "line", { x1, y1, x2, y2, stroke: "#7f93a5", "stroke-width": 1.5 });
     const [lx, ly] = gaugePoint(cx, cy, rPress, frac);
     gaugeAdd(g, "text", {
-      x: lx, y: ly + 3, fill: "#e8eef4", "font-size": 9, "text-anchor": "middle",
+      x: lx, y: ly + r * 0.04, fill: "#e8eef4", "font-size": fs(0.118, 7.5), "text-anchor": "middle",
     }, String(Math.round(v)));
 
     // Inner PT ring: saturation temperature at this gauge pressure
@@ -63,7 +69,7 @@ function drawGauge(svg, cx, cy, r, opts) {
       const satT = M.satTemp(opts.base, absBar);
       const [tx, ty] = gaugePoint(cx, cy, rSat, frac);
       gaugeAdd(g, "text", {
-        x: tx, y: ty + 2.5, fill: opts.color, "font-size": 7.5, "text-anchor": "middle", opacity: 0.95,
+        x: tx, y: ty + r * 0.033, fill: opts.color, "font-size": fs(0.099, 6.5), "text-anchor": "middle", opacity: 0.95,
       }, `${Math.round(U.cTo(satT))}°`);
     }
   }
@@ -71,15 +77,15 @@ function drawGauge(svg, cx, cy, r, opts) {
   // Needle at the current gauge pressure (clamped to the dial range)
   const gaugeDisp = U.barTo(U.gaugeBar(opts.pAbs));
   const frac = Math.max(0, Math.min(1, gaugeDisp / opts.max));
-  const [nx, ny] = gaugePoint(cx, cy, r - 13, frac);
-  const [tx2, ty2] = gaugePoint(cx, cy, 9, frac + 0.5);
-  gaugeAdd(g, "line", { x1: tx2, y1: ty2, x2: nx, y2: ny, stroke: "#e8eef4", "stroke-width": 2.5, "stroke-linecap": "round" });
-  gaugeAdd(g, "circle", { cx, cy, r: 4, fill: opts.color });
+  const [nx, ny] = gaugePoint(cx, cy, r * 0.83, frac);
+  const [tx2, ty2] = gaugePoint(cx, cy, r * 0.118, frac + 0.5);
+  gaugeAdd(g, "line", { x1: tx2, y1: ty2, x2: nx, y2: ny, stroke: "#e8eef4", "stroke-width": Math.max(1.8, r * 0.033), "stroke-linecap": "round" });
+  gaugeAdd(g, "circle", { cx, cy, r: Math.max(3, r * 0.053), fill: opts.color });
 
-  // The dial's open bottom quadrant is the only clear space on the face.
-  gaugeAdd(g, "text", {
-    x: cx, y: cy + 44, fill: "#5b6d7e", "font-size": 7.5, "text-anchor": "middle", "letter-spacing": .6,
-  }, U.P_UNITS[U.prefs.p].gaugeLabel + " / °" + U.prefs.t);
+  /* Nothing else goes on the face. Both scales run right round the dial and
+     the only clear space is the bottom wedge, which is exactly where the two
+     end-of-scale labels sit — so the title and the units belong under the
+     dial, where each caller already writes its reading. */
 }
 
 function renderGauges(c) {
@@ -94,11 +100,11 @@ function renderGauges(c) {
   const CY = 88, R = 76;
 
   drawGauge(svg, 94, CY, R, {
-    base, pAbs: c.pLow, color: getCss("--state-vapor"), title: "LOW",
+    base, pAbs: c.pLow, color: getCss("--state-vapor"),
     max: niceMax(base.pLow * 2.6 - U.ATM_BAR),
   });
   drawGauge(svg, 266, CY, R, {
-    base, pAbs: c.pHigh, color: getCss("--state-hotgas"), title: "HIGH",
+    base, pAbs: c.pHigh, color: getCss("--state-hotgas"),
     max: niceMax(base.pHigh * 1.9 - U.ATM_BAR),
   });
 
@@ -116,4 +122,7 @@ function renderGauges(c) {
       `${U.fmtPGauge(c.pLow)} · sat ${U.fmtT(c.tEvap)}`);
   cap(266, "HIGH SIDE", getCss("--state-hotgas"),
       `${U.fmtPGauge(c.pHigh)} · sat ${U.fmtT(c.tCond)}`);
+  gaugeAdd(svg, "text", {
+    x: 180, y: 224, fill: "#5b6d7e", "font-size": 9, "text-anchor": "middle", "letter-spacing": .8,
+  }, `outer ring ${U.P_UNITS[U.prefs.p].gaugeLabel} · inner ring saturation °${U.prefs.t}`);
 }

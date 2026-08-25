@@ -1540,7 +1540,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 /* ---------- Service Bay ---------- */
 .bay-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1fr) 344px;
   gap: 20px;
   padding: 20px 0 0;
   align-items: start;
@@ -1551,12 +1551,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   .bay-layout { grid-template-columns: 1fr; }
 }
 .bay-left, .bay-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* The order-of-work panel grades the whole job, so it sits under both columns
+   rather than squeezing into one of them. */
+.bay-wide { grid-column: 1 / -1; }
 #bayScene { width: 100%; height: auto; display: block; background: var(--sunken); border-radius: 12px; }
 .sb-click { cursor: pointer; }
 .sb-click:hover circle, .sb-click:hover rect, .sb-click:hover polygon { filter: brightness(1.5); }
+/* Refrigerant moving through the machine's own pipework: the rig is running
+   before you touch it, and it should look like it. */
+.sb-flow { stroke-dasharray: 16 12; animation: sbflow 1.1s linear infinite; }
+@keyframes sbflow { to { stroke-dashoffset: -28; } }
 .sb-hiss { animation: sbhiss 0.7s ease-in-out infinite; }
 @keyframes sbhiss { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
-@media (prefers-reduced-motion: reduce) { .sb-hiss { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .sb-hiss, .sb-flow { animation: none; }
+  .sb-flow { stroke-dasharray: none; }
+}
 
 .sb-valve-panel { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
 .sb-valve-panel:first-child { border-top: none; padding-top: 0; margin-top: 0; }
@@ -2129,8 +2139,8 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-hose-intro { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
 .sb-hose-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
 }
 .sb-hose-card {
   display: flex;
@@ -2206,7 +2216,8 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-seq-status { font-size: 13px; color: var(--text); margin: 0 0 10px; font-weight: 600; }
 .sb-seq-verdict { margin-bottom: 12px; }
 .sb-seq-verdict p { margin: 6px 0 0; }
-.sb-seq { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sb-seq { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 941px) { .sb-seq { grid-template-columns: 1fr 1fr; } }
 .sb-step {
   display: flex;
   gap: 10px;

@@ -48,87 +48,87 @@
   const COMPONENTS = {
     /* --- anchors --- */
     compressor: {
-      label: "Compressor", icon: "⚙", anchor: true, group: "Core",
+      label: "Compressor", icon: "⚙", short: "Compressor", anchor: true, group: "Core",
       why: "The pump of the system: it draws low-pressure vapour from the evaporator and raises its pressure and temperature so the condenser can reject the heat.",
     },
     condenser: {
-      label: "Condenser", icon: "▤", anchor: true, group: "Core",
+      label: "Condenser", icon: "▤", short: "Condenser", anchor: true, group: "Core",
       why: "Rejects heat to air or water. Hot vapour desuperheats, condenses to liquid, and usually leaves slightly subcooled.",
     },
     evaporator: {
-      label: "Evaporator", icon: "▥", anchor: true, group: "Core",
+      label: "Evaporator", icon: "▥", short: "Evaporator", anchor: true, group: "Core",
       why: "Where the useful cooling happens: liquid refrigerant boils, absorbing latent heat from the air or liquid being cooled.",
     },
     txv: {
-      label: "TX valve", icon: "◈", anchor: true, metering: true, group: "Metering",
+      label: "TX valve", icon: "◈", short: "TX valve", anchor: true, metering: true, group: "Metering",
       why: "Meters liquid into the evaporator and holds superheat steady as the load changes. Its bulb senses the suction line at the evaporator outlet.",
     },
     eev: {
-      label: "Electronic expansion valve", icon: "◈", anchor: true, metering: true, group: "Metering",
+      label: "Electronic expansion valve", icon: "◈", short: "EEV", anchor: true, metering: true, group: "Metering",
       why: "A stepper- or PWM-driven metering valve. A controller reads pressure and temperature and drives superheat to a setpoint far more tightly than a TX valve.",
     },
     aev: {
-      label: "Automatic expansion valve", icon: "◈", anchor: true, metering: true, group: "Metering",
+      label: "Automatic expansion valve", icon: "◈", short: "AEV", anchor: true, metering: true, group: "Metering",
       why: "Holds evaporator PRESSURE constant rather than superheat. Suits a constant, light load; it starves the coil as load rises.",
     },
     captube: {
-      label: "Capillary tube", icon: "∿", anchor: true, metering: true, group: "Metering",
+      label: "Capillary tube", icon: "∿", short: "Cap tube", anchor: true, metering: true, group: "Metering",
       why: "A fixed restriction sized to balance the system at design conditions. Cheap and reliable, but it cannot adjust to load, and the charge is critical.",
     },
     handvalve: {
-      label: "Hand expansion valve", icon: "◈", anchor: true, metering: true, group: "Metering",
+      label: "Hand expansion valve", icon: "◈", short: "Hand valve", anchor: true, metering: true, group: "Metering",
       why: "A manually set needle valve. It cannot respond to load at all, so it is used where conditions are steady or as a bypass around an automatic valve.",
     },
     lsf: {
-      label: "Low-side float", icon: "◐", anchor: true, metering: true, group: "Metering",
+      label: "Low-side float", icon: "◐", short: "Low-side float", anchor: true, metering: true, group: "Metering",
       why: "Maintains a liquid level in a flooded evaporator, feeding in as much liquid as boils off. Used on flooded and liquid-overfeed plant.",
     },
     hsf: {
-      label: "High-side float", icon: "◑", anchor: true, metering: true, group: "Metering",
+      label: "High-side float", icon: "◑", short: "High-side float", anchor: true, metering: true, group: "Metering",
       why: "Passes liquid on as fast as the condenser makes it. The charge is critical because the system has no receiver to hold a reserve.",
     },
 
     /* --- discharge line --- */
     oilseparator: {
-      label: "Oil separator", icon: "◍", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
+      label: "Oil separator", icon: "◍", short: "Oil separator", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
       why: "Catches oil leaving with the discharge gas and returns it straight to the crankcase, so it never has to find its way around the whole circuit.",
       wrongZone: "An oil separator only works in hot discharge gas, right at the compressor outlet. Anywhere else there is no oil mist to separate and it just adds pressure drop.",
       tips: ["Fit it as close to the compressor discharge as practical, and make sure the return line to the crankcase is trapped or fitted with a solenoid so hot gas cannot migrate back on the off-cycle."],
     },
     muffler: {
-      label: "Discharge muffler", icon: "◫", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
+      label: "Discharge muffler", icon: "◫", short: "Muffler", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
       why: "Damps the pulsation from a reciprocating compressor so the discharge line does not sing or shake the pipework apart.",
       wrongZone: "The pulsation a muffler is there to damp exists only in the discharge line, close to the compressor.",
       tips: ["Mount it so it cannot trap oil — horizontal or with the outlet down — and support it independently."],
     },
     reversingvalve: {
-      label: "Reversing (4-way) valve", icon: "⇄", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
+      label: "Reversing (4-way) valve", icon: "⇄", short: "4-way valve", zone: ["discharge"], before: ["condenser"], group: "Discharge line",
       why: "Swaps which coil is the condenser and which is the evaporator, so the same machine can cool in summer and heat in winter.",
       wrongZone: "The reversing valve has to sit in the discharge gas, immediately off the compressor — that is the port it switches.",
       tips: ["Once you fit one, both coils see flow in both directions: you need a bi-directional metering arrangement (or a check-valve pair) and a bi-directional drier."],
     },
     hpswitch: {
-      label: "High-pressure switch", icon: "◎", zone: ["discharge"], group: "Discharge line",
+      label: "High-pressure switch", icon: "◎", short: "HP switch", zone: ["discharge"], group: "Discharge line",
       why: "Stops the compressor before head pressure reaches a dangerous level — a blocked condenser, a failed fan or a closed valve.",
       wrongZone: "A high-pressure switch has to sense the high side. Sensing the suction line it would never see the pressure it exists to protect against.",
       tips: ["Pipe it to the high side ahead of any stop valve, so it can never be isolated from the pressure it is protecting."],
     },
     dischargevalve: {
-      label: "Discharge service valve", icon: "⊢", zone: ["discharge"], group: "Discharge line",
+      label: "Discharge service valve", icon: "⊢", short: "Discharge valve", zone: ["discharge"], group: "Discharge line",
       why: "The high-side connection point for your gauges, and the valve that lets you isolate the compressor from the rest of the system.",
       wrongZone: "The discharge service valve bolts to the compressor discharge. The suction side has its own.",
     },
 
     /* --- liquid line --- */
     receiver: {
-      label: "Liquid receiver", icon: "▬", zone: ["liquid"], after: ["condenser"],
+      label: "Liquid receiver", icon: "▬", short: "Receiver", zone: ["liquid"], after: ["condenser"],
       before: ["filterdrier", "sightglass", "solenoid"], group: "Liquid line",
       why: "Stores the charge the system does not need at the moment, so the charge can vary with load and the whole charge can be pumped down into it for service.",
       wrongZone: "A receiver must sit in the liquid line, taking drained liquid from the condenser outlet. In any other run it fills with vapour and does nothing.",
       tips: ["Feed it from the condenser outlet with a falling drain line, and take liquid from the bottom via a dip tube so you draw liquid and not vapour."],
     },
     filterdrier: {
-      label: "Filter drier", icon: "▮", zone: ["liquid", "suction"], orderZones: ["liquid"],
+      label: "Filter drier", icon: "▮", short: "Filter drier", zone: ["liquid", "suction"], orderZones: ["liquid"],
       before: ["txv", "eev", "aev", "captube", "handvalve", "lsf", "hsf"],
       group: "Liquid line",
       why: "Removes moisture, acid and debris before they reach the metering device — where a trace of water freezes and blocks the orifice.",
@@ -138,7 +138,7 @@
       tips: ["Fit it upstream of the sight glass, so the glass shows you what the drier is delivering, not what it still has to fix.", "Note the flow arrow — a drier fitted backwards dumps its desiccant into the system."],
     },
     sightglass: {
-      label: "Sight glass & moisture indicator", icon: "◉", zone: ["liquid"],
+      label: "Sight glass & moisture indicator", icon: "◉", short: "Sight glass", zone: ["liquid"],
       after: ["filterdrier"], before: ["txv", "eev", "aev", "captube", "handvalve", "lsf", "hsf"],
       group: "Liquid line",
       why: "Lets you see whether the liquid reaching the metering device is solid liquid, and whether the system is dry.",
@@ -147,31 +147,31 @@
       tips: ["Bubbles are not automatically 'low charge'. A restriction, a hot liquid line or a big static lift will flash liquid too — check subcooling before you condemn the charge."],
     },
     solenoid: {
-      label: "Liquid line solenoid", icon: "⊡", zone: ["liquid"],
+      label: "Liquid line solenoid", icon: "⊡", short: "Solenoid", zone: ["liquid"],
       before: ["txv", "eev", "aev", "captube", "handvalve", "lsf", "hsf"], group: "Liquid line",
       why: "Shuts the liquid feed on demand so the compressor can pump the evaporator down before it stops — which is what keeps liquid out of the crankcase on the off-cycle.",
       wrongZone: "A liquid line solenoid has to be in the liquid line ahead of the metering device. That is the only place where closing it stops the feed to the coil.",
       tips: ["Mount the coil upright and fit it close to the evaporator, so the pump-down leaves as little liquid as possible in the coil.", "Pump-down needs a low-pressure switch to stop the compressor once the coil is empty."],
     },
     kingvalve: {
-      label: "King valve (receiver outlet)", icon: "⊣", zone: ["liquid"], after: ["receiver"], group: "Liquid line",
+      label: "King valve (receiver outlet)", icon: "⊣", short: "King valve", zone: ["liquid"], after: ["receiver"], group: "Liquid line",
       why: "The receiver outlet valve. Front-seat it and the compressor pumps the whole charge into the receiver — the standard way to isolate a charge for service.",
       wrongZone: "The king valve is the receiver's own outlet valve, so it lives in the liquid line immediately downstream of the receiver.",
     },
     liquidhandvalve: {
-      label: "Liquid line shut-off valve", icon: "⊤", zone: ["liquid"], group: "Liquid line",
+      label: "Liquid line shut-off valve", icon: "⊤", short: "Shut-off valve", zone: ["liquid"], group: "Liquid line",
       why: "A manual isolating valve so a section can be worked on without losing the whole charge.",
       wrongZone: "This is a liquid-line isolating valve — that is where it earns its place.",
     },
     heatexchanger: {
-      label: "Liquid–suction heat exchanger", icon: "⧉", zone: ["suction", "liquid"], group: "Both lines",
+      label: "Liquid–suction heat exchanger", icon: "⧉", short: "Liquid–suction HX", zone: ["suction", "liquid"], group: "Both lines",
       why: "Runs the cold suction line against the warm liquid line: it subcools the liquid (more refrigeration effect, less flash gas) and adds superheat to the suction (drier vapour to the compressor).",
       tips: ["It touches both lines by definition — place it in either run and the other side is understood.", "It raises discharge temperature. On a fluid that already runs hot, that can be the wrong trade."],
     },
 
     /* --- distribution --- */
     distributor: {
-      label: "Refrigerant distributor", icon: "❋", zone: ["distrib"], group: "After the metering device",
+      label: "Refrigerant distributor", icon: "❋", short: "Distributor", zone: ["distrib"], group: "After the metering device",
       why: "Splits the flash mixture evenly between the parallel circuits of a multi-circuit evaporator, so every circuit gets the same share of liquid.",
       wrongZone: "A distributor's job is to divide the flow leaving the metering device between the evaporator circuits, so it sits between the two — nowhere else.",
       tips: ["A distributor has a real pressure drop (often around 200 kPa), which is exactly why a TX valve feeding one needs an EXTERNAL equaliser.", "Keep the nozzle and the tubes equal length, and mount it vertically down where you can."],
@@ -179,44 +179,44 @@
 
     /* --- suction line --- */
     epr: {
-      label: "Evaporator pressure regulator (EPR)", icon: "◨", zone: ["suction"],
+      label: "Evaporator pressure regulator (EPR)", icon: "◨", short: "EPR", zone: ["suction"],
       after: ["evaporator"], before: ["cpr", "compressor"], group: "Suction line",
       why: "Stops an evaporator running colder than you want it to, by holding its pressure UP. On a multi-temperature system it is what lets a high-temperature coil share a compressor with a lower one.",
       wrongZone: "An EPR throttles the vapour leaving an evaporator, so it belongs in the suction line at that evaporator's outlet.",
       tips: ["It is an inlet-pressure regulator: it senses the pressure upstream of itself, which is the evaporator it is protecting.", "Fit it at the outlet of the WARMEST coil. The coldest coil runs straight to the common suction."],
     },
     cpr: {
-      label: "Crankcase pressure regulator (CPR)", icon: "◧", zone: ["suction"],
+      label: "Crankcase pressure regulator (CPR)", icon: "◧", short: "CPR", zone: ["suction"],
       before: ["compressor"], after: ["evaporator"], group: "Suction line",
       why: "Limits the suction pressure the compressor sees during a hot pull-down, so the motor is not overloaded by dense vapour.",
       wrongZone: "A CPR protects the compressor motor, so it goes in the suction line close to the compressor inlet.",
       tips: ["It is an outlet-pressure regulator — it senses downstream of itself, which is the compressor suction.", "Set it against an ammeter to the compressor's full-load current, not to a pressure guessed off the gauge."],
     },
     accumulator: {
-      label: "Suction accumulator", icon: "◯", zone: ["suction"], after: ["evaporator"],
+      label: "Suction accumulator", icon: "◯", short: "Accumulator", zone: ["suction"], after: ["evaporator"],
       before: ["compressor"], group: "Suction line",
       why: "Catches liquid that gets past the evaporator and meters it back as vapour, with the oil, at a rate the compressor can swallow. It is the last defence against floodback.",
       wrongZone: "An accumulator has to sit in the suction line between the evaporator and the compressor. That is the only place liquid floodback can be intercepted.",
       tips: ["Its oil-return orifice is tiny and blocks easily — that is a classic cause of oil starvation.", "It is not a receiver. Fitting one in the liquid line does nothing useful."],
     },
     suctionfilter: {
-      label: "Suction line filter", icon: "▯", zone: ["suction"], before: ["compressor"], group: "Suction line",
+      label: "Suction line filter", icon: "▯", short: "Suction filter", zone: ["suction"], before: ["compressor"], group: "Suction line",
       why: "Protects the compressor from debris — normally fitted after a burnout, with a pressure-drop check across it.",
       wrongZone: "A suction filter protects the compressor from what the suction line is carrying to it.",
       tips: ["Measure the pressure drop across it. A blocked suction filter looks exactly like a starved evaporator on the gauges."],
     },
     lpswitch: {
-      label: "Low-pressure switch", icon: "◉", zone: ["suction"], group: "Suction line",
+      label: "Low-pressure switch", icon: "◉", short: "LP switch", zone: ["suction"], group: "Suction line",
       why: "Stops the compressor on loss of charge or a blocked feed — and, on a pump-down system, it is the control that stops the machine once the coil is empty.",
       wrongZone: "A low-pressure switch has to sense the low side, so it is piped to the suction line.",
     },
     suctionvalve: {
-      label: "Suction service valve", icon: "⊢", zone: ["suction"], group: "Suction line",
+      label: "Suction service valve", icon: "⊢", short: "Suction valve", zone: ["suction"], group: "Suction line",
       why: "The low-side gauge connection, and the valve you front-seat to pump the system down.",
       wrongZone: "The suction service valve bolts to the compressor suction. The discharge side has its own.",
     },
     crankcaseheater: {
-      label: "Crankcase heater", icon: "≋", zone: [], attachTo: "compressor", group: "Suction line",
+      label: "Crankcase heater", icon: "≋", short: "Crankcase heater", zone: [], attachTo: "compressor", group: "Suction line",
       why: "Keeps the oil warm while the compressor is off, so refrigerant does not migrate to it and dissolve in it — which is what causes a foaming, oil-free start.",
       wrongZone: "A crankcase heater is not in the refrigerant path at all. It is strapped to, or inserted in, the compressor crankcase.",
     },

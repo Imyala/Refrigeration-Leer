@@ -14,7 +14,7 @@
    unusable on a laptop in a plant room, let alone a phone. */
 .build-layout {
   display: grid;
-  grid-template-columns: 268px minmax(0, 1fr) 348px;
+  grid-template-columns: 244px minmax(0, 1fr) 324px;
   gap: 20px;
   align-items: start;
   max-width: var(--maxw);
@@ -98,194 +98,205 @@
 }
 
 /* ---------- The loop ----------
-   Drawn as a closed circuit, not a list: the refrigerant runs down the
-   coloured track through each run in turn, round the bottom, and back up the
-   return spine into the compressor it started from. */
-.loop {
+   A drawing, not a list: four anchors at the corners of a rectangle, four
+   coloured runs of pipe between them, and every accessory sitting on the run
+   it is piped into. The SVG underneath carries the pipework and the run
+   names; the components and drop targets are HTML positioned on top of it at
+   the same coordinates, so drag, focus and keyboard editing all still work. */
+.loop-wrap { position: relative; overflow: hidden; margin-top: 4px; }
+.loop-stage {
   position: relative;
-  padding-left: 44px;
-  margin-top: 6px;
+  transform-origin: top left;
 }
-.loop-return {
-  position: absolute;
-  left: 0;
-  top: 26px;
-  bottom: 26px;
-  width: 36px;
-  border: 3px solid var(--state-vapor);
-  border-right: none;
-  border-radius: 16px 0 0 16px;
-  opacity: .75;
-  pointer-events: none;
-}
-.loop.is-unzoned .loop-return { border-color: var(--line); opacity: .9; }
-.loop-return-tag {
-  position: absolute;
-  left: 6px;
-  top: 50%;
-  transform: translateY(-50%) rotate(180deg);
-  writing-mode: vertical-rl;
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--state-vapor);
-  white-space: nowrap;
-  pointer-events: none;
-}
-.loop.is-unzoned .loop-return-tag { color: var(--muted); }
+.loop-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.loop-parts { position: absolute; inset: 0; }
 
-/* Anchor chips: the four components that define the circuit. */
-.loop-node { position: relative; padding: 4px 0; }
-.loop-card, .loop-node-card {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(125, 154, 181, 0.22);
-  background: linear-gradient(180deg, rgba(31, 45, 61, .96), rgba(20, 30, 42, .96));
-  overflow: hidden;
-  max-width: 100%;
+/* Pipework */
+.pipe-base { stroke: #1e2b39; stroke-width: 13; stroke-linecap: round; }
+.pipe-flow {
+  stroke: var(--run-col, var(--line));
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 17 11;
+  animation: pipeflow 1.15s linear infinite;
 }
-.loop-node-card { border-color: rgba(125, 154, 181, .34); }
-.loop-node-card.is-anchor-fixed { border-style: solid; }
-.card-main {
+.run-none { --run-col: #3b4c5d; }
+@keyframes pipeflow { to { stroke-dashoffset: -28; } }
+@media (prefers-reduced-motion: reduce) {
+  .pipe-flow { animation: none; stroke-dasharray: none; }
+}
+
+/* Run names, and the split every technician thinks in: high side from the
+   compressor round to the metering device, low side from there back again. */
+.run-name {
+  fill: var(--run-col, var(--muted));
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-anchor: middle;
+  opacity: .85;
+}
+.run-state {
+  fill: var(--muted);
+  font-size: 9.5px;
+  letter-spacing: .3px;
+  text-anchor: middle;
+  opacity: .8;
+}
+.side-split { stroke: rgba(125, 154, 181, .28); stroke-width: 1.5; stroke-dasharray: 3 7; }
+.side-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-anchor: middle;
+  opacity: .55;
+}
+.side-tag.high { fill: var(--state-liquid); }
+.side-tag.low  { fill: var(--state-vapor); }
+
+/* Components on the drawing */
+.cx {
+  position: absolute;
+  display: flex;
+  border-radius: 11px;
+  border: 1px solid rgba(125, 154, 181, 0.28);
+  background: linear-gradient(180deg, #1f2d3d, #17212d);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .45);
+  overflow: visible;
+}
+.cx-anchor { border-color: rgba(125, 154, 181, .5); border-radius: 13px; }
+.cx-main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
-  padding: 9px 12px;
+  padding: 6px 8px;
   background: none;
   border: none;
+  border-radius: inherit;
   color: var(--text);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.2;
   text-align: left;
-  cursor: pointer;
+  cursor: grab;
+  overflow: hidden;
 }
-.card-main:hover { background: rgba(255, 255, 255, .04); }
-.card-icon {
+.cx-anchor .cx-main { flex-direction: column; justify-content: center; gap: 5px; text-align: center; font-size: 12.5px; }
+.cx-main:hover { background: rgba(255, 255, 255, .05); }
+.cx-icon {
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: var(--panel-2);
-  font-size: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(79, 195, 247, .1);
   color: var(--accent);
+  font-size: 12px;
 }
-.card-text { min-width: 0; }
-.card-label { font-weight: 600; display: block; overflow-wrap: anywhere; }
-.card-sub { font-size: 11px; color: var(--muted); display: block; margin-top: 1px; }
-.card-tools { display: flex; align-items: center; flex: none; border-left: 1px solid rgba(125, 154, 181, .16); }
+.cx-anchor .cx-icon { width: 26px; height: 26px; font-size: 15px; }
+.cx-label { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.cx-anchor .cx-label { font-weight: 700; letter-spacing: .3px; }
+
+.cx.sev-error { border-color: rgba(224, 64, 90, .75); }
+.cx.sev-warning { border-color: rgba(245, 166, 35, .7); }
+.cx.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 2px 12px rgba(0, 0, 0, .5); }
+.cx.is-dragging { opacity: .35; }
+.cx.is-flash { animation: buildFlash 1.1s ease-out 2; }
+
+.cx-flag {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #12181f;
+}
+.cx-flag.error { background: var(--bad); }
+.cx-flag.warning { background: var(--warn); }
+
+/* The move / remove controls stay out of the drawing until the part is
+   hovered or focused — including from the keyboard, which is what
+   :focus-within is doing here. */
+.cx-tools {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  transform: translateX(-50%);
+  display: flex;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease;
+  z-index: 3;
+}
+.cx.tools-below .cx-tools { bottom: auto; top: calc(100% + 5px); }
+.cx:hover .cx-tools, .cx:focus-within .cx-tools { opacity: 1; pointer-events: auto; }
 .card-tool {
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-family: inherit;
   line-height: 1;
-  width: 30px;
-  min-height: 40px;
+  width: 28px;
+  height: 26px;
   cursor: pointer;
 }
-.card-tool:hover:not(:disabled) { color: var(--text); background: rgba(255, 255, 255, .05); }
+.card-tool:hover:not(:disabled) { color: var(--text); background: rgba(255, 255, 255, .06); }
 .card-tool:disabled { opacity: .3; cursor: not-allowed; }
-.card-tool.is-remove:hover { color: #f09aa8; background: rgba(224, 64, 90, .12); }
-.card-flag {
-  flex: none;
-  align-self: center;
-  margin-right: 8px;
-  padding: 2px 7px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .4px;
-  text-transform: uppercase;
+.card-tool.is-remove:hover { color: #f09aa8; background: rgba(224, 64, 90, .14); }
+
+/* A drop target is the join between two components — and doubles as the flow
+   arrow along the pipe, so an empty run still shows which way it runs. */
+.drop-slot {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgba(160, 185, 205, .75);
+  font-size: 11px;
+  transition: transform .12s ease;
 }
-.card-flag.error { background: rgba(224, 64, 90, .2); color: #f09aa8; }
-.card-flag.warning { background: rgba(245, 166, 35, .18); color: var(--warn); }
-.loop-card.sev-error { border-color: rgba(224, 64, 90, .55); }
-.loop-card.sev-warning { border-color: rgba(245, 166, 35, .45); }
-.loop-card.is-selected, .loop-node-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.loop-card.is-flash, .loop-node-card.is-flash { animation: buildFlash 1.1s ease-out 2; }
-.loop-card.is-dragging { opacity: .4; }
+.drop-slot::after { content: "▸"; }
+.drop-slot.dir-down::after  { content: "▾"; }
+.drop-slot.dir-left::after  { content: "◂"; }
+.drop-slot.dir-up::after    { content: "▴"; }
+.loop-stage.is-dragging .drop-slot,
+.loop-parts:hover .drop-slot { color: var(--accent); }
+.drop-slot.is-on {
+  background: var(--accent-2);
+  color: #0b1219;
+  transform: scale(1.35);
+  box-shadow: 0 0 0 5px rgba(79, 195, 247, .25);
+}
 
 @keyframes buildFlash {
   0%, 100% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0); }
   35% { box-shadow: 0 0 0 4px rgba(79, 195, 247, .45); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .loop-card.is-flash, .loop-node-card.is-flash, .palette-item.is-flash { animation: none; }
+  .cx.is-flash, .palette-item.is-flash { animation: none; }
 }
-
-/* A run of pipe: the coloured rail on the left is the refrigerant itself. */
-.loop-run {
-  position: relative;
-  border-left: 4px solid var(--run-col, var(--line));
-  margin-left: 15px;
-  padding: 8px 0 8px 16px;
-  min-height: 46px;
-}
-.loop-run-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-}
-.loop-run-name {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--run-col, var(--muted));
-}
-.loop-run-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
-.loop-run-body { display: flex; flex-wrap: wrap; align-items: center; gap: 0; }
-.loop-run-empty { font-size: 11.5px; color: var(--muted); font-style: italic; padding: 2px 0; }
 
 .run-discharge { --run-col: var(--state-hotgas); }
 .run-liquid    { --run-col: var(--state-liquid); }
 .run-distrib   { --run-col: var(--state-flash); }
 .run-suction   { --run-col: var(--state-vapor); }
 
-/* The drop indicator doubles as the flow arrow between two components. */
-.drop-slot {
-  flex: none;
-  position: relative;
-  width: 26px;
-  align-self: stretch;
-  min-height: 40px;
-  display: grid;
-  place-items: center;
-  color: rgba(138, 160, 179, .5);
-  font-size: 12px;
-}
-.drop-slot::after { content: "▸"; }
-.drop-slot.is-on::before {
-  content: "";
-  position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 11px;
-  width: 4px;
-  border-radius: 3px;
-  background: var(--accent-2);
-  box-shadow: 0 0 10px var(--accent);
-}
-.drop-slot.is-on::after { color: var(--accent-2); }
-.loop.is-dragging .drop-slot { color: rgba(79, 195, 247, .55); }
-
-.loop-empty {
-  padding: 22px 18px;
-  border: 1px dashed var(--line);
-  border-radius: 14px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
 .loop-note {
   margin: 0 0 12px;
   padding: 11px 13px;
@@ -440,7 +451,7 @@ button.issue:hover { background: rgba(255, 255, 255, .05); }
 
 /* Focus is never implied by colour alone anywhere on this page. */
 .palette-item:focus-visible,
-.card-main:focus-visible,
+.cx-main:focus-visible,
 .card-tool:focus-visible,
 button.issue:focus-visible {
   outline: 2px solid var(--accent-2);

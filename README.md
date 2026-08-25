@@ -170,6 +170,13 @@ where the job really starts, at the van:
   manifold and both hoses in one puff, which is the reason the order is worth
   teaching at all.
 
+The rig is drawn the way the machine actually stands in front of you: a
+running condensing unit with a stem-type service valve bolted to each side of
+the compressor, and the gauge manifold below it with its hoses run up to the
+two gauge ports. Every part you can act on is drawn where it is on the real
+thing — spindle cap on top of the stem, gauge-port cap on the side stub — so
+clicking the picture teaches the layout as well as the procedure.
+
 The procedure rules live in a pure, unit-tested state machine
 (`js/servicebay.js`); the UI (`js/service-ui.js`) renders the rig and wires
 the clicks.
@@ -177,10 +184,17 @@ the clicks.
 ## The System Builder (build.html)
 
 Instead of reading a schematic, the learner **draws one**. Components are
-dragged from a palette of **30** into a closed loop in flow order, starting at
-the compressor — because that is where a circuit is always read from — and a
+dragged from a palette of **30** onto a piped circuit diagram — the four main
+components at the corners, the four runs of pipe between them — starting at
+the compressor, because that is where a circuit is always read from, and a
 rules engine decides whether that circuit would actually run.
 
+- **It is a drawing, not a list.** Each run is coloured for what the
+  refrigerant is in it, the flow animates round the loop, a dashed diagonal
+  splits the high side from the low side, and a part is dropped onto the join
+  in the pipework where it belongs. The pipes are drawn in SVG and the parts
+  sit on top as ordinary HTML, so dragging, clicking and keyboard editing all
+  behave the way they do everywhere else on the site.
 - **Four runs of pipe** — discharge line, liquid line, distribution and
   suction line — and two questions asked of every accessory: is it in the
   right run, and is it on the right side of its neighbours? Nearly every real
@@ -200,12 +214,13 @@ rules engine decides whether that circuit would actually run.
 - **"Explain this circuit"** walks the loop in flow order and says what the
   refrigerant is doing in each run and what each component is there for.
 - **Keyboard equivalent of the drag** — every placed component carries
-  move-earlier / move-later / remove buttons, so the loop can be built and
-  reordered entirely from the keyboard.
+  move-earlier / move-later / remove buttons, which appear on the part as soon
+  as it is hovered or focused, so the circuit can be built and reordered
+  entirely from the keyboard.
 
 The rules are pure and unit-tested (`js/circuit.js`); the UI (`js/build-ui.js`,
-`styles-build.css`) handles the palette, the drag-and-drop and the analysis
-panel.
+`styles-build.css`) computes the drawing's geometry, places the parts and the
+drop targets on it, and renders the analysis panel.
 
 ## The Fault Diagnosis Workshop (diagnose.html)
 
@@ -496,7 +511,7 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `diagnose.html` | The Fault Diagnosis Workshop: schematic, instruments, evidence and diagnosis panels |
 | `learn.html` | Course page (sidebar navigation + lesson view); loads every content file |
 | `styles.css` | Dark theme, layout, state colours, course styles |
-| `styles-build.css` | System Builder layout: palette, loop rows, drag states, findings |
+| `styles-build.css` | System Builder layout: palette, the circuit drawing, drag states, findings |
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |
 | `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |
 | `js/circuits.js` | The seven system variations: pipe runs, components, captions, and what each adds to the cycle |
@@ -516,7 +531,7 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/refdocs.js` | Reference-document library behind `!CITE[…]` and the `#reference` view |
 | `js/srs.js`, `js/cards.js` | Spaced-repetition scheduler and the extra card banks |
 | `js/servicebay.js`, `js/service-ui.js` | Service Bay state machine (pure, tested), including hose selection, the gauge zero check and order-of-work grading — and its UI |
-| `js/circuit.js`, `js/build-ui.js` | System Builder rules engine (component library, pipe runs, placement findings, scenarios — pure, tested) and its drag-and-drop UI |
+| `js/circuit.js`, `js/build-ui.js` | System Builder rules engine (component library, pipe runs, placement findings, scenarios — pure, tested) and the drawn circuit it is edited on |
 | `js/diagnose.js`, `js/diagnose-ui.js` | Diagnosis Workshop engine (measurement points, derived values, evidence, scoring — pure, tested) and its UI |
 | `js/learn.js` | Course UI: routing, progress store, lesson quizzes, stream & final exams, certificate, export/import |
 | `js/exam.js` | Exam sampling + certificate code (pure, tested) |
