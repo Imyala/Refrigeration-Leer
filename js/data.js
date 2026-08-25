@@ -172,6 +172,59 @@
         "Hot discharge line despite a low head pressure",
       ],
     },
+
+    /* ---- Faults that need hardware only some circuits have -----------------
+       `needsCircuitDevice` keeps these out of the fault list on a circuit that
+       has no such device: you cannot have a stuck liquid-line solenoid on a
+       system that was never drawn with one.                                  */
+    solenoidShut: {
+      label: "Liquid-line solenoid stuck shut", needsCircuitDevice: true,
+      mLow: 0.42, mHigh: 0.86, dSuper: 22, dSub: 9, dDisch: 6,
+      family: "starved",
+      diag: "The solenoid has failed closed, so no liquid is reaching the metering device at all. The compressor keeps pulling the low side down into a deep vacuum while the high side falls away for want of flow. On a machine with pump-down control this is exactly what a normal shutdown looks like — the difference is that it never opens again and the room never pulls down.",
+      clues: [
+        "Low side pulls down into a vacuum and stays there",
+        "Superheat enormous, subcooling high — the charge is stacked upstream",
+        "Nothing at all is passing the valve; the liquid line is warm right up to the solenoid",
+        "Check the coil for voltage before condemning the valve",
+      ],
+    },
+    floodback: {
+      label: "Floodback — liquid returning to the compressor", needsCircuitDevice: true,
+      mLow: 1.36, mHigh: 1.06, dSuper: -9, dSub: -4, dDisch: -26,
+      family: "flooded",
+      diag: "Liquid refrigerant is leaving the evaporator and travelling up the suction line. Superheat has collapsed to nothing, the suction line is cold and sweating right back to the compressor, and the discharge is unnaturally cool because the compressor is cooling itself on the liquid it is trying to pump. The accumulator is the only thing holding the damage off.",
+      clues: [
+        "Superheat at or near zero",
+        "Suction line frosted or sweating all the way to the compressor",
+        "Discharge temperature far lower than the pressure ratio would predict",
+        "Compressor may knock audibly on start-up",
+      ],
+    },
+    eprMisadjusted: {
+      label: "EPR set too low", needsCircuitDevice: true,
+      mLow: 0.86, mHigh: 0.98, dSuper: -3, dSub: 0, dDisch: -4,
+      family: "flooded",
+      diag: "The evaporator pressure regulator is passing too freely, so the warm coil is being dragged down toward the cold coil's pressure. The room it serves over-cools and its produce starts to freeze, while the compressor sees more load than it was sized for. Nothing here looks like a fault on the gauges — you find it by comparing the two coils.",
+      clues: [
+        "The warm room runs colder than its setpoint and will not come up",
+        "Both coils sitting at nearly the same pressure",
+        "Compressor running far longer than expected",
+        "Freezer side looks entirely normal",
+      ],
+    },
+    cascadeFouled: {
+      label: "Cascade condenser fouled", needsCircuitDevice: true,
+      mLow: 1.02, mHigh: 1.24, dSuper: 2, dSub: -3, dDisch: 20,
+      family: "high-side",
+      diag: "The cascade heat exchanger is not passing heat properly — oil logging on the low-stage side, or non-condensables in it. The low stage cannot reject its heat, so its head pressure climbs and its discharge runs hot, while the high stage looks entirely healthy because nothing is wrong with it. Reading only the high stage will send you the wrong way.",
+      clues: [
+        "Low-stage head pressure high and climbing",
+        "Low-stage discharge temperature high",
+        "High stage completely normal on its own gauges",
+        "Temperature difference across the cascade vessel much larger than design",
+      ],
+    },
   };
 
   /* ---- How each fault looks on the schematic ------------------------------
@@ -192,6 +245,10 @@
     txvStuckOpen:     { condFront: 0.50, evapFront: 0.92, liquidSpill: 0.00, suctionSpill: 0.50, flags: ["metering", "compressor"] },
     nonCondensables:  { condFront: 0.85, evapFront: 0.60, liquidSpill: 0.12, suctionSpill: 0.00, flags: ["condenser", "receiver"] },
     compressorValves: { condFront: 0.35, evapFront: 0.50, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["compressor"] },
+    solenoidShut:     { condFront: 0.35, evapFront: 0.10, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["solenoid", "evaporator"] },
+    floodback:        { condFront: 0.45, evapFront: 0.98, liquidSpill: 0.00, suctionSpill: 0.72, flags: ["accumulator", "compressor"] },
+    eprMisadjusted:   { condFront: 0.52, evapFront: 0.82, liquidSpill: 0.00, suctionSpill: 0.20, flags: ["epr", "evaporatorB"] },
+    cascadeFouled:    { condFront: 0.60, evapFront: 0.58, liquidSpill: 0.10, suctionSpill: 0.00, flags: ["cascadeHx", "compressorB"] },
   };
 
   const api = { toRows, TABLES, CP_VAP, CP_LIQ, ATM_BAR, BASE_FLOW, REFRIGERANTS, FAULTS, VIZ };

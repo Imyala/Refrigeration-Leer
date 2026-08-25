@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const D = require("../js/data.js");
+const C = require("../js/circuits.js");
 const M = require("../js/model.js");
 
 const REF_KEYS = Object.keys(D.REFRIGERANTS);
@@ -107,8 +108,11 @@ test("every fault has a label, diagnosis (except none), clues and a VIZ entry", 
     if (key !== "none") assert.ok(f.diag, `${key}: diagnosis text`);
     assert.ok(D.VIZ[key], `${key}: VIZ entry`);
     for (const flag of D.VIZ[key].flags) {
-      assert.ok(["compressor", "condenser", "receiver", "metering", "evaporator"].includes(flag),
-        `${key}: valid flag ${flag}`);
+      // Flags may name any component any circuit can draw, not just the four
+      // core ones — the variations add devices that faults attach to.
+      const known = new Set(
+        Object.values(C.CIRCUITS).flatMap(c => c.components.map(x => x.id)));
+      assert.ok(known.has(flag), `${key}: valid flag ${flag}`);
     }
   }
 });

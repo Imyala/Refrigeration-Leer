@@ -80,7 +80,10 @@ function quizSyncSliders() {
 }
 
 function quizNextScenario() {
-  const faultKeys = Object.keys(RefrigData.FAULTS).filter(k => k !== "none");
+  // Only faults this circuit could actually have: a stuck liquid-line solenoid
+  // is not a fair answer on a system that was never drawn with one.
+  const faultKeys = Object.keys(RefrigData.FAULTS)
+    .filter(k => k !== "none" && faultAvailable(k));
   Quiz.fault = Math.random() < 0.14 ? "none" : faultKeys[Math.floor(Math.random() * faultKeys.length)];
   Quiz.answered = false;
   Quiz.count += 1;
@@ -94,7 +97,8 @@ function quizNextScenario() {
   quizSyncSliders();
 
   document.getElementById("quizScenario").textContent =
-    `Scenario ${Quiz.count} — ${RefrigData.REFRIGERANTS[state.refrigerant].label} system · ` +
+    `Scenario ${Quiz.count} — ${RefrigCircuits.CIRCUITS[state.circuit].label}, ` +
+    `${RefrigData.REFRIGERANTS[state.refrigerant].label} · ` +
     `compressor at ${state.speed}% · load ${state.load}%. ` +
     `Read the gauges, temperatures, superheat/subcool and the P–h cycle, then pick the fault.`;
 
@@ -110,7 +114,7 @@ function quizNextScenario() {
 function quizRenderOptions() {
   const wrap = document.getElementById("quizOptions");
   wrap.innerHTML = "";
-  Object.entries(RefrigData.FAULTS).forEach(([key, f]) => {
+  Object.entries(RefrigData.FAULTS).filter(([key]) => faultAvailable(key)).forEach(([key, f]) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "quiz-opt";

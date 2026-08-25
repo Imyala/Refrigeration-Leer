@@ -8,6 +8,7 @@
 "use strict";
 
 const { REFRIGERANTS, FAULTS, VIZ } = RefrigData;
+const { CIRCUITS, ORDER: CIRCUIT_ORDER } = RefrigCircuits;
 const { clamp, deriveAt, satTemp } = RefrigModel;
 const U = RefrigUnits;
 
@@ -33,17 +34,24 @@ function mixGrey(rgb, g) {
   return `rgb(${r},${gr},${b})`;
 }
 
-const SEGMENTS = [
-  { id: "seg-discharge", state: "hotgas", color: STATE_COLORS.hotgas, label: "Discharge line", detail: "high-pressure hot vapour" },
-  { id: "seg-liquid",    state: "liquid", color: STATE_COLORS.liquid, label: "Liquid line",    detail: "high-pressure liquid" },
-  { id: "seg-evapfeed",  state: "flash",  color: STATE_COLORS.flash,  label: "After metering", detail: "low-pressure flash mix" },
-  { id: "seg-suction",   state: "vapor",  color: STATE_COLORS.vapor,  label: "Suction line",   detail: "low-pressure vapour" },
+/* The pipe key. Each refrigerant state gets one entry however many runs of
+   pipe a given circuit draws in that state — the learner needs four colours
+   explained, not eleven pipe segments. */
+const STATE_KEY = [
+  { state: "hotgas", label: "Discharge line", detail: "high-pressure hot vapour" },
+  { state: "liquid", label: "Liquid line",    detail: "high-pressure liquid" },
+  { state: "flash",  label: "After metering", detail: "low-pressure flash mix" },
+  { state: "vapor",  label: "Suction line",   detail: "low-pressure vapour" },
 ];
+
+/* Filled in by renderCircuit() from whichever circuit is on screen. */
+let SEGMENTS = [];
 
 /* ========================================================================= */
 /* Live state                                                                */
 /* ========================================================================= */
 const state = {
+  circuit: "basic",
   running: true, refrigerant: "R134a", speed: 100, load: 100, fault: "none",
   dashOffset: 0, phaseT: 0, selected: null, tourActive: false, tourIndex: 0,
   showHealthy: true, level: 1,
@@ -55,9 +63,11 @@ const r1 = (v) => Math.round(v * 10) / 10;
 const r0 = (v) => Math.round(v);
 
 function recompute() {
-  current = deriveAt(state.refrigerant, state.speed, state.load, state.fault);
+  current = deriveAt(state.refrigerant, state.speed, state.load, state.fault, state.circuit);
   if (!(state.refrigerant in capRefs)) {
-    capRefs[state.refrigerant] = deriveAt(state.refrigerant, 100, 100, "none").capRaw;
+    // The nominal reference is always the basic cycle, so "% of nominal" means
+    // the same thing across circuits and the extra hardware shows up as a gain.
+    capRefs[state.refrigerant] = deriveAt(state.refrigerant, 100, 100, "none", "basic").capRaw;
   }
   current.capacityPct = current.capRaw / capRefs[state.refrigerant] * 100;
 }
@@ -142,6 +152,164 @@ const COMPONENTS = {
       `The last ~${U.fmtDT(c.superheat)} of superheat dry out the vapour to protect the compressor.`,
     ],
   }),
+
+  /* ---- Devices that only some circuits carry ------------------------------
+     Each answers the same three questions the core components do: what goes
+     in, what comes out, and what it is for. Several change nothing about the
+     refrigerant at all — which is itself the lesson, so they say so plainly
+     rather than inventing a state change.                                    */
+
+  drier: (c) => ({
+    title: "Filter-drier — protects everything downstream",
+    inState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    outState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    body: `A canister of desiccant and filter mesh in the liquid line. It takes
+      <b>moisture and debris out of the refrigerant</b> before they reach the metering
+      device. The state is unchanged — a drier is protection, not process.`,
+    points: [
+      "Water is the enemy: it freezes at the valve orifice and blocks it, and with the oil it forms acids that attack the windings.",
+      "Fit a new one every time the system is opened — a saturated drier gives its moisture back.",
+      "A blocked one shows as a temperature drop across it: feel for a cold outlet on a warm liquid line.",
+    ],
+  }),
+
+  sightglass: (c) => ({
+    title: "Sight glass — the charge and moisture window",
+    inState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    outState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    body: `A window into the liquid line with a moisture indicator behind it. Clear
+      glass means <b>solid liquid</b> reaching the valve; bubbles mean vapour where
+      there should be none.`,
+    points: [
+      `The liquid is leaving the condenser with ${U.fmtDT(c.subcool)} of subcooling right now, so it should run clear.`,
+      "Bubbles usually mean undercharge or a restriction upstream — but they also appear whenever subcooling is low, so read it with the gauges, never on its own.",
+      "The indicator ring changes colour with moisture content. Compare it against the printed key, and give it time to settle.",
+    ],
+  }),
+
+  solenoid: (c) => ({
+    title: "Liquid-line solenoid — the pump-down valve",
+    inState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    outState: stateChip(STATE_COLORS.liquid, "High-pressure liquid"),
+    inVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    outVals: `${U.fmtPGauge(c.pHigh)} · ${U.fmtT(c.tLiquid)}`,
+    body: `An electrically operated shut-off valve in the liquid line. The thermostat
+      closes it, the compressor keeps running and <b>pulls the low side down</b> until
+      a pressure switch stops it — so the machine shuts down with the refrigerant
+      parked in the condenser and receiver, not lying in a cold evaporator.`,
+    points: [
+      "This is what pump-down control means, and it is why the compressor stops on a pressure switch rather than directly on the thermostat.",
+      "Refrigerant left in a cold evaporator migrates to the compressor overnight and greets it as liquid on start-up.",
+      "A coil that has failed shut starves the system; one stuck open costs you pump-down but the system still cools — so the symptoms are nothing alike.",
+    ],
+  }),
+
+  accumulator: (c) => ({
+    title: "Suction accumulator — the compressor's insurance",
+    inState: stateChip(STATE_COLORS.vapor, "Suction vapour, possibly wet"),
+    outState: stateChip(STATE_COLORS.vapor, "Dry suction vapour"),
+    inVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tSuction)}`,
+    outVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tSuction)}`,
+    body: `A vessel in the suction line with its outlet taken from the <b>top</b>, so
+      only vapour can leave. Any liquid that gets past the evaporator collects in the
+      bottom and boils off slowly instead of arriving at the compressor in a slug.`,
+    points: [
+      "A small metered hole at the bottom of the outlet tube returns oil — and a controlled trickle of liquid — at a rate the compressor can cope with.",
+      `The coil is holding ${U.fmtDT(c.superheat)} of superheat now. When superheat collapses toward zero, this vessel is the only thing between the liquid and the valves.`,
+      "Fitted wherever floodback is likely: heat pumps coming off defrost, low-temperature systems, and anything with a wildly swinging load.",
+    ],
+  }),
+
+  suctionHx: (c) => ({
+    title: "Suction-line heat exchanger — subcooling paid for in superheat",
+    inState: stateChip(STATE_COLORS.liquid, "Warm liquid, cold vapour"),
+    outState: stateChip(STATE_COLORS.flash, "Colder liquid, warmer vapour"),
+    inVals: `liquid in ${U.fmtT(c.tCond - Math.max(c.subcool - 6, 0))} · vapour in ${U.fmtT(c.tEvap + c.superheatCoil)}`,
+    outVals: `liquid out ${U.fmtT(c.tLiquid)} · vapour out ${U.fmtT(c.tSuction)}`,
+    body: `The liquid line and the suction line are run against each other so heat
+      crosses from one to the other. Nothing is added and nothing is lost — heat is
+      simply <b>moved from where it hurts to where it helps</b>.`,
+    points: [
+      `Liquid reaches the valve about ${U.fmtDT(6)} colder, so less of it flashes: the coil inlet is ${r0(c.flashFraction * 100)} % vapour.`,
+      `The vapour reaches the compressor at ${U.fmtT(c.tSuction)} rather than ${U.fmtT(c.tEvap + c.superheatCoil)} — dry gas guaranteed, but a hotter discharge and more work.`,
+      "The two effects very nearly cancel in COP terms. The real reasons to fit one are a guaranteed-dry suction and a valve fed with solid liquid.",
+    ],
+  }),
+
+  flashChamber: (c) => ({
+    title: "Flash chamber — separates the gas that does no work",
+    inState: stateChip(STATE_COLORS.flash, "Liquid + flash vapour"),
+    outState: stateChip(STATE_COLORS.liquid, "Liquid down, vapour off the top"),
+    inVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tEvap)}`,
+    outVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tEvap)}`,
+    body: `A vessel just after the metering device. The mixture separates by gravity:
+      liquid falls to the bottom and feeds the evaporator, and vapour is drawn off the
+      top and <b>sent straight to the compressor</b>, skipping the coil entirely.`,
+    points: [
+      `Throttling flashes ${r0(c.flashFraction * 100)} % of the refrigerant to vapour. That vapour is already at coil temperature — it cannot absorb any more heat, so in the coil it does nothing but take up room.`,
+      "With it removed, the whole coil surface is wetted with liquid, which is the condition a coil is rated at.",
+      "The compressor still has to pump that gas, so this buys evaporator performance rather than efficiency. On two-stage plant the same vessel becomes an economiser — and then it does save work.",
+    ],
+  }),
+
+  epr: (c) => ({
+    title: "EPR — holds one coil up while the rest go down",
+    inState: stateChip(STATE_COLORS.vapor, "Vapour at coil pressure"),
+    outState: stateChip(STATE_COLORS.vapor, "Vapour at suction pressure"),
+    inVals: c.pLowB ? `${U.fmtPGauge(c.pLowB)} · ${U.fmtT(c.tEvapB)}` : "—",
+    outVals: `${U.fmtPGauge(c.pLow)} · ${U.fmtT(c.tEvap)}`,
+    body: `An evaporator pressure regulator sits in the suction branch of the
+      <b>warmer</b> coil and throttles it, so that coil can hold a higher pressure than
+      the compressor is pulling everywhere else on the machine.`,
+    points: [
+      c.tEvapB != null
+        ? `The freezer coil is at ${U.fmtT(c.tEvap)}; this valve is holding the chiller coil at ${U.fmtT(c.tEvapB)}. Without it, both would sit at the lower figure.`
+        : "Without it, every coil on the machine is dragged down to the lowest coil's pressure.",
+      "It regulates its <b>inlet</b> — the pressure upstream of itself. That is exactly why it belongs in the suction line and not the liquid line.",
+      "Set too low and the warm room over-cools; set too high and it starves the compressor and the warm room never pulls down.",
+    ],
+  }),
+
+  cascadeHx: (c) => ({
+    title: "Cascade condenser — one vessel, two circuits",
+    inState: stateChip(STATE_COLORS.hotgas, "Low-stage discharge"),
+    outState: stateChip(STATE_COLORS.vapor, "High-stage suction"),
+    inVals: c.tInter != null ? `condensing at ${U.fmtT(c.tInter)}` : "—",
+    outVals: c.tInter != null ? `boiling at ${U.fmtT(c.tInter - 5)}` : "—",
+    body: `A heat exchanger belonging to both circuits at once: the low stage
+      <b>condenses</b> inside it, and that heat is precisely what the high stage
+      <b>boils</b> to absorb. The two refrigerants never mix.`,
+    points: [
+      "The high stage has to boil colder than the low stage condenses, or no heat would cross. That gap is a real loss, and the reason a cascade is not free.",
+      "Each circuit can use a refrigerant suited to its own range — CO₂ or a low-temperature blend below, ammonia or an HFC above.",
+      "Fouling here shows up as a climbing low-stage head pressure with a high stage that looks perfectly healthy.",
+    ],
+  }),
+
+  evaporatorB: (c) => ({
+    title: "Chiller coil — the warm room's evaporator",
+    inState: stateChip(STATE_COLORS.flash, "Low-pressure flash mix"),
+    outState: stateChip(STATE_COLORS.vapor, "Low-pressure vapour"),
+    inVals: c.pLowB ? `${U.fmtPGauge(c.pLowB)} · ${U.fmtT(c.tEvapB)}` : "—",
+    outVals: c.pLowB ? `${U.fmtPGauge(c.pLowB)} · ${U.fmtT(c.tEvapB + 6)}` : "—",
+    body: `The same job as any evaporator, but this one has to run <b>warmer</b> than
+      the freezer sharing a compressor with it — which only works because an EPR is
+      holding its pressure up.`,
+    points: [
+      c.tEvapB != null
+        ? `Boiling at ${U.fmtT(c.tEvapB)} against the freezer's ${U.fmtT(c.tEvap)}, on the same machine.`
+        : "Runs at its own pressure, set by the EPR in its suction branch.",
+      "It has its own TX valve, so each room is metered for its own load.",
+      "If the EPR fails open, this coil is dragged down with the freezer and everything in it freezes.",
+    ],
+  }),
+
+  compressorB: (c) => COMPONENTS.compressor(c),
+  meteringB: (c) => COMPONENTS.metering(c),
 };
 
 /* ========================================================================= */
@@ -161,6 +329,16 @@ function renderReadouts() {
     { label: "Subcool",    value: U.fmtDT(c.subcool),    dot: STATE_COLORS.liquid, level: 2 },
     { label: "Flow",       value: `${r0(c.flow)} L/min` },
   ];
+  // A second coil at its own temperature is the whole point of the circuit
+  // that has one, so it belongs in the rail from the first detail level.
+  if (c.tEvapB != null) {
+    rows.splice(4, 0, { label: "Chiller coil", value: U.fmtT(c.tEvapB), dot: STATE_COLORS.flash });
+  }
+  // Flash gas is the number that explains why subcooling matters
+  rows.push({
+    label: "Flash gas", dot: STATE_COLORS.flash, level: 2,
+    value: c.flashBypassed ? "0 % (bypassed)" : `${r0(c.flashFraction * 100)} %`,
+  });
   // Split "1499 kPa g" into number + unit so the unit can sit back visually.
   const split = (v) => String(v).replace(/^([\-\d.,]+)\s*(.*)$/, (m, n, u) =>
     u ? `${n} <span class="unit">${u}</span>` : n);
@@ -197,11 +375,142 @@ function renderPerf() {
     </div>`).join("");
 }
 
+/* Figures that only exist on some circuits: the second coil's temperature, the
+   flash fraction, the cascade's interstage point and the comparison against a
+   single machine. These sit under the performance grid so the variation's
+   effect is visible as a number, not just as a different picture. */
+function renderCircuitStats() {
+  const box = document.getElementById("circuitStats");
+  if (!box) return;
+  const c = current, cells = [];
+
+  // Flash fraction is worth showing everywhere — it is why subcooling matters
+  cells.push({
+    k: "Flash gas at the valve",
+    v: `${r0(c.flashFraction * 100)} %`,
+    n: c.flashBypassed
+      ? "separated out in the chamber, so the coil inlet is 0 % vapour"
+      : "of the refrigerant boils crossing the valve and does no cooling",
+    cls: c.flashBypassed ? "good" : "",
+  });
+
+  if (c.tEvapB != null) {
+    cells.push({
+      k: "Chiller coil", v: U.fmtT(c.tEvapB),
+      n: `held up by the EPR while the freezer runs at ${U.fmtT(c.tEvap)}`,
+      cls: "good",
+    });
+  }
+
+  if (c.tInter != null && c.singleStage) {
+    cells.push({ k: "Interstage", v: U.fmtT(c.tInter),
+      n: "where the two stages hand the heat over" });
+    cells.push({ k: "Ratio per stage",
+      v: `${c.lowStage.ratio.toFixed(1)} · ${c.highStage.ratio.toFixed(1)}`,
+      n: `one machine would need ${c.singleStage.ratio.toFixed(1)} : 1 across the same span`,
+      cls: "good" });
+    cells.push({ k: "Single stage would give",
+      v: c.singleStage.cop.toFixed(2),
+      n: `COP, discharging at ${U.fmtT(c.singleStage.tDisch)} — against ${c.cop.toFixed(2)} for the cascade`,
+      cls: "warn" });
+  }
+
+  box.hidden = cells.length === 0;
+  box.innerHTML = cells.map(x => `
+    <div class="cstat ${x.cls || ""}">
+      <div class="k">${x.k}</div><div class="v">${x.v}</div><div class="n">${x.n}</div>
+    </div>`).join("");
+}
+
 function renderLegend() {
-  document.getElementById("legend").innerHTML = SEGMENTS.map(s => `
-    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>
+  document.getElementById("legend").innerHTML = STATE_KEY.map(s => `
+    <div class="legend-item"><span class="legend-swatch" style="background:${STATE_COLORS[s.state]}"></span>
       <span><span class="legend-name">${s.label}</span><span class="legend-detail">${s.detail}</span></span>
     </div>`).join("");
+}
+
+/* ========================================================================= */
+/* Circuit rendering                                                         */
+/* ========================================================================= */
+/* Draw the active circuit and rebuild everything that keys off the drawing:
+   the segment table, the flowing particles, the fault overlays and the click
+   handlers. Called on load and whenever the learner changes circuit. */
+function renderCircuit() {
+  const circuit = CIRCUITS[state.circuit];
+  const svg = document.getElementById("diagram");
+  // Coil captions can carry live temperatures, so the drawing never contradicts
+  // the instrument rail beside it.
+  RefrigSchematic.render(svg, circuit, {
+    tEvap:  current ? U.fmtT(current.tEvap) : "",
+    tEvapB: current && current.tEvapB != null ? U.fmtT(current.tEvapB) : "",
+    tCond:  current ? U.fmtT(current.tCond) : "",
+  });
+
+  SEGMENTS = circuit.pipes.filter(p => !p.hidden).map(p => ({
+    id: p.id, state: p.state, color: STATE_COLORS[p.state],
+  }));
+  indexSegments();
+
+  buildParticles();
+  setupFaultViz();
+  bindComponents();
+
+  // The selection and any tour focus belong to the previous drawing
+  state.selected = null;
+  resetInfoPanel();
+  renderCircuitNote();
+}
+
+function bindComponents() {
+  const onPick = (key) => {
+    if (!COMPONENTS[key]) return;
+    showInfo(key);
+    const panel = document.getElementById("infoPanel");
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    focusSectionSoon(panel);
+  };
+  document.querySelectorAll(".component").forEach(c => {
+    c.addEventListener("click", () => onPick(c.dataset.component));
+    c.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(c.dataset.component); }
+    });
+  });
+}
+
+/* Live temperatures printed on the coils, updated in place rather than by
+   redrawing the whole schematic on every slider move. */
+function refreshLiveCaptions() {
+  const circuit = CIRCUITS[state.circuit];
+  const values = {
+    tEvap:  U.fmtT(current.tEvap),
+    tEvapB: current.tEvapB != null ? U.fmtT(current.tEvapB) : "",
+    tCond:  U.fmtT(current.tCond),
+  };
+  circuit.components.forEach(c => {
+    if (!c.sub || !/\{\w+\}/.test(String(c.sub.text))) return;
+    const g = document.querySelector(`[data-component="${c.id}"] .comp-sub`);
+    if (g) g.textContent = String(c.sub.text).replace(/\{(\w+)\}/g, (m, k) => values[k] != null ? values[k] : m);
+  });
+}
+
+function resetInfoPanel() {
+  document.getElementById("infoTitle").textContent = "Click a component";
+  document.getElementById("infoBody").innerHTML =
+    `<p class="info-hint">Select any component in the diagram to learn what it does and how it
+     changes the refrigerant. Or just watch the colours flow — each colour is a different
+     refrigerant state.</p>`;
+}
+
+/* The panel under the picker: what this circuit is, what it teaches, and
+   where a technician actually meets it. */
+function renderCircuitNote() {
+  const c = CIRCUITS[state.circuit];
+  const box = document.getElementById("circuitNote");
+  if (!box) return;
+  box.innerHTML = `
+    <p class="circuit-blurb">${c.blurb}</p>
+    <p class="circuit-teaches"><b>Why it is built this way.</b> ${c.teaches}</p>
+    <p class="circuit-seen"><span class="u-label">Where you meet it</span> ${c.seenIn}</p>`;
 }
 
 /* ========================================================================= */
@@ -237,19 +546,25 @@ function updateParticles(speed) {
 }
 
 // Blend the pipe and particle colours toward grey by factor g (0..1).
-const SEG_RGB = {};
-SEGMENTS.forEach(s => { SEG_RGB[s.id] = hexToRgb(s.color); });
+let SEG_RGB = {};
+function indexSegments() {
+  SEG_RGB = {};
+  SEGMENTS.forEach(s => { SEG_RGB[s.id] = hexToRgb(s.color); });
+}
 function applyPipeColors(g) {
-  SEGMENTS.forEach(s => document.getElementById(s.id).setAttribute("stroke", mixGrey(SEG_RGB[s.id], g)));
+  SEGMENTS.forEach(s => {
+    const p = document.getElementById(s.id);
+    if (p) p.style.stroke = mixGrey(SEG_RGB[s.id], g);
+  });
   particles.forEach(p => p.el.setAttribute("fill", mixGrey(p.rgb, g)));
   // coil fills and spills fade out as the system greys (off = no refrigerant shown)
   const f = 1 - g;
-  if (viz.fillCond) {
-    viz.fillCond.setAttribute("opacity", 0.5 * f);
-    viz.fillEvap.setAttribute("opacity", 0.5 * f);
-    viz.spillLiquid.setAttribute("opacity", (viz.spillLiquid._op || 0) * f);
-    viz.spillSuction.setAttribute("opacity", (viz.spillSuction._op || 0) * f);
-  }
+  [viz.fillCond, viz.fillEvap, viz.fillEvapB].forEach(r => {
+    if (r) r.setAttribute("opacity", 0.34 * f);
+  });
+  [viz.spillLiquid, viz.spillSuction].forEach(p => {
+    if (p) p.setAttribute("opacity", (p._op || 0) * f);
+  });
 }
 
 /* ========================================================================= */
@@ -288,17 +603,35 @@ function setupFaultViz() {
     rect.setAttribute("width", w); rect.setAttribute("height", h);
     rect.setAttribute("rx", 8); rect.setAttribute("class", "coil-fill");
     rect.setAttribute("fill", `url(#${grad})`); rect.setAttribute("opacity", 0.34);
-    group.insertBefore(rect, group.firstElementChild.nextSibling);
+    // The first child is the invisible hit area and the second is the coil
+    // body; the fill belongs above the body and below the fins.
+    const body = group.querySelector(".comp-box");
+    group.insertBefore(rect, body ? body.nextSibling : group.firstElementChild);
     return rect;
   };
-  viz.fillCond = addFill('[data-component="condenser"]', 709, 44, 182, 88, "gradCond");
-  viz.fillEvap = addFill('[data-component="evaporator"]', 59, 252, 172, 88, "gradEvap");
+  // Coil fills are placed from the circuit's own component boxes, so a circuit
+  // that moves or adds a coil does not need this code changed.
+  const circuit = CIRCUITS[state.circuit];
+  const coilBox = (which) => {
+    const c = circuit.components.find(k => k.coil === which);
+    return c ? c.box : null;
+  };
+  const fillFor = (which, grad) => {
+    const b = coilBox(which);
+    if (!b) return null;
+    return addFill(`[data-component="${circuit.components.find(k => k.coil === which).id}"]`,
+      b.x + 4, b.y + 4, b.w - 8, b.h - 8, grad);
+  };
+  viz.fillCond = fillFor("cond", "gradCond");
+  viz.fillEvap = fillFor("evap", "gradEvap");
+  viz.fillEvapB = fillFor("evapB", "gradEvap");
 
   // Spill overlays on the liquid and suction lines (abnormal state carried over)
   const spills = document.createElementNS(NS, "g");
   spills.id = "spills";
   const mkSpill = (refId, color) => {
     const src = document.getElementById(refId);
+    if (!src) return null;   // this circuit has no run by that name
     const path = document.createElementNS(NS, "path");
     path.setAttribute("d", src.getAttribute("d"));
     path.setAttribute("class", "spill-pipe");
@@ -329,9 +662,11 @@ function renderFaultViz() {
   const bb = 1 - evapFront;
   viz.evapStops[1].setAttribute("offset", Math.max(bb - 0.07, 0));
   viz.evapStops[2].setAttribute("offset", Math.min(bb + 0.07, 1));
+  if (viz.fillEvapB) viz.fillEvapB.setAttribute("opacity", 0.34);
 
   // spill overlays: show the first `frac` of the pipe in the wrong-state colour
   const setSpill = (path, frac) => {
+    if (!path) return;
     if (frac <= 0.001) { path._op = 0; path.setAttribute("opacity", 0); return; }
     const vis = path._len * frac;
     path.setAttribute("stroke-dasharray", `${vis} ${path._len + vis}`);
@@ -498,6 +833,34 @@ const TOUR = [
     text: "That's one complete cycle. Heat went IN at the evaporator and OUT at the condenser; the compressor did the work to make it flow uphill. Try the sliders and fault selector to see how the cycle reshapes — then test yourself with the Technician Quiz." },
 ];
 
+/* The tour walks the loop, but not every circuit has every component — the
+   basic cycle has no receiver, for instance. Steps whose component is absent
+   are dropped rather than pointing at nothing. */
+function tourSteps() {
+  const ids = new Set(CIRCUITS[state.circuit].components.map(c => c.id));
+  const steps = TOUR.filter(s => !s.component || ids.has(s.component));
+  const extra = CIRCUIT_TOUR[state.circuit];
+  if (!extra) return steps;
+  // Circuit-specific stops go in just before the closing step
+  return steps.slice(0, -1).concat(extra.filter(s => ids.has(s.component)), steps.slice(-1));
+}
+
+/* One extra stop per variation, on the thing that variation exists to teach. */
+const CIRCUIT_TOUR = {
+  commercial: [{ component: "solenoid", seg: "seg-liquid", phaseT: 0.55, title: "Pump-down",
+    text: "The solenoid closes on the thermostat and the compressor keeps running, pulling the low side down until a pressure switch stops it. The machine parks its refrigerant in the condenser and receiver rather than leaving it in a cold coil." }],
+  accumulator: [{ component: "accumulator", seg: "seg-suction", phaseT: 0.92, title: "The last defence",
+    text: "Anything liquid that gets this far collects in the bottom of the vessel and boils off slowly. The outlet is taken from the top, so only vapour can leave for the compressor." }],
+  suctionHx: [{ component: "suctionHx", seg: null, phaseT: 0.55, title: "Swapping heat",
+    text: "Heat crosses from the liquid line into the suction line. The liquid arrives at the valve colder so less of it flashes; the vapour arrives at the compressor warmer, which costs work. Watch COP — the net gain is real and small." }],
+  flashGas: [{ component: "flashChamber", seg: "seg-bypass", phaseT: 0.66, title: "Losing the dead weight",
+    text: "The vapour made by throttling is drawn off the top and sent straight to the compressor. It could not have absorbed any more heat, so all it was doing in the coil was taking up room." }],
+  multiEvap: [{ component: "epr", seg: "seg-suctB", phaseT: 0.9, title: "Two temperatures, one compressor",
+    text: "The compressor pulls everything down to the freezer's pressure. The EPR sits in the chiller's branch and refuses to let it follow — which is the only reason the produce in that room does not freeze." }],
+  cascade: [{ component: "cascadeHx", seg: null, phaseT: 0.4, title: "Where the two circuits meet",
+    text: "The low stage condenses in this vessel and the high stage boils in it. Neither compressor has to span the whole temperature range, so neither runs a ruinous pressure ratio." }],
+};
+
 function setTour(active) {
   state.tourActive = active;
   document.getElementById("tourBar").hidden = !active;
@@ -506,14 +869,15 @@ function setTour(active) {
   if (active) { state.tourIndex = 0; gotoTourStep(0); }
 }
 function gotoTourStep(i) {
-  state.tourIndex = clamp(i, 0, TOUR.length - 1);
-  const step = TOUR[state.tourIndex];
+  const steps = tourSteps();
+  state.tourIndex = clamp(i, 0, steps.length - 1);
+  const step = steps[state.tourIndex];
   document.getElementById("tourStep").textContent = state.tourIndex + 1;
-  document.getElementById("tourTotal").textContent = TOUR.length;
+  document.getElementById("tourTotal").textContent = steps.length;
   document.getElementById("tourTitle").textContent = step.title;
   document.getElementById("tourText").textContent = step.text;
   document.getElementById("tourPrev").disabled = state.tourIndex === 0;
-  document.getElementById("tourNext").textContent = state.tourIndex === TOUR.length - 1 ? "Finish" : "Next";
+  document.getElementById("tourNext").textContent = state.tourIndex === steps.length - 1 ? "Finish" : "Next";
   document.querySelectorAll(".component").forEach(c => c.classList.toggle("tour-focus", c.dataset.component === step.component));
   document.querySelectorAll(".pipes-flow path").forEach(p => p.classList.toggle("tour-dim", step.seg != null && p.id !== step.seg));
   if (step.component) showInfo(step.component);
@@ -546,11 +910,13 @@ function refreshAll() {
   recompute();
   renderReadouts();
   renderPerf();
+  renderCircuitStats();
   renderGauges(current);
   renderPhChart();
   renderPtChart();
   renderFaultViz();
   updateFaultBanner();
+  refreshLiveCaptions();
   if (state.selected) showInfo(state.selected);
 }
 
@@ -613,6 +979,7 @@ function focusSectionSoon(el) {
    choice is remembered. Deep links from a lesson raise the level they need. */
 const LEVEL_KEY = "refrigSim.simLevel";
 const QUICKSTART_KEY = "simQuickstartDismissed";
+const CIRCUIT_KEY = "refrigSim.circuit";
 const MAX_LEVEL = 3;
 /* What each level is showing now, and what the next one would add. */
 const LEVEL_STEPS = {
@@ -645,6 +1012,40 @@ function applyLevel(level) {
   }
 }
 
+/* ========================================================================= */
+/* Switching circuit                                                         */
+/* ========================================================================= */
+function setCircuit(key, remember) {
+  if (!CIRCUITS[key]) return;
+  state.circuit = key;
+  // A fault that belongs to hardware this circuit does not have makes no sense
+  if (!faultAvailable(state.fault)) state.fault = "none";
+  populateFaultSelect();
+  renderCircuit();
+  refreshAll();
+  if (remember !== false) {
+    try { localStorage.setItem(CIRCUIT_KEY, key); } catch (e) { /* storage unavailable */ }
+  }
+}
+
+/* Faults are either universal (they can happen on any vapour-compression
+   system) or tied to a device — a stuck liquid-line solenoid needs a circuit
+   that actually has one. */
+function faultAvailable(key) {
+  if (key === "none") return true;
+  const f = FAULTS[key];
+  if (!f) return false;
+  if (!f.needsCircuitDevice) return true;
+  return (CIRCUITS[state.circuit].faults || []).includes(key);
+}
+
+function populateFaultSelect() {
+  const fsel = document.getElementById("faultSelect");
+  fsel.innerHTML = Object.keys(FAULTS).filter(faultAvailable).map(k =>
+    `<option value="${k}">${FAULTS[k].label}</option>`).join("");
+  fsel.value = faultAvailable(state.fault) ? state.fault : "none";
+}
+
 function setLevel(level, remember) {
   const lv = Math.min(MAX_LEVEL, Math.max(1, level | 0));
   applyLevel(lv);
@@ -674,8 +1075,6 @@ function init() {
   sel.addEventListener("change", () => { state.refrigerant = sel.value; refreshAll(); });
 
   const fsel = document.getElementById("faultSelect");
-  fsel.innerHTML = Object.keys(FAULTS).map(k => `<option value="${k}">${FAULTS[k].label}</option>`).join("");
-  fsel.value = state.fault;
   fsel.addEventListener("change", () => { state.fault = fsel.value; refreshAll(); });
 
   // Unit preferences
@@ -722,20 +1121,6 @@ function init() {
     refreshAll();
   });
 
-  const onPick = (key) => {
-    showInfo(key);
-    const panel = document.getElementById("infoPanel");
-    // bring the info panel (just under the diagram) into view on small screens
-    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    focusSectionSoon(panel);
-  };
-  document.querySelectorAll(".component").forEach(c => {
-    c.addEventListener("click", () => onPick(c.dataset.component));
-    c.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(c.dataset.component); }
-    });
-  });
-
   // Detail level: stored preference, unless the link asks for more.
   let level = readLevel();
   const uLevel = parseInt(urlq.get("level"), 10);
@@ -756,7 +1141,7 @@ function init() {
   document.getElementById("tourExit").addEventListener("click", () => setTour(false));
   document.getElementById("tourPrev").addEventListener("click", () => gotoTourStep(state.tourIndex - 1));
   document.getElementById("tourNext").addEventListener("click", () => {
-    if (state.tourIndex === TOUR.length - 1) setTour(false);
+    if (state.tourIndex === tourSteps().length - 1) setTour(false);
     else gotoTourStep(state.tourIndex + 1);
   });
 
@@ -779,10 +1164,23 @@ function init() {
     });
   }
 
+  // Circuit picker
+  const csel = document.getElementById("circuitSelect");
+  try {
+    const saved = localStorage.getItem(CIRCUIT_KEY);
+    if (saved && CIRCUITS[saved]) state.circuit = saved;
+  } catch (e) { /* storage unavailable */ }
+  if (urlq.get("circuit") && CIRCUITS[urlq.get("circuit")]) state.circuit = urlq.get("circuit");
+  csel.innerHTML = CIRCUIT_ORDER.map(k =>
+    `<option value="${k}">${CIRCUITS[k].order}. ${CIRCUITS[k].label}</option>`).join("");
+  csel.value = state.circuit;
+  csel.addEventListener("change", () => setCircuit(csel.value));
+  if (!faultAvailable(state.fault)) state.fault = "none";
+  populateFaultSelect();
+
   recompute();
   renderLegend();
-  buildParticles();
-  setupFaultViz();
+  renderCircuit();
   refreshAll();
   setRunning(true);
   initPtTrainer();

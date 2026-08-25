@@ -90,86 +90,11 @@
     <div class="workbench">
       <div class="workbench-top">
         <div class="diagram-wrap">
-      <!-- Geometry note: the loop is drawn wide and short so the whole cycle
-           fits on screen beside its instruments, rather than forcing a scroll.
-           Verticals sit on component centres; app.js reads the pipe paths for
-           particle animation, and the coil-fill rects in setupFaultViz() are
-           keyed to the component boxes below. -->
-      <svg id="diagram" viewBox="30 18 900 362" role="img" aria-label="Refrigeration cycle schematic">
-        <defs>
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="b" />
-            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-
-        <!-- Pipes: a base layer and an animated flow overlay -->
-        <g class="pipes-base">
-          <path d="M 235 88 L 705 88" />
-          <path d="M 800 136 L 800 276" />
-          <path d="M 770 296 L 235 296" />
-          <path d="M 145 248 L 145 136" />
-        </g>
-        <g class="pipes-flow">
-          <path id="seg-discharge" d="M 235 88 L 705 88" data-segment="discharge" />
-          <path id="seg-liquid"    d="M 800 136 L 800 276" data-segment="liquid" />
-          <path id="seg-evapfeed"  d="M 770 296 L 235 296" data-segment="evapfeed" />
-          <path id="seg-suction"   d="M 145 248 L 145 136" data-segment="suction" />
-        </g>
-
-        <!-- Text labels on each line, so state isn't conveyed by colour alone -->
-        <g class="pipe-labels" aria-hidden="true">
-          <text x="470" y="72">hot gas</text>
-          <text x="848" y="164" class="pipe-label-left">liquid</text>
-          <text x="500" y="280">flash mix</text>
-          <text x="158" y="196" class="pipe-label-left">suction vapour</text>
-        </g>
-
-        <!-- Liquid receiver (sits on the liquid line) -->
-        <g class="component" data-component="receiver" tabindex="0" role="button" aria-label="Liquid receiver">
-          <rect x="768" y="170" width="64" height="76" rx="10" class="comp-box receiver-box" />
-          <rect x="780" y="210" width="40" height="28" rx="3" class="receiver-liquid" />
-          <text x="758" y="212" class="comp-label comp-label-left">RECEIVER</text>
-        </g>
-
-        <!-- Compressor -->
-        <g class="component" data-component="compressor" tabindex="0" role="button" aria-label="Compressor">
-          <rect x="55" y="40" width="180" height="96" rx="12" class="comp-box compressor-box" />
-          <circle cx="145" cy="80" r="20" class="comp-icon compressor-icon" />
-          <text x="145" y="124" class="comp-label">COMPRESSOR</text>
-        </g>
-
-        <!-- Condenser -->
-        <g class="component" data-component="condenser" tabindex="0" role="button" aria-label="Condenser">
-          <rect x="705" y="40" width="190" height="96" rx="12" class="comp-box condenser-box" />
-          <g class="fin-set condenser-fins">
-            <line x1="727" y1="56" x2="727" y2="112" /><line x1="742" y1="56" x2="742" y2="112" />
-            <line x1="757" y1="56" x2="757" y2="112" /><line x1="772" y1="56" x2="772" y2="112" />
-          </g>
-          <text x="828" y="88" class="comp-sub">heat OUT</text>
-          <text x="800" y="124" class="comp-label">CONDENSER</text>
-        </g>
-
-        <!-- Metering / expansion device -->
-        <g class="component" data-component="metering" tabindex="0" role="button" aria-label="Metering device">
-          <path d="M 800 276 L 820 296 L 800 316 L 780 296 Z" class="comp-box metering-box" />
-          <text x="800" y="344" class="comp-label">METERING DEVICE</text>
-        </g>
-
-        <!-- Evaporator -->
-        <g class="component" data-component="evaporator" tabindex="0" role="button" aria-label="Evaporator">
-          <rect x="55" y="248" width="180" height="96" rx="12" class="comp-box evaporator-box" />
-          <g class="fin-set evaporator-fins">
-            <line x1="77" y1="264" x2="77" y2="320" /><line x1="92" y1="264" x2="92" y2="320" />
-            <line x1="107" y1="264" x2="107" y2="320" /><line x1="122" y1="264" x2="122" y2="320" />
-          </g>
-          <text x="180" y="296" class="comp-sub">heat IN</text>
-          <text x="145" y="332" class="comp-label">EVAPORATOR</text>
-        </g>
-
-        <!-- Flowing particles get injected here -->
-        <g id="particles"></g>
-      </svg>
+      <!-- The schematic is drawn by js/schematic.js from whichever circuit in
+           js/circuits.js is selected, so the picture, the components you can
+           click and the thermodynamics all change together. -->
+      <svg id="diagram" viewBox="30 18 900 362" role="img"
+           aria-label="Refrigeration circuit schematic"></svg>
 
         </div><!-- /.diagram-wrap -->
 
@@ -193,6 +118,10 @@
       <!-- Operating controls belong with the thing they operate -->
       <div class="workbench-controls">
         <div class="sim-controls" aria-label="Operating controls">
+          <label class="select-group select-circuit">
+            <span>System</span>
+            <select id="circuitSelect"></select>
+          </label>
           <label class="select-group">
             <span>Refrigerant</span>
             <select id="refrigerantSelect"></select>
@@ -232,6 +161,8 @@
         </div>
       </div>
     </div><!-- /.workbench -->
+
+    <section class="circuit-note" id="circuitNote" aria-live="polite"></section>
 
     <p class="level-hint" id="levelHint" hidden></p>
 
@@ -275,6 +206,7 @@
           <span class="hint">from the cycle enthalpies</span>
         </div>
         <div class="perf-grid" id="perfGrid"></div>
+        <div class="circuit-stats" id="circuitStats" hidden></div>
         <p class="perf-caption">COP = cooling delivered ÷ compressor work. Capacity is relative to this fluid's nominal point. Energy figures are per kg of refrigerant.</p>
       </div>
     </div><!-- /.instruments -->
@@ -329,6 +261,8 @@
 
   <script src="js/nav.js" defer></script>
   <script src="js/data.js"></script>
+  <script src="js/circuits.js"></script>
+  <script src="js/schematic.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>
   <script src="js/srs.js"></script>

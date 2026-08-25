@@ -490,7 +490,7 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | File | Purpose |
 |------|---------|
 | `index.html` | "Start here" front door: the staged pathway, stream cards, tool cards |
-| `simulator.html` | Simulator page structure + the SVG schematic |
+| `simulator.html` | Simulator page structure; the schematic itself is drawn from data |
 | `service.html` | The Service Bay rig |
 | `build.html` | The System Builder: palette, loop and analysis panel |
 | `diagnose.html` | The Fault Diagnosis Workshop: schematic, instruments, evidence and diagnosis panels |
@@ -499,7 +499,9 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `styles-build.css` | System Builder layout: palette, loop rows, drag states, findings |
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |
 | `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |
-| `js/model.js` | Interpolation, saturation lookups, operating-point derivation |
+| `js/circuits.js` | The seven system variations: pipe runs, components, captions, and what each adds to the cycle |
+| `js/schematic.js` | Draws a circuit definition into the SVG (pipes, components, hit areas, captions) |
+| `js/model.js` | Interpolation, saturation lookups, operating-point derivation, per-circuit effects, two-stage cascade |
 | `js/units.js` | kPa/bar/psi and °C/°F display, gauge-vs-absolute, localStorage prefs |
 | `js/gauges.js` | Analog gauge manifold with PT rings |
 | `js/pt.js` | PT chart + target-pressure trainer |
