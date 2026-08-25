@@ -1,0 +1,111 @@
+<?xml version="1.0" standalone="no"?>
+<manifest identifier="refrigeration-learning-course" version="1.2"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="org-refrig">
+    <organization identifier="org-refrig">
+      <title>Refrigeration Learning Course</title>
+      <item identifier="item-course" identifierref="res-course" isvisible="true">
+        <title>Refrigeration Learning Course</title>
+        <adlcp:masteryscore>80</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="res-course" type="webcontent" adlcp:scormtype="sco" href="learn.html">
+      <file href="learn.html"/>
+      <file href="index.html"/>
+      <file href="simulator.html"/>
+      <file href="teach.html"/>
+      <file href="service.html"/>
+      <file href="about.html"/>
+      <file href="styles.css"/>
+      <file href="js/nav.js"/>
+      <file href="js/home.js"/>
+      <file href="js/servicebay.js"/>
+      <file href="js/service-ui.js"/>
+      <file href="js/md.js"/>
+      <file href="js/figures.js"/>
+      <file href="js/srs.js"/>
+      <file href="js/cards.js"/>
+      <file href="js/scorm.js"/>
+      <file href="js/exam.js"/>
+      <file href="js/streams.js"/>
+      <file href="js/course-index.js"/>
+      <file href="js/course1.js"/>
+      <file href="js/course2.js"/>
+      <file href="js/course3.js"/>
+      <file href="js/course101.js"/>
+      <file href="js/course102.js"/>
+      <file href="js/course103.js"/>
+      <file href="js/course104.js"/>
+      <file href="js/course105.js"/>
+      <file href="js/course106.js"/>
+      <file href="js/course107.js"/>
+      <file href="js/course108.js"/>
+      <file href="js/course109.js"/>
+      <file href="js/course110.js"/>
+      <file href="js/course111.js"/>
+      <file href="js/course112.js"/>
+      <file href="js/course113.js"/>
+      <file href="js/course114.js"/>
+      <file href="js/course115.js"/>
+      <file href="js/course116.js"/>
+      <file href="js/course201.js"/>
+      <file href="js/course202.js"/>
+      <file href="js/course203.js"/>
+      <file href="js/course204.js"/>
+      <file href="js/course205.js"/>
+      <file href="js/course206.js"/>
+      <file href="js/course207.js"/>
+      <file href="js/course208.js"/>
+      <file href="js/course209.js"/>
+      <file href="js/course210.js"/>
+      <file href="js/course211.js"/>
+      <file href="js/course212.js"/>
+      <file href="js/course213.js"/>
+      <file href="js/course301.js"/>
+      <file href="js/course302.js"/>
+      <file href="js/course303.js"/>
+      <file href="js/course304.js"/>
+      <file href="js/course305.js"/>
+      <file href="js/course306.js"/>
+      <file href="js/course307.js"/>
+      <file href="js/course308.js"/>
+      <file href="js/course309.js"/>
+      <file href="js/course310.js"/>
+      <file href="js/course311.js"/>
+      <file href="js/course312.js"/>
+      <file href="js/course313.js"/>
+      <file href="js/course314.js"/>
+      <file href="js/course401.js"/>
+      <file href="js/course402.js"/>
+      <file href="js/course403.js"/>
+      <file href="js/course404.js"/>
+      <file href="js/course405.js"/>
+      <file href="js/course406.js"/>
+      <file href="js/course407.js"/>
+      <file href="js/course408.js"/>
+      <file href="js/course409.js"/>
+      <file href="js/course410.js"/>
+      <file href="js/refdocs.js"/>
+      <file href="js/learn.js"/>
+      <file href="js/teach.js"/>
+      <file href="js/demo.js"/>
+      <file href="js/data.js"/>
+      <file href="js/units.js"/>
+      <file href="js/model.js"/>
+      <file href="js/gauges.js"/>
+      <file href="js/pt.js"/>
+      <file href="js/quiz.js"/>
+      <file href="js/app.js"/>
+    </resource>
+  </resources>
+</manifest>

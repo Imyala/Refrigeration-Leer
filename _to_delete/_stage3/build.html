@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Builder — Refrigeration Simulator</title>
+  <meta name="description" content="Build a refrigeration circuit component by component: drag the parts into the loop in flow order and get told, like a teacher would, whether the system would actually run and where each accessory belongs." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles-build.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#buildMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Start here</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="simulator.html" data-nav="sim">Simulator</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="build.html" data-nav="build" aria-current="page">Build a system</a></li>
+      <li><a href="diagnose.html" data-nav="diagnose">Diagnose</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>System Builder</h1>
+      <p class="subtitle">Pipe the circuit yourself — every component in flow order, checked the way a teacher would check it</p>
+    </div>
+    <div class="controls">
+      <label class="select-group">
+        <span>Task</span>
+        <select id="buildScenario"></select>
+      </label>
+      <button id="buildExplainBtn" class="btn btn-tour" type="button" aria-expanded="false" aria-controls="buildExplain">Explain this circuit</button>
+      <button id="buildClearBtn" class="btn btn-ghost" type="button">Clear the loop</button>
+    </div>
+  </header>
+
+  <section class="quickstart" aria-label="How to use the builder">
+    <h2 class="quickstart-title">Follow the refrigerant — that is the whole method</h2>
+    <ol class="quickstart-steps">
+      <li><b>Start at the compressor.</b> It is fixed at the top of the loop, because
+        that is where a circuit is always read from. Everything else you add follows
+        the flow round to it again.</li>
+      <li><b>Drag a part in, or click it.</b> Drop it between two components to place
+        it there; use the ▲ ▼ buttons on a placed part to move it, and × to take it
+        out. Every action works from the keyboard.</li>
+      <li><b>Read what the analysis tells you.</b> An error means the system would not
+        run. A note means it would run, but a technician would have piped it
+        differently — and it says why.</li>
+    </ol>
+  </section>
+
+  <main id="buildMain" class="build-layout">
+    <div class="build-col build-col-side">
+      <div class="panel palette-panel" id="palettePanel">
+        <div class="panel-head">
+          <h2>Components</h2>
+          <span class="hint">drag or click</span>
+        </div>
+        <p class="palette-note">Click a component (or press Enter on it) to add it to the
+          end of the loop, or drag it to the exact place it belongs.</p>
+        <div id="buildPalette"></div>
+        <p class="palette-bin">Drop it here to take it back out of the loop.</p>
+      </div>
+    </div>
+
+    <div class="build-col">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>The circuit</h2>
+          <span class="hint" id="buildCount"></span>
+        </div>
+        <div id="buildLoop"></div>
+      </div>
+
+      <div class="panel" id="buildExplain" hidden>
+        <div class="panel-head">
+          <h2>What the refrigerant is doing</h2>
+          <span class="hint">in flow order</span>
+        </div>
+        <div id="buildExplainBody"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Component detail</h2>
+          <span class="hint">click a part in the loop</span>
+        </div>
+        <div id="buildDetail"></div>
+      </div>
+    </div>
+
+    <div class="build-col build-col-side">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Analysis</h2>
+          <span class="hint">live</span>
+        </div>
+        <div id="buildBrief"></div>
+        <div id="buildVerdict" aria-live="polite"></div>
+        <div id="buildIssues"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Educational circuit trainer · placements and advice are representative of common
+      practice, for training not design. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/circuit.js"></script>
+  <script src="js/build-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fault Diagnosis Workshop — Refrigeration Simulator</title>
+  <meta name="description" content="Diagnose a hidden fault the way you would on site: decide where to put an instrument, read it, work out superheat and subcooling, weigh the evidence and commit to a diagnosis." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles-diagnose.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#dgMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Start here</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="simulator.html" data-nav="sim">Simulator</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li><a href="build.html" data-nav="build">Build a system</a></li>
+      <li><a href="diagnose.html" data-nav="diagnose" aria-current="page">Diagnose</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Fault Diagnosis Workshop</h1>
+      <p class="subtitle">A machine with something wrong with it, and no numbers handed to you. Decide what to measure, fit the instrument, and read what it tells you.</p>
+    </div>
+    <div class="controls">
+      <label class="select-group">
+        <span>Refrigerant</span>
+        <select id="dgRefrigerant"></select>
+      </label>
+      <label class="select-group">
+        <span>Pressure</span>
+        <select id="dgPUnit" aria-label="Pressure unit">
+          <option value="kPa">kPa</option>
+          <option value="bar">bar</option>
+          <option value="psi">psi</option>
+        </select>
+      </label>
+      <label class="select-group">
+        <span>Temperature</span>
+        <select id="dgTUnit" aria-label="Temperature unit">
+          <option value="C">°C</option>
+          <option value="F">°F</option>
+        </select>
+      </label>
+      <button id="dgNewJobBtn" class="btn btn-tour" type="button">New job</button>
+    </div>
+  </header>
+
+  <section class="quickstart" aria-label="How the workshop works">
+    <h2 class="quickstart-title">The method — the same one that works on site</h2>
+    <ol class="quickstart-steps">
+      <li><b>Decide, then measure.</b> Every point on the machine is a place you
+        could put an instrument. Click one to fit it and see what it reads —
+        but ask first what that reading could change your mind about.</li>
+      <li><b>Work the numbers.</b> Superheat and subcooling are each made of
+        <em>two</em> readings. Until you have both halves, the number does not
+        exist — the panel tells you which half is missing and why it matters.</li>
+      <li><b>Commit.</b> Name the fault, including the courage to call a healthy
+        machine healthy. Only then does the workshop tell you what was really
+        wrong, and what you would have seen, heard and felt at the machine.</li>
+    </ol>
+  </section>
+
+  <main id="dgMain" class="dg-layout">
+    <div class="dg-left">
+      <div class="panel dg-job-panel">
+        <div class="panel-head">
+          <h2>The job</h2>
+          <span class="hint" id="dgJobMode">Live job · fault hidden</span>
+        </div>
+        <p class="dg-job-line" id="dgJobLine"></p>
+        <div class="dg-conditions">
+          <label class="dg-slider">
+            <span>Ambient (air on to the condenser) <b id="dgAmbientOut"></b></span>
+            <input id="dgAmbient" type="range" min="5" max="55" step="1" />
+          </label>
+          <label class="dg-slider">
+            <span>Box air (return air to the evaporator) <b id="dgBoxAirOut"></b></span>
+            <input id="dgBoxAir" type="range" min="-30" max="25" step="1" />
+          </label>
+        </div>
+        <div class="dg-job-actions">
+          <button id="dgHintBtn" class="btn btn-ghost" type="button">Hint — what should I measure next? <span class="dg-cost">costs ¼ mark</span></button>
+          <label class="dg-check">
+            <input id="dgPractice" type="checkbox" />
+            <span>Practice mode — I choose the fault and study its signature</span>
+          </label>
+          <label class="dg-check dg-practice-only" id="dgFaultPick" hidden>
+            <span>Fault to study</span>
+            <select id="dgFaultSelect"></select>
+          </label>
+        </div>
+        <div id="dgCoach" class="dg-coach" aria-live="polite"></div>
+      </div>
+
+      <div class="panel dg-scene-panel">
+        <div class="panel-head">
+          <h2>The machine</h2>
+          <span class="hint">click a point to fit an instrument</span>
+        </div>
+
+        <div class="dg-scene-wrap">
+          <svg id="dgScene" class="dg-scene" viewBox="0 0 820 560" role="img" aria-labelledby="dgSceneTitle dgSceneDesc">
+            <title id="dgSceneTitle">Schematic of the refrigeration circuit</title>
+            <desc id="dgSceneDesc">The compressor is on the right; hot gas leaves it and runs up and across to the condenser along the top, in the outside airstream. Liquid leaves the condenser and runs down the left side to the expansion valve. The low-pressure mixture crosses the bottom through the evaporator, in the cold-room airstream, and suction vapour returns along the bottom right to the compressor. A suction service valve and a discharge service valve sit on the pipework either side of the compressor. The buttons over this diagram fit measuring instruments to it.</desc>
+
+            <defs>
+              <marker id="dgAirHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#8aa0b3" opacity=".65" />
+              </marker>
+              <marker id="dgFlowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#c9d8e6" opacity=".8" />
+              </marker>
+            </defs>
+
+            <!-- Air zones: the two heat sinks the circuit works between -->
+            <rect class="dg-zone" x="16" y="20" width="788" height="98" rx="14" />
+            <text class="dg-zone-label" x="34" y="42">OUTSIDE — AMBIENT AIR</text>
+            <rect class="dg-zone dg-zone-cold" x="16" y="450" width="788" height="94" rx="14" />
+            <text class="dg-zone-label" x="34" y="534">COLD ROOM — BOX AIR</text>
+
+            <!-- Four runs of pipe, coloured by the state the refrigerant is in -->
+            <path class="dg-pipe p-hot"   d="M 650 332 L 650 180 L 540 180" />
+            <path class="dg-pipe p-liq"   d="M 290 180 L 150 180 L 150 300" />
+            <path class="dg-pipe p-flash" d="M 150 300 L 150 390 L 290 390" />
+            <path class="dg-pipe p-vap"   d="M 540 390 L 650 390 L 650 332" />
+
+            <!-- Condenser: hot gas in at the right, liquid out at the left -->
+            <rect class="dg-coil" x="290" y="152" width="250" height="56" rx="8" />
+            <path class="dg-pipe p-hot" d="M 540 180 L 402 180" />
+            <path class="dg-pipe p-liq" d="M 402 180 L 290 180" />
+            <g class="dg-fins">
+              <line x1="310" y1="156" x2="310" y2="204" /><line x1="334" y1="156" x2="334" y2="204" />
+              <line x1="358" y1="156" x2="358" y2="204" /><line x1="382" y1="156" x2="382" y2="204" />
+              <line x1="426" y1="156" x2="426" y2="204" /><line x1="450" y1="156" x2="450" y2="204" />
+              <line x1="474" y1="156" x2="474" y2="204" /><line x1="498" y1="156" x2="498" y2="204" />
+              <line x1="522" y1="156" x2="522" y2="204" />
+            </g>
+            <text class="dg-lab" x="415" y="145">CONDENSER</text>
+
+            <!-- Condenser fan and its airstream: ambient down through the coil -->
+            <g class="dg-fan">
+              <circle cx="415" cy="72" r="20" />
+              <path d="M 415 72 q 16 -12 18 4 q -16 -2 -18 -4 z" />
+              <path d="M 415 72 q -4 19 -16 8 q 12 -8 16 -8 z" />
+              <path d="M 415 72 q -12 -16 4 -18 q -2 15 -4 18 z" />
+            </g>
+            <text class="dg-sub" x="415" y="108">condenser fan</text>
+            <line class="dg-air" x1="345" y1="104" x2="345" y2="146" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="487" y1="104" x2="487" y2="146" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="345" y1="212" x2="345" y2="252" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="487" y1="212" x2="487" y2="252" marker-end="url(#dgAirHead)" />
+            <text class="dg-sub" x="345" y="268">air off</text>
+            <text class="dg-sub" x="487" y="268">air off</text>
+
+            <!-- Evaporator: mixture in at the left, suction vapour out at the right -->
+            <rect class="dg-coil" x="290" y="362" width="250" height="56" rx="8" />
+            <path class="dg-pipe p-flash" d="M 290 390 L 452 390" />
+            <path class="dg-pipe p-vap"   d="M 452 390 L 540 390" />
+            <g class="dg-fins">
+              <line x1="310" y1="366" x2="310" y2="414" /><line x1="334" y1="366" x2="334" y2="414" />
+              <line x1="358" y1="366" x2="358" y2="414" /><line x1="382" y1="366" x2="382" y2="414" />
+              <line x1="406" y1="366" x2="406" y2="414" /><line x1="430" y1="366" x2="430" y2="414" />
+              <line x1="474" y1="366" x2="474" y2="414" /><line x1="498" y1="366" x2="498" y2="414" />
+              <line x1="522" y1="366" x2="522" y2="414" />
+            </g>
+            <text class="dg-lab" x="415" y="437">EVAPORATOR</text>
+
+            <!-- Evaporator fan and its airstream: box air up through the coil -->
+            <g class="dg-fan">
+              <circle cx="415" cy="500" r="20" />
+              <path d="M 415 500 q 16 -12 18 4 q -16 -2 -18 -4 z" />
+              <path d="M 415 500 q -4 19 -16 8 q 12 -8 16 -8 z" />
+              <path d="M 415 500 q -12 -16 4 -18 q -2 15 -4 18 z" />
+            </g>
+            <text class="dg-sub" x="415" y="466">evaporator fan</text>
+            <line class="dg-air" x1="345" y1="470" x2="345" y2="426" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="487" y1="470" x2="487" y2="426" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="345" y1="356" x2="345" y2="316" marker-end="url(#dgAirHead)" />
+            <line class="dg-air" x1="487" y1="356" x2="487" y2="316" marker-end="url(#dgAirHead)" />
+            <text class="dg-sub" x="345" y="308">air off</text>
+            <text class="dg-sub" x="487" y="308">air off</text>
+
+            <!-- Expansion valve: the high side ends here and the low side begins -->
+            <g class="dg-meter">
+              <polygon points="132,282 168,300 132,318" />
+              <polygon points="168,282 132,300 168,318" />
+              <line x1="150" y1="276" x2="150" y2="266" />
+            </g>
+            <text class="dg-lab dg-lab-left" x="112" y="304">TX</text>
+            <text class="dg-sub dg-lab-left" x="112" y="318">VALVE</text>
+
+            <!-- Compressor and its electrical supply -->
+            <rect class="dg-body" x="612" y="250" width="76" height="82" rx="14" />
+            <circle class="dg-motor" cx="650" cy="291" r="18" />
+            <text class="dg-lab" x="650" y="352">COMPRESSOR</text>
+            <line class="dg-cable" x1="688" y1="300" x2="774" y2="300" />
+            <rect class="dg-body" x="774" y="282" width="30" height="36" rx="6" />
+            <text class="dg-sub" x="789" y="334">supply</text>
+
+            <!-- The two service valves: the only legal way on to the gauges -->
+            <g class="dg-valve">
+              <rect x="636" y="204" width="28" height="20" rx="4" />
+              <line x1="664" y1="214" x2="692" y2="214" />
+              <circle cx="694" cy="214" r="4" />
+            </g>
+            <text class="dg-sub dg-lab-start" x="668" y="192">discharge service valve</text>
+            <g class="dg-valve">
+              <rect x="636" y="352" width="28" height="20" rx="4" />
+              <line x1="664" y1="362" x2="692" y2="362" />
+              <circle cx="694" cy="362" r="4" />
+            </g>
+            <text class="dg-sub dg-lab-start" x="668" y="392">suction service valve</text>
+
+            <!-- Flow direction, so the circuit reads as a loop and not a picture -->
+            <line class="dg-flow" x1="650" y1="250" x2="650" y2="214" marker-end="url(#dgFlowHead)" />
+            <line class="dg-flow" x1="240" y1="180" x2="196" y2="180" marker-end="url(#dgFlowHead)" />
+            <line class="dg-flow" x1="150" y1="340" x2="150" y2="374" marker-end="url(#dgFlowHead)" />
+            <line class="dg-flow" x1="586" y1="390" x2="626" y2="390" marker-end="url(#dgFlowHead)" />
+          </svg>
+          <div class="dg-overlay" id="dgOverlay"></div>
+        </div>
+
+        <ul class="dg-legend" aria-label="What the pipe colours mean">
+          <li class="legend-item"><span class="legend-swatch sw-hot"></span> High-pressure hot gas</li>
+          <li class="legend-item"><span class="legend-swatch sw-liq"></span> High-pressure liquid</li>
+          <li class="legend-item"><span class="legend-swatch sw-flash"></span> Low-pressure mixture</li>
+          <li class="legend-item"><span class="legend-swatch sw-vap"></span> Low-pressure vapour</li>
+        </ul>
+
+        <div class="dg-point-detail" id="dgPointDetail"></div>
+
+        <p class="ph-caption">The compressor is running at its rated duty; nothing here is being
+          throttled or switched for you. Every instrument you fit takes time and disturbs a
+          machine that is working, so fit the ones whose reading would change your mind —
+          and remember that a gauge reads <b>gauge</b> pressure, above atmospheric, while the
+          pressure–temperature relationship is what turns it into a saturation temperature.</p>
+      </div>
+    </div>
+
+    <aside class="dg-right">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Readings</h2>
+          <span class="hint" id="dgReadCount"></span>
+        </div>
+        <div id="dgReadings" aria-live="polite"></div>
+      </div>
+
+      <div class="panel dg-derived-panel">
+        <div class="panel-head">
+          <h2>What the readings give you</h2>
+          <span class="hint">and what they don't</span>
+        </div>
+        <div id="dgDerived" aria-live="polite"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Evidence</h2>
+          <span class="hint">what the instruments say</span>
+        </div>
+        <div id="dgEvidence" aria-live="polite"></div>
+      </div>
+
+      <div class="panel dg-diagnosis-panel">
+        <div class="panel-head">
+          <h2>Your diagnosis</h2>
+          <span class="hint" id="dgScoreLine"></span>
+        </div>
+        <div id="dgDiagnosis"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Educational fault-finding trainer · behaviour is representative, for training not design. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/data.js"></script>
+  <script src="js/units.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/diagnose.js"></script>
+  <script src="js/diagnose-ui.js"></script>
+</body>
+</html>

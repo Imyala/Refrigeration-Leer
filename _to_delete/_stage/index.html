@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refrigeration Training — Start here</title>
+  <meta name="description" content="A staged refrigeration training program: five stages from how the cycle works through reading instruments, diagnosing faults and working safely on real plant — with an interactive simulator, a service-procedure trainer, quizzes, exam and certificate." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#homeMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home" aria-current="page">Start here</a></li>
+      <li><a href="learn.html" data-nav="learn">Course</a></li>
+      <li><a href="simulator.html" data-nav="sim">Simulator</a></li>
+      <li><a href="service.html" data-nav="service">Service Bay</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+
+  <main id="homeMain" class="home-main">
+    <section class="home-hero">
+      <p class="home-eyebrow">Refrigeration &amp; air conditioning · training program</p>
+      <h1>Learn refrigeration one stage at a time.</h1>
+      <p class="home-lede">Six stages take you from what heat actually does, through reading
+      gauges and diagnosing a fault, to working safely on real plant and to the Refrigerant
+      Handling Code of Practice. Each stage is a short block of theory plus one hands-on tool —
+      nothing new is opened until you need it. Behind the pathway sit three full technical
+      streams for trade-course depth.</p>
+
+      <div class="home-cta" id="homeCta">
+        <a class="btn btn-tour home-start" href="learn.html">Start Stage 1 →</a>
+        <span class="home-cta-note">About 6 minutes to the first lesson. Progress saves in this browser.</span>
+      </div>
+
+      <div class="home-progress" id="homeProgress" hidden>
+        <div class="progress-bar"><div class="progress-fill" id="homeProgressFill"></div></div>
+        <span id="homeProgressText"></span>
+      </div>
+    </section>
+
+    <section class="home-stages" aria-labelledby="pathwayHeading">
+      <h2 id="pathwayHeading" class="home-section-title">The pathway</h2>
+      <ol class="stage-list" id="stageList"></ol>
+    </section>
+
+    <section class="home-streams" aria-labelledby="streamsHeading">
+      <h2 id="streamsHeading" class="home-section-title">Going deeper: the specialist streams</h2>
+      <p class="home-section-note">The pathway above is the guided program. Behind it sit three
+      full technical streams — the trade-course depth an apprentice, a TAFE cohort or a
+      university unit works through chapter by chapter. Open any of them from the course page.</p>
+      <div class="stream-row" id="streamRow"></div>
+    </section>
+
+    <section class="home-tools" aria-labelledby="toolsHeading">
+      <h2 id="toolsHeading" class="home-section-title">Already know your way around?</h2>
+      <p class="home-section-note">The tools are introduced by the stages above, but they are
+      open at any time.</p>
+      <div class="tool-row">
+        <a class="tool-card" href="simulator.html">
+          <h3>Cycle Simulator</h3>
+          <p>A live vapour-compression system you can drive, break and read. Starts on the
+          simple view; more instruments appear as you need them.</p>
+        </a>
+        <a class="tool-card" href="service.html">
+          <h3>Service Bay</h3>
+          <p>Fit the gauges yourself: caps, hoses, purging and back-seating, with realistic
+          consequences for getting the order wrong.</p>
+        </a>
+        <a class="tool-card" href="simulator.html?quiz=1">
+          <h3>Technician Quiz</h3>
+          <p>The fault is hidden. Read the instruments, work out what is wrong, and find out
+          whether you would have condemned the right part.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Educational program · simulator values are representative, for training not design. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/streams.js"></script>
+  <script src="js/course-index.js"></script>
+  <script src="js/course1.js"></script>
+  <script src="js/course2.js"></script>
+  <script src="js/course3.js"></script>
+  <script src="js/home.js" defer></script>
+</body>
+</html>
