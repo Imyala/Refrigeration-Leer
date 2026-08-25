@@ -36,67 +36,26 @@
       <p class="subtitle">Watch the refrigerant flow and change state through a vapour-compression cycle</p>
     </div>
     <div class="controls">
-      <label class="select-group">
-        <span>Refrigerant</span>
-        <select id="refrigerantSelect"></select>
-      </label>
-      <label class="select-group">
-        <span>Pressure</span>
-        <select id="pUnitSelect" aria-label="Pressure unit">
-          <option value="kPa">kPa</option>
-          <option value="bar">bar</option>
-          <option value="psi">psi</option>
-        </select>
-      </label>
-      <label class="select-group">
-        <span>Temperature</span>
-        <select id="tUnitSelect" aria-label="Temperature unit">
-          <option value="C">°C</option>
-          <option value="F">°F</option>
-        </select>
-      </label>
       <div class="level-switch" role="group" aria-label="How much detail to show">
         <span class="level-switch-label" id="levelLabel">Detail</span>
         <button class="level-btn" type="button" data-level="1" aria-pressed="true">Cycle</button>
         <button class="level-btn" type="button" data-level="2" aria-pressed="false">+ Gauges</button>
         <button class="level-btn" type="button" data-level="3" aria-pressed="false">Everything</button>
       </div>
-      <button id="quizBtn" class="btn btn-quiz" type="button">Technician Quiz</button>
-      <button id="tourBtn" class="btn btn-tour" type="button">Guided Tour</button>
-      <button id="powerBtn" class="btn btn-stop" type="button">Stop Compressor</button>
+      <button id="tourBtn" class="btn btn-tour" type="button">Guided tour</button>
+      <button id="quizBtn" class="btn btn-quiz" type="button">Technician quiz</button>
     </div>
   </header>
 
-  <section class="quickstart" aria-label="How to use the simulator">
-    <h2 class="quickstart-title">New here? Three things to try</h2>
+  <section class="quickstart" id="quickstart" aria-label="How to use the simulator">
+    <h2 class="quickstart-title">New here?</h2>
     <ol class="quickstart-steps">
-      <li><b>Click a component</b> in the diagram — the panel underneath explains
-        what it does to the refrigerant, and how it changes state.</li>
-      <li><b>Move the sliders</b> for compressor speed and heat load, and watch
-        every reading respond together.</li>
-      <li><b>Simulate a fault</b> and watch what it does to the cycle. Turn the
-        detail up when you want gauges and the full instrument set.</li>
+      <li><b>Click a component</b> to see what it does to the refrigerant.</li>
+      <li><b>Move the sliders</b> and watch every reading respond together.</li>
+      <li><b>Simulate a fault</b> and see what it does to the cycle.</li>
     </ol>
-  </section>
-
-  <section class="readouts" id="readouts" aria-label="Live system readings"></section>
-
-  <section class="sim-controls" aria-label="Operating controls">
-    <div class="slider-group">
-      <label for="speedSlider">Compressor speed <output id="speedOut">100%</output></label>
-      <input id="speedSlider" type="range" min="50" max="150" value="100" step="1" />
-      <span class="slider-hint">Faster → wider pressure split, hotter discharge, more flow</span>
-    </div>
-    <div class="slider-group">
-      <label for="loadSlider">Evaporator load (heat in) <output id="loadOut">100%</output></label>
-      <input id="loadSlider" type="range" min="50" max="150" value="100" step="1" />
-      <span class="slider-hint">More heat → higher evaporator pressure &amp; temperature</span>
-    </div>
-    <label class="fault-select">
-      <span>Fault to simulate</span>
-      <select id="faultSelect"></select>
-    </label>
-    <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
+    <button class="quickstart-dismiss" id="quickstartDismiss" type="button"
+            aria-label="Hide these tips">&times;</button>
   </section>
 
   <div id="faultBanner" class="fault-banner" hidden>
@@ -124,10 +83,19 @@
   </section>
 
   <main class="stage" id="mainStage">
-    <!-- Left column: schematic diagram + the component info directly beneath it -->
     <div class="main-col">
-    <div class="diagram-wrap">
-      <svg id="diagram" viewBox="0 0 800 560" role="img" aria-label="Refrigeration cycle schematic">
+
+    <!-- The workbench: schematic, its instrument rail, and the controls that
+         drive them — one surface, because they are one machine. -->
+    <div class="workbench">
+      <div class="workbench-top">
+        <div class="diagram-wrap">
+      <!-- Geometry note: the loop is drawn wide and short so the whole cycle
+           fits on screen beside its instruments, rather than forcing a scroll.
+           Verticals sit on component centres; app.js reads the pipe paths for
+           particle animation, and the coil-fill rects in setupFaultViz() are
+           keyed to the component boxes below. -->
+      <svg id="diagram" viewBox="30 18 900 362" role="img" aria-label="Refrigeration cycle schematic">
         <defs>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="b" />
@@ -137,76 +105,137 @@
 
         <!-- Pipes: a base layer and an animated flow overlay -->
         <g class="pipes-base">
-          <path d="M 245 150 L 545 150" />
-          <path d="M 620 195 L 620 405" />
-          <path d="M 595 430 L 255 430" />
-          <path d="M 180 385 L 180 200" />
+          <path d="M 235 88 L 705 88" />
+          <path d="M 800 136 L 800 276" />
+          <path d="M 770 296 L 235 296" />
+          <path d="M 145 248 L 145 136" />
         </g>
         <g class="pipes-flow">
-          <path id="seg-discharge" d="M 245 150 L 545 150" data-segment="discharge" />
-          <path id="seg-liquid"    d="M 620 195 L 620 405" data-segment="liquid" />
-          <path id="seg-evapfeed"  d="M 595 430 L 255 430" data-segment="evapfeed" />
-          <path id="seg-suction"   d="M 180 385 L 180 200" data-segment="suction" />
+          <path id="seg-discharge" d="M 235 88 L 705 88" data-segment="discharge" />
+          <path id="seg-liquid"    d="M 800 136 L 800 276" data-segment="liquid" />
+          <path id="seg-evapfeed"  d="M 770 296 L 235 296" data-segment="evapfeed" />
+          <path id="seg-suction"   d="M 145 248 L 145 136" data-segment="suction" />
         </g>
 
         <!-- Text labels on each line, so state isn't conveyed by colour alone -->
         <g class="pipe-labels" aria-hidden="true">
-          <text x="395" y="134">hot gas</text>
-          <text x="643" y="228" transform="rotate(90 643 228)">liquid</text>
-          <text x="425" y="416">flash mix</text>
-          <text x="157" y="292" transform="rotate(-90 157 292)">suction vapour</text>
+          <text x="470" y="72">hot gas</text>
+          <text x="848" y="164" class="pipe-label-left">liquid</text>
+          <text x="500" y="280">flash mix</text>
+          <text x="158" y="196" class="pipe-label-left">suction vapour</text>
         </g>
 
         <!-- Liquid receiver (sits on the liquid line) -->
         <g class="component" data-component="receiver" tabindex="0" role="button" aria-label="Liquid receiver">
-          <rect x="588" y="260" width="64" height="80" rx="10" class="comp-box receiver-box" />
-          <rect x="596" y="300" width="48" height="32" rx="3" class="receiver-liquid" />
-          <text x="620" y="356" class="comp-label">RECEIVER</text>
+          <rect x="768" y="170" width="64" height="76" rx="10" class="comp-box receiver-box" />
+          <rect x="780" y="210" width="40" height="28" rx="3" class="receiver-liquid" />
+          <text x="758" y="212" class="comp-label comp-label-left">RECEIVER</text>
         </g>
 
         <!-- Compressor -->
         <g class="component" data-component="compressor" tabindex="0" role="button" aria-label="Compressor">
-          <rect x="115" y="105" width="130" height="90" rx="12" class="comp-box compressor-box" />
-          <circle cx="180" cy="143" r="20" class="comp-icon compressor-icon" />
-          <text x="180" y="183" class="comp-label">COMPRESSOR</text>
+          <rect x="55" y="40" width="180" height="96" rx="12" class="comp-box compressor-box" />
+          <circle cx="145" cy="80" r="20" class="comp-icon compressor-icon" />
+          <text x="145" y="124" class="comp-label">COMPRESSOR</text>
         </g>
 
         <!-- Condenser -->
         <g class="component" data-component="condenser" tabindex="0" role="button" aria-label="Condenser">
-          <rect x="545" y="105" width="150" height="90" rx="12" class="comp-box condenser-box" />
+          <rect x="705" y="40" width="190" height="96" rx="12" class="comp-box condenser-box" />
           <g class="fin-set condenser-fins">
-            <line x1="565" y1="120" x2="565" y2="180" /><line x1="580" y1="120" x2="580" y2="180" />
-            <line x1="595" y1="120" x2="595" y2="180" /><line x1="610" y1="120" x2="610" y2="180" />
+            <line x1="727" y1="56" x2="727" y2="112" /><line x1="742" y1="56" x2="742" y2="112" />
+            <line x1="757" y1="56" x2="757" y2="112" /><line x1="772" y1="56" x2="772" y2="112" />
           </g>
-          <text x="640" y="150" class="comp-sub">heat OUT</text>
-          <text x="620" y="183" class="comp-label">CONDENSER</text>
+          <text x="828" y="88" class="comp-sub">heat OUT</text>
+          <text x="800" y="124" class="comp-label">CONDENSER</text>
         </g>
 
         <!-- Metering / expansion device -->
         <g class="component" data-component="metering" tabindex="0" role="button" aria-label="Metering device">
-          <path d="M 620 410 L 640 430 L 620 450 L 600 430 Z" class="comp-box metering-box" />
-          <text x="620" y="478" class="comp-label">METERING DEVICE</text>
+          <path d="M 800 276 L 820 296 L 800 316 L 780 296 Z" class="comp-box metering-box" />
+          <text x="800" y="344" class="comp-label">METERING DEVICE</text>
         </g>
 
         <!-- Evaporator -->
         <g class="component" data-component="evaporator" tabindex="0" role="button" aria-label="Evaporator">
-          <rect x="105" y="385" width="150" height="90" rx="12" class="comp-box evaporator-box" />
+          <rect x="55" y="248" width="180" height="96" rx="12" class="comp-box evaporator-box" />
           <g class="fin-set evaporator-fins">
-            <line x1="125" y1="400" x2="125" y2="460" /><line x1="140" y1="400" x2="140" y2="460" />
-            <line x1="155" y1="400" x2="155" y2="460" /><line x1="170" y1="400" x2="170" y2="460" />
+            <line x1="77" y1="264" x2="77" y2="320" /><line x1="92" y1="264" x2="92" y2="320" />
+            <line x1="107" y1="264" x2="107" y2="320" /><line x1="122" y1="264" x2="122" y2="320" />
           </g>
-          <text x="200" y="430" class="comp-sub">heat IN</text>
-          <text x="180" y="463" class="comp-label">EVAPORATOR</text>
+          <text x="180" y="296" class="comp-sub">heat IN</text>
+          <text x="145" y="332" class="comp-label">EVAPORATOR</text>
         </g>
 
         <!-- Flowing particles get injected here -->
         <g id="particles"></g>
       </svg>
 
-      <div class="legend" id="legend"></div>
-    </div>
+        </div><!-- /.diagram-wrap -->
 
-      <!-- Component info appears right under the diagram -->
+        <!-- Instrument rail: the live readings, beside the machine they read -->
+        <aside class="instrument-rail" aria-label="Live system readings">
+          <div class="rail-head">
+            <h2 class="rail-title">Readings</h2>
+            <span class="rail-status" id="railStatus">Running</span>
+          </div>
+          <div class="readouts" id="readouts"></div>
+
+          <div class="rail-head rail-head-key">
+            <h2 class="rail-title">Pipe key</h2>
+          </div>
+          <div class="legend" id="legend"></div>
+
+          <button id="powerBtn" class="btn btn-stop" type="button">Stop compressor</button>
+        </aside>
+      </div><!-- /.workbench-top -->
+
+      <!-- Operating controls belong with the thing they operate -->
+      <div class="workbench-controls">
+        <div class="sim-controls" aria-label="Operating controls">
+          <label class="select-group">
+            <span>Refrigerant</span>
+            <select id="refrigerantSelect"></select>
+          </label>
+          <div class="slider-group">
+            <label for="speedSlider">Compressor speed <output id="speedOut">100%</output></label>
+            <input id="speedSlider" type="range" min="50" max="150" value="100" step="1" />
+            <span class="slider-hint">Faster &rarr; wider pressure split, hotter discharge</span>
+          </div>
+          <div class="slider-group">
+            <label for="loadSlider">Evaporator load <output id="loadOut">100%</output></label>
+            <input id="loadSlider" type="range" min="50" max="150" value="100" step="1" />
+            <span class="slider-hint">More heat &rarr; higher evaporator pressure &amp; temperature</span>
+          </div>
+          <label class="fault-select" id="faultField">
+            <span>Fault to simulate</span>
+            <select id="faultSelect"></select>
+          </label>
+          <div class="unit-controls">
+            <label class="select-group">
+              <span>Units</span>
+              <select id="pUnitSelect" aria-label="Pressure unit">
+                <option value="kPa">kPa</option>
+                <option value="bar">bar</option>
+                <option value="psi">psi</option>
+              </select>
+            </label>
+            <label class="select-group">
+              <span class="u-hidden">Temperature</span>
+              <select id="tUnitSelect" aria-label="Temperature unit">
+                <option value="C">&deg;C</option>
+                <option value="F">&deg;F</option>
+              </select>
+            </label>
+            <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.workbench -->
+
+    <p class="level-hint" id="levelHint" hidden></p>
+
+      <!-- Component info appears right under the workbench -->
       <div class="panel info-panel" id="infoPanel">
         <div class="panel-head">
           <h2 id="infoTitle">Click a component</h2>
@@ -215,16 +244,15 @@
           <p class="info-hint">Select any component in the diagram to learn what it does and how it changes the refrigerant. Or just watch the colours flow — each colour is a different refrigerant state.</p>
         </div>
       </div>
-    </div>
 
-    <!-- Side: gauges + P-h diagram + performance -->
-    <aside class="side">
+    <!-- Instruments: gauges, P-h diagram and performance, revealed by detail level -->
+    <div class="instruments">
       <div class="panel manifold-panel" data-level="2">
         <div class="panel-head">
           <h2>Gauge manifold</h2>
           <span class="hint">gauge pressure</span>
         </div>
-        <svg id="manifoldSvg" viewBox="0 0 360 200" role="img" aria-label="Low and high side pressure gauges"></svg>
+        <svg id="manifoldSvg" viewBox="0 0 360 214" role="img" aria-label="Low and high side pressure gauges"></svg>
         <p class="ph-caption">Field gauges read pressure <em>above atmospheric</em>. The inner ring shows the saturation temperature at each pressure — the PT ring on a real gauge set. Needle vs. expected PT reading is how technicians judge a system.</p>
       </div>
 
@@ -249,10 +277,9 @@
         <div class="perf-grid" id="perfGrid"></div>
         <p class="perf-caption">COP = cooling delivered ÷ compressor work. Capacity is relative to this fluid's nominal point. Energy figures are per kg of refrigerant.</p>
       </div>
-    </aside>
+    </div><!-- /.instruments -->
+    </div><!-- /.main-col -->
   </main>
-
-  <p class="level-hint" id="levelHint" hidden></p>
 
   <!-- PT chart + target-pressure trainer -->
   <section class="pt-section" data-level="3" aria-label="Pressure temperature trainer">
@@ -261,8 +288,8 @@
         <h2>Pressure–Temperature (PT) chart</h2>
         <span class="hint" id="ptSource"></span>
       </div>
-      <svg id="ptChart" viewBox="0 0 340 220" role="img" aria-label="Saturation pressure versus temperature chart"></svg>
-      <p class="ph-caption">While liquid and vapour coexist (inside the coils), pressure and temperature are locked together — this curve. Dots mark the current evaporating and condensing points. Below the dashed line the gauge reads vacuum.</p>
+      <svg id="ptChart" viewBox="0 0 340 208" role="img" aria-label="Saturation pressure versus temperature chart"></svg>
+      <p class="ph-caption">While liquid and vapour coexist (inside the coils), pressure and temperature are locked together — that is this curve. The dots mark where the system is evaporating and condensing right now.</p>
     </div>
     <div class="panel trainer-panel">
       <div class="panel-head">

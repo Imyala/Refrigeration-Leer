@@ -25,13 +25,15 @@ const DG_STORE_KEY = "refrigSim.diagnoseScore";
 const DG_SPOTS = {
   dischargeLine: { x: 600, y: 180, cx: 600, cy: 150, anchor: "center" },
   highGauge:     { x: 706, y: 214, cx: 722, cy: 214, anchor: "left" },
-  condAirOn:     { x: 415, y: 135, cx: 440, cy: 135, anchor: "left" },
-  condAirOff:    { x: 415, y: 232, cx: 440, cy: 232, anchor: "left" },
+  // Air probes sit on the airstream arrows rather than the coil's centre line:
+  // at x=415 they landed directly on the CONDENSER / EVAPORATOR captions.
+  condAirOn:     { x: 487, y: 126, cx: 510, cy: 126, anchor: "left" },
+  condAirOff:    { x: 345, y: 234, cx: 312, cy: 234, anchor: "right" },
   condOutlet:    { x: 265, y: 180, cx: 262, cy: 150, anchor: "center" },
   liquidLine:    { x: 150, y: 258, cx: 172, cy: 258, anchor: "left" },
   evapInlet:     { x: 265, y: 390, cx: 262, cy: 420, anchor: "center" },
-  evapAirOn:     { x: 415, y: 435, cx: 440, cy: 435, anchor: "left" },
-  evapAirOff:    { x: 415, y: 338, cx: 440, cy: 338, anchor: "left" },
+  evapAirOn:     { x: 487, y: 446, cx: 510, cy: 446, anchor: "left" },
+  evapAirOff:    { x: 345, y: 336, cx: 312, cy: 336, anchor: "right" },
   evapOutlet:    { x: 565, y: 390, cx: 562, cy: 360, anchor: "center" },
   suctionLine:   { x: 612, y: 390, cx: 612, cy: 420, anchor: "center" },
   lowGauge:      { x: 706, y: 362, cx: 722, cy: 362, anchor: "left" },

@@ -34,10 +34,10 @@ function mixGrey(rgb, g) {
 }
 
 const SEGMENTS = [
-  { id: "seg-discharge", state: "hotgas", color: STATE_COLORS.hotgas, label: "Discharge line · high-pressure hot vapour" },
-  { id: "seg-liquid",    state: "liquid", color: STATE_COLORS.liquid, label: "Liquid line · high-pressure liquid" },
-  { id: "seg-evapfeed",  state: "flash",  color: STATE_COLORS.flash,  label: "After metering · low-pressure flash mix" },
-  { id: "seg-suction",   state: "vapor",  color: STATE_COLORS.vapor,  label: "Suction line · low-pressure vapour" },
+  { id: "seg-discharge", state: "hotgas", color: STATE_COLORS.hotgas, label: "Discharge line", detail: "high-pressure hot vapour" },
+  { id: "seg-liquid",    state: "liquid", color: STATE_COLORS.liquid, label: "Liquid line",    detail: "high-pressure liquid" },
+  { id: "seg-evapfeed",  state: "flash",  color: STATE_COLORS.flash,  label: "After metering", detail: "low-pressure flash mix" },
+  { id: "seg-suction",   state: "vapor",  color: STATE_COLORS.vapor,  label: "Suction line",   detail: "low-pressure vapour" },
 ];
 
 /* ========================================================================= */
@@ -149,20 +149,34 @@ const COMPONENTS = {
 /* ========================================================================= */
 function renderReadouts() {
   const c = current;
+  // The dot ties each reading to the line on the schematic it is measured from,
+  // so colour teaches the cycle instead of just decorating the number.
   const rows = [
-    { label: "High Side",     value: U.fmtPGauge(c.pHigh),    cls: "amber" },
-    { label: "Low Side",      value: U.fmtPGauge(c.pLow),     cls: "cold" },
-    { label: "Condenser",     value: U.fmtT(c.tCond),         cls: "hot" },
-    { label: "Evaporator",    value: U.fmtT(c.tEvap),         cls: "cold" },
-    { label: "Discharge Gas", value: U.fmtT(c.tDischarge),    cls: "hot" },
-    { label: "Superheat",     value: U.fmtDT(c.superheat),    cls: "", level: 2 },
-    { label: "Subcool",       value: U.fmtDT(c.subcool),      cls: "", level: 2 },
-    { label: "Flow",          value: `${r0(c.flow)} L/min`,   cls: "" },
-    { label: "Compressor",    value: state.running ? "RUNNING" : "OFF", cls: state.running ? "ok" : "" },
+    { label: "High side",  value: U.fmtPGauge(c.pHigh),  dot: STATE_COLORS.liquid },
+    { label: "Low side",   value: U.fmtPGauge(c.pLow),   dot: STATE_COLORS.vapor  },
+    { label: "Condenser",  value: U.fmtT(c.tCond),       dot: STATE_COLORS.hotgas },
+    { label: "Evaporator", value: U.fmtT(c.tEvap),       dot: STATE_COLORS.flash  },
+    { label: "Discharge",  value: U.fmtT(c.tDischarge),  dot: STATE_COLORS.hotgas },
+    { label: "Superheat",  value: U.fmtDT(c.superheat),  dot: STATE_COLORS.vapor,  level: 2 },
+    { label: "Subcool",    value: U.fmtDT(c.subcool),    dot: STATE_COLORS.liquid, level: 2 },
+    { label: "Flow",       value: `${r0(c.flow)} L/min` },
   ];
+  // Split "1499 kPa g" into number + unit so the unit can sit back visually.
+  const split = (v) => String(v).replace(/^([\-\d.,]+)\s*(.*)$/, (m, n, u) =>
+    u ? `${n} <span class="unit">${u}</span>` : n);
+
   document.getElementById("readouts").innerHTML = rows.map(row => `
-    <div class="readout"${row.level ? ` data-level="${row.level}"` : ""}><div class="label">${row.label}</div>
-      <div class="value ${row.cls}">${row.value}</div></div>`).join("");
+    <div class="readout"${row.level ? ` data-level="${row.level}"` : ""}>
+      <span class="label">${row.dot
+        ? `<span class="dot" style="background:${row.dot}"></span>` : `<span class="dot"></span>`}${row.label}</span>
+      <span class="value">${split(row.value)}</span>
+    </div>`).join("");
+
+  const status = document.getElementById("railStatus");
+  if (status) {
+    status.textContent = state.running ? "Running" : "Stopped";
+    status.className = "rail-status" + (state.running ? "" : " off");
+  }
 }
 
 /* ---- Performance panel ---------------------------------------------------- */
@@ -185,7 +199,9 @@ function renderPerf() {
 
 function renderLegend() {
   document.getElementById("legend").innerHTML = SEGMENTS.map(s => `
-    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.label}</div>`).join("");
+    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>
+      <span><span class="legend-name">${s.label}</span><span class="legend-detail">${s.detail}</span></span>
+    </div>`).join("");
 }
 
 /* ========================================================================= */
@@ -271,12 +287,12 @@ function setupFaultViz() {
     rect.setAttribute("x", x); rect.setAttribute("y", y);
     rect.setAttribute("width", w); rect.setAttribute("height", h);
     rect.setAttribute("rx", 8); rect.setAttribute("class", "coil-fill");
-    rect.setAttribute("fill", `url(#${grad})`); rect.setAttribute("opacity", 0.5);
+    rect.setAttribute("fill", `url(#${grad})`); rect.setAttribute("opacity", 0.34);
     group.insertBefore(rect, group.firstElementChild.nextSibling);
     return rect;
   };
-  viz.fillCond = addFill('[data-component="condenser"]', 549, 109, 142, 82, "gradCond");
-  viz.fillEvap = addFill('[data-component="evaporator"]', 109, 389, 142, 82, "gradEvap");
+  viz.fillCond = addFill('[data-component="condenser"]', 709, 44, 182, 88, "gradCond");
+  viz.fillEvap = addFill('[data-component="evaporator"]', 59, 252, 172, 88, "gradEvap");
 
   // Spill overlays on the liquid and suction lines (abnormal state carried over)
   const spills = document.createElementNS(NS, "g");
@@ -450,10 +466,10 @@ function showInfo(key) {
   document.getElementById("infoBody").innerHTML = `
     <div class="phase-row">
       <div class="phase-col"><div class="k">In</div><div class="v">${data.inState}</div>
-        <div class="k" style="margin-top:6px">${data.inVals}</div></div>
+        <div class="vals">${data.inVals}</div></div>
       <div class="arrow">→</div>
       <div class="phase-col"><div class="k">Out</div><div class="v">${data.outState}</div>
-        <div class="k" style="margin-top:6px">${data.outVals}</div></div>
+        <div class="vals">${data.outVals}</div></div>
     </div>
     <p>${data.body}</p>
     <ul>${data.points.map(p => `<li>${p}</li>`).join("")}</ul>`;
@@ -511,13 +527,15 @@ function gotoTourStep(i) {
 function setRunning(run) {
   state.running = run;
   const btn = document.getElementById("powerBtn");
-  btn.textContent = run ? "Stop Compressor" : "Start Compressor";
+  btn.textContent = run ? "Stop compressor" : "Start compressor";
   btn.className = "btn " + (run ? "btn-stop" : "btn-start");
   renderReadouts();
 }
 
 function updateFaultBanner() {
   const f = FAULTS[state.fault];
+  const field = document.getElementById("faultField");
+  if (field) field.classList.toggle("is-active", state.fault !== "none" && !Quiz.active);
   const banner = document.getElementById("faultBanner");
   if (Quiz.active || state.fault === "none" || !f.diag) { banner.hidden = true; return; }
   banner.hidden = false;
@@ -594,6 +612,7 @@ function focusSectionSoon(el) {
    the cycle. Gauges and the full instrument set are one click away, and the
    choice is remembered. Deep links from a lesson raise the level they need. */
 const LEVEL_KEY = "refrigSim.simLevel";
+const QUICKSTART_KEY = "simQuickstartDismissed";
 const MAX_LEVEL = 3;
 /* What each level is showing now, and what the next one would add. */
 const LEVEL_STEPS = {
@@ -746,6 +765,19 @@ function init() {
   document.getElementById("quizHintBtn").addEventListener("click", quizShowClues);
   document.getElementById("quizNextBtn").addEventListener("click", quizNextScenario);
   document.getElementById("quizEndBtn").addEventListener("click", endQuiz);
+
+  // Quick-start tips are scaffolding: once dismissed, they stay gone.
+  const qs = document.getElementById("quickstart");
+  const qsDismiss = document.getElementById("quickstartDismiss");
+  if (qs && qsDismiss) {
+    let hidden = false;
+    try { hidden = localStorage.getItem(QUICKSTART_KEY) === "1"; } catch (e) { /* no storage */ }
+    qs.hidden = hidden;
+    qsDismiss.addEventListener("click", () => {
+      qs.hidden = true;
+      try { localStorage.setItem(QUICKSTART_KEY, "1"); } catch (e) { /* no storage */ }
+    });
+  }
 
   recompute();
   renderLegend();

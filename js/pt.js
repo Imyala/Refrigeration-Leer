@@ -23,43 +23,58 @@ function renderPtChart() {
     return el;
   };
 
-  const x0 = 54, x1 = 322, y0 = 16, y1 = 182;
+  // Plot box. Generous top and bottom margins: the axis titles, the gauge-zero
+  // note and the two operating-point labels all live outside the box, and the
+  // old layout had them landing on top of each other.
+  const x0 = 52, x1 = 330, y0 = 30, y1 = 168;
   const tMin = tbl[0].T, tMax = tbl[tbl.length - 1].T;
   const gLo = U.barTo(U.gaugeBar(tbl[0].P));
   const gHi = U.barTo(U.gaugeBar(tbl[tbl.length - 1].P));
   const tX = (t) => x0 + (t - tMin) / (tMax - tMin) * (x1 - x0);
   const gY = (g) => y1 - (g - gLo) / (gHi - gLo) * (y1 - y0);
 
-  add("line", { x1: x0, y1: y0, x2: x0, y2: y1, stroke: "#2a3b4d" });
-  add("line", { x1: x0, y1: y1, x2: x1, y2: y1, stroke: "#2a3b4d" });
+  const INK = "#7f93a5", FAINT = "#5b6d7e", GRID = "#1b2632", AXIS = "#23303d";
   const uLbl = U.P_UNITS[U.prefs.p].gaugeLabel;
-  add("text", { x: 8, y: 12, fill: "#8aa0b3", "font-size": 10 }, `P (${uLbl})`);
-  add("text", { x: x1, y: 212, fill: "#8aa0b3", "font-size": 10, "text-anchor": "end" },
+
+  // Gridlines first, so everything else sits on top of them
+  for (let i = 0; i <= 4; i++) {
+    const y = gY(gLo + (gHi - gLo) * i / 4);
+    add("line", { x1: x0, y1: y, x2: x1, y2: y, stroke: GRID });
+  }
+  add("line", { x1: x0, y1: y0, x2: x0, y2: y1, stroke: AXIS });
+  add("line", { x1: x0, y1: y1, x2: x1, y2: y1, stroke: AXIS });
+
+  // Axis titles, both outside the plot box
+  add("text", { x: 4, y: 14, fill: INK, "font-size": 10 }, `P (${uLbl})`);
+  add("text", { x: x1, y: 202, fill: INK, "font-size": 10, "text-anchor": "end" },
     `saturation temperature (°${U.prefs.t}) →`);
 
   // x ticks: every second table temperature
   tbl.forEach((row, i) => {
     if (i % 2 !== 0) return;
     const x = tX(row.T);
-    add("line", { x1: x, y1: y1, x2: x, y2: y1 + 3, stroke: "#2a3b4d" });
-    add("text", { x, y: y1 + 14, fill: "#6f8294", "font-size": 9, "text-anchor": "middle" },
+    add("line", { x1: x, y1: y1, x2: x, y2: y1 + 3, stroke: AXIS });
+    add("text", { x, y: y1 + 15, fill: FAINT, "font-size": 9, "text-anchor": "middle" },
       String(Math.round(U.cTo(row.T))));
   });
   // y ticks: 5 even steps
   for (let i = 0; i <= 4; i++) {
     const g = gLo + (gHi - gLo) * i / 4;
     const y = gY(g);
-    add("line", { x1: x0 - 3, y1: y, x2: x0, y2: y, stroke: "#2a3b4d" });
-    add("text", { x: x0 - 6, y: y + 3, fill: "#6f8294", "font-size": 9, "text-anchor": "end" },
+    add("text", { x: x0 - 7, y: y + 3, fill: FAINT, "font-size": 9, "text-anchor": "end" },
       String(Math.round(g)));
   }
 
   // atmospheric line (gauge zero) — below it the gauge reads vacuum
+  let yZero = null;
   if (gLo < 0) {
-    const yz = gY(0);
-    add("line", { x1: x0, y1: yz, x2: x1, y2: yz, stroke: "#8aa0b3", "stroke-dasharray": "4 4", opacity: 0.5 });
-    add("text", { x: x1 - 2, y: yz - 4, fill: "#8aa0b3", "font-size": 8, "text-anchor": "end", opacity: 0.8 },
-      "atmospheric (gauge 0) — vacuum below");
+    yZero = gY(0);
+    add("line", { x1: x0, y1: yZero, x2: x1, y2: yZero, stroke: INK, "stroke-dasharray": "4 4", opacity: 0.45 });
+    // Right-aligned: the evaporating point sits near gauge zero on the left,
+    // and the note used to run straight through it.
+    add("text", { x: x1 - 3, y: yZero - 5, fill: INK, "font-size": 8.5,
+                  "text-anchor": "end", opacity: 0.85 },
+      "gauge 0 — vacuum below");
   }
 
   // the saturation curve itself
@@ -68,9 +83,10 @@ function renderPtChart() {
     const pt = `${tX(row.T)} ${gY(U.barTo(U.gaugeBar(row.P)))}`;
     d += (i === 0 ? "M " : " L ") + pt;
   });
-  add("path", { d, fill: "none", stroke: "#4fc3f7", "stroke-width": 1.8 });
+  add("path", { d, fill: "none", stroke: "#4fc3f7", "stroke-width": 2 });
 
-  // current operating points
+  // Current operating points. Labels go above the dot, or below it when that
+  // would collide with the gauge-zero note running across the chart.
   const marks = [
     { t: current.tEvap, p: current.pLow,  color: getCss("--state-vapor"),  label: "evap" },
     { t: current.tCond, p: current.pHigh, color: getCss("--state-hotgas"), label: "cond" },
@@ -78,8 +94,12 @@ function renderPtChart() {
   marks.forEach(m => {
     const x = tX(RefrigModel.clamp(m.t, tMin, tMax));
     const y = gY(U.barTo(U.gaugeBar(m.p)));
-    add("circle", { cx: x, cy: y, r: 4, fill: m.color, stroke: "#fff", "stroke-width": 1 });
-    add("text", { x: x + 7, y: y + 3, fill: m.color, "font-size": 9 }, m.label);
+    const clash = yZero != null && Math.abs(y - yZero) < 18;
+    add("circle", { cx: x, cy: y, r: 4, fill: m.color, stroke: "#0d141c", "stroke-width": 1.5 });
+    add("text", {
+      x, y: clash ? y + 16 : y - 9,
+      fill: m.color, "font-size": 9.5, "font-weight": 700, "text-anchor": "middle",
+    }, m.label);
   });
 
   const src = document.getElementById("ptSource");
