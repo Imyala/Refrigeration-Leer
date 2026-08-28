@@ -201,14 +201,40 @@
     return el("rect", { x, y, width: w, height: h, class: "comp-hit" });
   }
 
+  /* Where a component's caption goes, whichever artwork is drawing its body.
+     The schematic bodies place their own (they always have); the equipment
+     view has the renderer place them from here, so the two views caption
+     identically and flipping between them moves nothing but the machine. */
+  function captionAnchor(c) {
+    if (c.kind === "hx") {
+      const lines = String(c.label).split("\n").length;
+      return { x: c.box.x + c.box.w / 2, y: c.box.y + c.box.h / 2 - (lines - 1) * 5, anchor: "middle" };
+    }
+    if (c.box) return { x: c.box.x + c.box.w / 2, y: c.box.y + c.box.h - 12, anchor: "middle" };
+    const b = bounds(c);
+    return labelAnchor(c.labelPos, c.at.x, c.at.y, b.w, b.h);
+  }
+
   /* Captions may carry {tokens} that the caller resolves to live values. */
   function fill(text, values) {
     if (!values || text == null) return text;
     return String(text).replace(/\{(\w+)\}/g, (m, k) => (k in values ? values[k] : m));
   }
 
+  /* Which artwork to draw a component with. "diagram" is the trade symbol set
+     above; "equipment" swaps in js/equipment.js, which draws the same circuit
+     as the plant it represents. Both work off the same geometry, so only the
+     component bodies change — pipes, captions, hit areas and particles are
+     identical either way. */
+  function drawTable(view) {
+    if (view === "equipment" && root.RefrigEquipment) return root.RefrigEquipment.DRAW;
+    return DRAW;
+  }
+
   /* ---- Render ------------------------------------------------------------- */
-  function render(svg, circuit, values) {
+  function render(svg, circuit, values, opts) {
+    const view = (opts && opts.view) || "diagram";
+    const draw = drawTable(view);
     svg.setAttribute("viewBox", circuit.viewBox);
     svg.innerHTML = "";
 
@@ -223,7 +249,9 @@
     merge.appendChild(el("feMergeNode", { in: "SourceGraphic" }));
     filter.appendChild(merge);
     defs.appendChild(filter);
+    if (view === "equipment" && root.RefrigEquipment) root.RefrigEquipment.defineMaterials(defs);
     svg.appendChild(defs);
+    svg.setAttribute("data-view", view);
 
     const visible = circuit.pipes.filter(p => !p.hidden);
 
@@ -268,12 +296,15 @@
       });
       g.appendChild(hitArea(c));
       const resolved = c.sub ? Object.assign({}, c, { sub: Object.assign({}, c.sub, { text: fill(c.sub.text, values) }) }) : c;
-      (DRAW[resolved.kind] || drawBox)(g, resolved);
+      (draw[resolved.kind] || draw.box || drawBox)(g, resolved);
+      if (view === "equipment") {
+        g.appendChild(caption(resolved.label, captionAnchor(resolved), "comp-label"));
+      }
       svg.appendChild(g);
     });
 
     svg.appendChild(el("g", { id: "particles" }));
-    return { pipes: visible, components: circuit.components };
+    return { pipes: visible, components: circuit.components, view };
   }
 
   const api = { render };

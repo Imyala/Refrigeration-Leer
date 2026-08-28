@@ -54,7 +54,7 @@ const state = {
   circuit: "basic",
   running: true, refrigerant: "R134a", speed: 100, load: 100, fault: "none",
   dashOffset: 0, phaseT: 0, selected: null, tourActive: false, tourIndex: 0,
-  showHealthy: true, level: 1,
+  showHealthy: true, level: 1, view: "diagram",
 };
 let current = null;
 const capRefs = {};   // per-refrigerant nominal capacity for the % readout
@@ -444,7 +444,7 @@ function renderCircuit() {
     tEvap:  current ? U.fmtT(current.tEvap) : "",
     tEvapB: current && current.tEvapB != null ? U.fmtT(current.tEvapB) : "",
     tCond:  current ? U.fmtT(current.tCond) : "",
-  });
+  }, { view: state.view });
 
   SEGMENTS = circuit.pipes.filter(p => !p.hidden).map(p => ({
     id: p.id, state: p.state, color: STATE_COLORS[p.state],
@@ -1003,6 +1003,7 @@ function focusSectionSoon(el) {
    choice is remembered. Deep links from a lesson raise the level they need. */
 const LEVEL_KEY = "refrigSim.simLevel";
 const CIRCUIT_KEY = "refrigSim.circuit";
+const VIEW_KEY = "refrigSim.view";
 const MAX_LEVEL = 3;
 /* What each level is showing now, and what the next one would add. */
 const LEVEL_STEPS = {
@@ -1067,6 +1068,26 @@ function populateFaultSelect() {
   fsel.innerHTML = Object.keys(FAULTS).filter(faultAvailable).map(k =>
     `<option value="${k}">${FAULTS[k].label}</option>`).join("");
   fsel.value = faultAvailable(state.fault) ? state.fault : "none";
+}
+
+/* Schematic symbols or the equipment they stand for. The circuit, the physics
+   and everything downstream are identical — this only changes what the
+   components are drawn as, so a learner can check one against the other. */
+function readView() {
+  try { return localStorage.getItem(VIEW_KEY) === "equipment" ? "equipment" : "diagram"; }
+  catch (e) { return "diagram"; }
+}
+
+function setView(view, remember) {
+  state.view = view === "equipment" ? "equipment" : "diagram";
+  document.querySelectorAll(".view-switch .level-btn").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.view === state.view));
+  });
+  renderCircuit();
+  refreshAll();
+  if (remember !== false) {
+    try { localStorage.setItem(VIEW_KEY, state.view); } catch (e) { /* storage unavailable */ }
+  }
 }
 
 function setLevel(level, remember) {
@@ -1151,8 +1172,11 @@ function init() {
   // These deep links are meaningless without the panels they point at.
   if (urlq.get("view") === "pt") level = Math.max(level, 3);
   applyLevel(level);
-  document.querySelectorAll(".level-btn").forEach(b => {
+  document.querySelectorAll(".level-btn[data-level]").forEach(b => {
     b.addEventListener("click", () => setLevel(+b.dataset.level, true));
+  });
+  document.querySelectorAll(".view-switch .level-btn").forEach(b => {
+    b.addEventListener("click", () => setView(b.dataset.view, true));
   });
   document.addEventListener("click", (e) => {
     if (e.target.classList && e.target.classList.contains("level-more")) {
@@ -1173,6 +1197,14 @@ function init() {
   document.getElementById("quizHintBtn").addEventListener("click", quizShowClues);
   document.getElementById("quizNextBtn").addEventListener("click", quizNextScenario);
   document.getElementById("quizEndBtn").addEventListener("click", endQuiz);
+
+  // Schematic or equipment artwork. Remembered, and openable straight from a
+  // lesson with ?draw=equipment.
+  state.view = readView();
+  if (urlq.get("draw")) state.view = urlq.get("draw") === "equipment" ? "equipment" : "diagram";
+  document.querySelectorAll(".view-switch .level-btn").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.view === state.view));
+  });
 
   // Circuit picker
   const csel = document.getElementById("circuitSelect");

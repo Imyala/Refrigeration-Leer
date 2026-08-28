@@ -1122,6 +1122,66 @@ select.field { max-width: 100%; }
 .fins-flash  line { stroke: rgba(95,216,189,.32); }
 .fins-liquid line { stroke: rgba(240,169,60,.32); }
 
+/* ---------- Equipment view ----------
+   The same circuit drawn as the plant it represents (js/equipment.js). The
+   frame is the .comp-box every component still carries — invisible until you
+   hover, select or the fault flags it, so selection and focus behave exactly
+   as they do on the schematic. */
+.eq-frame { fill: none; stroke: transparent; }
+.component:hover .eq-frame,
+.component:focus .eq-frame,
+.component.selected .eq-frame,
+.component.fault-flag .eq-frame { stroke: currentColor; }
+/* accent-* sets stroke, so borrow it as the frame colour */
+.eq-frame.accent-hotgas { color: var(--state-hotgas); }
+.eq-frame.accent-liquid { color: var(--state-liquid); }
+.eq-frame.accent-flash  { color: var(--state-flash); }
+.eq-frame.accent-vapor  { color: var(--state-vapor); }
+
+.eq-body { stroke-width: 1.5; }
+.eq-stub { stroke: #5b6b79; stroke-linecap: round; }
+.eq-foot { fill: #2a343f; stroke: #101820; stroke-width: 1; }
+.eq-seam { stroke: rgba(0, 0, 0, .5); stroke-width: 1.5; }
+.eq-sheen { fill: rgba(255, 255, 255, .16); stroke: none; pointer-events: none; }
+.eq-dish { fill: rgba(255, 255, 255, .07); stroke: rgba(0, 0, 0, .35); stroke-width: 1; }
+.eq-nut { stroke: rgba(0, 0, 0, .45); stroke-width: 1; }
+.eq-cap { stroke: rgba(0, 0, 0, .45); stroke-width: 1; }
+.eq-terminal { fill: #1b232c; stroke: #55636f; stroke-width: 1.5; }
+.eq-pin { fill: var(--state-liquid); }
+
+/* Coil: the fin pack, the tubes threading it, and its fan */
+.eq-pack { fill: #1b242d; stroke: rgba(0, 0, 0, .4); stroke-width: 1; }
+.eq-fins line { stroke: rgba(255, 255, 255, .16); stroke-width: 1; }
+.eq-fins.fins-hotgas line { stroke: rgba(255, 106, 77, .3); }
+.eq-fins.fins-vapor line  { stroke: rgba(79, 195, 247, .3); }
+.eq-tubes { fill: none; stroke-width: 3.5; stroke-linecap: round; opacity: .85; }
+.eq-fan-guard { fill: rgba(10, 16, 22, .55); stroke: #4a5866; stroke-width: 2; }
+.eq-fan-blade { fill: none; stroke: #7d8d9c; stroke-width: 4.5; stroke-linecap: round; opacity: .8; }
+.eq-fan-hub { stroke: #101820; stroke-width: 1; }
+
+/* Line components */
+.eq-capillary { fill: none; stroke: #b07a4a; stroke-width: 2; }
+.eq-bulb { stroke: rgba(0, 0, 0, .45); stroke-width: 1; }
+.eq-window { fill: #0c141b; stroke: rgba(0, 0, 0, .5); stroke-width: 1; }
+.eq-glint { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.5; stroke-linecap: round; }
+.eq-coilbox { fill: #232c35; stroke: #57646f; stroke-width: 1.5; }
+.eq-conduit { fill: none; stroke: #57646f; stroke-width: 2.5; stroke-linecap: round; }
+.eq-inner-tube { fill: none; stroke: rgba(255, 255, 255, .3); stroke-width: 2.5; stroke-linecap: round; }
+
+/* The phase fill washes across a whole coil casing here rather than sitting
+   inside a flat box, so it needs to be quieter to leave the machine readable. */
+#diagram[data-view="equipment"] .coil-fill { opacity: .17 !important; }
+/* Liquid in a vessel reads as liquid, not as a solid block of paint. */
+#diagram[data-view="equipment"] .vessel-liquid { opacity: .55; }
+
+/* Captions sit over the artwork rather than over a flat panel, so give them a
+   darker halo than the schematic's — legible against metal as well as ground. */
+#diagram[data-view="equipment"] .comp-label,
+#diagram[data-view="equipment"] .comp-sub {
+  stroke: rgba(8, 14, 20, .92);
+  stroke-width: 3.5px;
+}
+
 /* Refrigerant phase fill inside the coils + abnormal-state spill on pipes */
 .coil-fill { pointer-events: none; }
 .spill-pipe { fill: none; stroke-linecap: round; pointer-events: none; }

@@ -46,6 +46,11 @@
       <p class="subtitle">Watch the refrigerant flow and change state through a vapour-compression cycle</p>
     </div>
     <div class="controls">
+      <div class="level-switch view-switch" role="group" aria-label="How to draw the system">
+        <span class="level-switch-label">Draw as</span>
+        <button class="level-btn" type="button" data-view="diagram" aria-pressed="true">Diagram</button>
+        <button class="level-btn" type="button" data-view="equipment" aria-pressed="false">Equipment</button>
+      </div>
       <div class="level-switch" role="group" aria-label="How much detail to show">
         <span class="level-switch-label" id="levelLabel">Show</span>
         <button class="level-btn" type="button" data-level="1" aria-pressed="true">Cycle</button>
@@ -285,6 +290,7 @@
   <script src="js/data.js"></script>
   <script src="js/circuits.js"></script>
   <script src="js/schematic.js"></script>
+  <script src="js/equipment.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>
   <script src="js/srs.js"></script>

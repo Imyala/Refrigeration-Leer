@@ -79,7 +79,7 @@
     const q = location.search;
     if (!q || q.length < 2) return false;
     const params = new URLSearchParams(q);
-    const SIM_PARAMS = ["quiz", "tour", "view", "fault", "r", "speed", "load", "level", "circuit"];
+    const SIM_PARAMS = ["quiz", "tour", "view", "draw", "fault", "r", "speed", "load", "level", "circuit"];
     if (!SIM_PARAMS.some((k) => params.has(k))) return false;
     location.replace("simulator.html" + q + location.hash);
     return true;
