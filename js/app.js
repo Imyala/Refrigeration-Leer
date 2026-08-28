@@ -923,7 +923,14 @@ function refreshAll() {
 /* ========================================================================= */
 /* Animation loop                                                            */
 /* ========================================================================= */
-const BASE_SPEED = 2.2;
+/* How fast the refrigerant appears to move, in diagram units per 60 Hz frame.
+   This is a teaching animation: a learner has to be able to pick one dash and
+   follow it round the loop with their eye, naming what it is doing in each run.
+   Anything much quicker reads as a strobe and is tiring to look at. */
+const BASE_SPEED = 0.8;
+/* If the tab has been in the background the next timestamp can be seconds
+   later; clamp the step so the flow resumes rather than jumping round the loop. */
+const MAX_FRAME_STEP = 3;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 const PREVENT_SCROLL_FOCUS = (() => {
   let supported = false;
@@ -937,21 +944,38 @@ const PREVENT_SCROLL_FOCUS = (() => {
 })();
 let currentSpeed = BASE_SPEED;
 let greyFactor = 0;           // 0 = full colour, 1 = grey (compressor off)
-function loop() {
+let lastFrameTime = null;
+
+/* Ease a value toward a target by `rate` per 60 Hz frame, over `frames` of
+   them, so the easing looks the same whatever the display is doing. */
+function ease(value, target, rate, frames) {
+  return value + (target - value) * (1 - Math.pow(1 - rate, frames));
+}
+
+function loop(now) {
+  // requestAnimationFrame runs at the display's refresh rate, so without this a
+  // 120 Hz screen would push the refrigerant round twice as fast as a 60 Hz one.
+  // Measure the real elapsed time and express it in 60 Hz frames.
+  const t = typeof now === "number" ? now : 0;
+  const frames = lastFrameTime === null
+    ? 1
+    : Math.min(Math.max((t - lastFrameTime) / (1000 / 60), 0), MAX_FRAME_STEP);
+  lastFrameTime = t;
+
   const animate = state.running && !state.tourActive && !REDUCED_MOTION.matches;
   const targetSpeed = animate ? BASE_SPEED * (state.speed / 100) : 0;
-  currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+  currentSpeed = ease(currentSpeed, targetSpeed, 0.05, frames);
 
   // Fade pipes to grey when the compressor is off (no heat or cooling).
-  const greyTarget = state.running ? 0 : 1;
-  greyFactor += (greyTarget - greyFactor) * 0.04;
+  greyFactor = ease(greyFactor, state.running ? 0 : 1, 0.04, frames);
   applyPipeColors(greyFactor);
 
-  state.dashOffset = (state.dashOffset - currentSpeed) % 1000;
+  const step = currentSpeed * frames;
+  state.dashOffset = (state.dashOffset - step) % 1000;
   document.querySelectorAll(".pipes-flow path").forEach(p => p.setAttribute("stroke-dashoffset", state.dashOffset));
-  updateParticles(currentSpeed);
+  updateParticles(step);
   if (!state.tourActive) {
-    state.phaseT = (state.phaseT + currentSpeed * 0.0012) % 1;
+    state.phaseT = (state.phaseT + step * 0.0012) % 1;
     updateMovingDot();
   }
   requestAnimationFrame(loop);

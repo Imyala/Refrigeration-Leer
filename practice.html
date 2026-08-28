@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice — Refrigeration Training</title>
+  <meta name="description" content="The hands-on side of the refrigeration training program: a live cycle simulator, a gauge-fitting service bay, a circuit builder, a fault-diagnosis workshop and the technician quiz." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#practiceMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">&#10052;</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Home</a></li>
+      <li><a href="learn.html" data-nav="learn">Learn</a></li>
+      <li><a href="practice.html" data-nav="practice" aria-current="page">Practice</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Practice</h1>
+      <p class="subtitle">Five workshops, each one a different way of getting your hands on a
+      machine. Pick the one that matches what you want to get better at — you can stop and
+      switch at any time, and nothing here can be broken.</p>
+    </div>
+  </header>
+
+  <main id="practiceMain" class="practice-main">
+    <!-- Ordered the way a technician grows: watch it run, work on it, build one,
+         then diagnose one with nothing handed to you. -->
+    <ol class="practice-list">
+      <li class="practice-card">
+        <a class="practice-card-link" href="simulator.html">
+          <span class="practice-num" aria-hidden="true">1</span>
+          <span class="practice-body">
+            <span class="practice-title">Cycle Simulator</span>
+            <span class="practice-goal">Get to know how a running system behaves</span>
+            <span class="practice-what">A live vapour-compression system. Turn the compressor
+            up, load the evaporator, break something on purpose — and watch every reading move
+            together. It opens showing only the cycle; gauges and charts are one click away when
+            you want them.</span>
+          </span>
+        </a>
+        <p class="practice-meta"><span class="practice-time">10 min</span> · start here if you are new</p>
+      </li>
+
+      <li class="practice-card">
+        <a class="practice-card-link" href="service.html">
+          <span class="practice-num" aria-hidden="true">2</span>
+          <span class="practice-body">
+            <span class="practice-title">Service Bay</span>
+            <span class="practice-goal">Fit gauges to a machine without venting it</span>
+            <span class="practice-what">Caps off, hoses on, crack the valve, purge, read, pack
+            up as found. Do it out of order and the rig behaves the way a real one would —
+            including losing charge to atmosphere.</span>
+          </span>
+        </a>
+        <p class="practice-meta"><span class="practice-time">15 min</span> · hands-on procedure</p>
+      </li>
+
+      <li class="practice-card">
+        <a class="practice-card-link" href="build.html">
+          <span class="practice-num" aria-hidden="true">3</span>
+          <span class="practice-body">
+            <span class="practice-title">System Builder</span>
+            <span class="practice-goal">Learn where every component belongs</span>
+            <span class="practice-what">Pipe the circuit yourself, in flow order. Drop each part
+            into the run it belongs in and find out whether the system would actually run — and
+            where a technician would have put the accessories.</span>
+          </span>
+        </a>
+        <p class="practice-meta"><span class="practice-time">15 min</span> · drag or click</p>
+      </li>
+
+      <li class="practice-card">
+        <a class="practice-card-link" href="diagnose.html">
+          <span class="practice-num" aria-hidden="true">4</span>
+          <span class="practice-body">
+            <span class="practice-title">Fault Diagnosis Workshop</span>
+            <span class="practice-goal">Work a fault out with no numbers handed to you</span>
+            <span class="practice-what">A machine with something wrong with it. You decide where
+            to put an instrument, read it, work out superheat and subcooling from the halves you
+            have, then commit to a diagnosis.</span>
+          </span>
+        </a>
+        <p class="practice-meta"><span class="practice-time">20 min</span> · the real test</p>
+      </li>
+
+      <li class="practice-card">
+        <a class="practice-card-link" href="simulator.html?quiz=1">
+          <span class="practice-num" aria-hidden="true">5</span>
+          <span class="practice-body">
+            <span class="practice-title">Technician Quiz</span>
+            <span class="practice-goal">Check yourself against a hidden fault</span>
+            <span class="practice-what">The simulator, with the fault hidden. Read the
+            instruments, name what is wrong, and find out whether you would have condemned the
+            right part.</span>
+          </span>
+        </a>
+        <p class="practice-meta"><span class="practice-time">10 min</span> · scored</p>
+      </li>
+    </ol>
+
+    <p class="practice-footnote">Prefer to be taught first? The <a href="learn.html">course</a>
+    introduces each of these tools at the point you need it.</p>
+  </main>
+
+  <footer class="footer">
+    <span>Educational tools · behaviour is representative, for training not design. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+</body>
+</html>

@@ -12,7 +12,7 @@
   <a class="skip-link" href="#bayMain">Skip to content</a>
   <nav class="sitenav" aria-label="Site">
     <a class="sitenav-brand" href="index.html">
-      <span class="brand-mark" aria-hidden="true">❄</span>
+      <span class="brand-mark" aria-hidden="true">&#10052;</span>
       <span>Refrigeration Training</span>
     </a>
     <button class="sitenav-toggle" id="navToggle" type="button"
@@ -20,14 +20,24 @@
       <span class="bars" aria-hidden="true"></span> Menu
     </button>
     <ul class="sitenav-links" id="sitenavLinks">
-      <li><a href="index.html" data-nav="home">Start here</a></li>
-      <li><a href="learn.html" data-nav="learn">Course</a></li>
-      <li><a href="simulator.html" data-nav="sim">Simulator</a></li>
-      <li><a href="service.html" data-nav="service" aria-current="page">Service Bay</a></li>
-      <li><a href="build.html" data-nav="build">Build a system</a></li>
-      <li><a href="diagnose.html" data-nav="diagnose">Diagnose</a></li>
+      <li><a href="index.html" data-nav="home">Home</a></li>
+      <li><a href="learn.html" data-nav="learn">Learn</a></li>
+      <li><a href="practice.html" data-nav="practice" aria-current="true">Practice</a></li>
       <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
       <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+  <!-- The four workshops sit one click from each other, so a learner never has to
+       go back out to the hub to try the next one. -->
+  <nav class="toolstrip" aria-label="Practice tools">
+    <a class="toolstrip-back" href="practice.html">
+      <span aria-hidden="true">&#8592;</span> All practice tools</a>
+    <ul class="toolstrip-links">
+      <li><a href="simulator.html" data-tool="sim">Simulator</a></li>
+      <li><a href="service.html" data-tool="service" aria-current="page">Service Bay</a></li>
+      <li><a href="build.html" data-tool="build">Build</a></li>
+      <li><a href="diagnose.html" data-tool="diagnose">Diagnose</a></li>
+      <li><a href="simulator.html?quiz=1" data-tool="quiz">Quiz</a></li>
     </ul>
   </nav>
   <header class="topbar">

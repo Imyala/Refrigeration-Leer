@@ -2,15 +2,16 @@
    The nav markup is static in every page (so it works before scripts run and
    without JavaScript at all); this only adds the small-screen menu toggle and
    the one piece of "where am I" state that can't be baked into the HTML —
-   Technician Quiz is a mode of the simulator page, not a page of its own. */
+   the Technician Quiz is a mode of the simulator page, not a page of its own,
+   so the simulator's own markup can't know which of the two you opened. */
 (function () {
   "use strict";
 
   function markCurrent() {
     if (!/(^|[?&])quiz=1(&|$)/.test(location.search)) return;
-    // Only the simulator page carries quiz mode, and only it marks "sim" current.
-    const sim = document.querySelector('.sitenav-links a[data-nav="sim"][aria-current]');
-    const quiz = document.querySelector('.sitenav-links a[data-nav="quiz"]');
+    // Only the simulator carries quiz mode, and only it marks "sim" current.
+    const sim = document.querySelector('.toolstrip-links a[data-tool="sim"][aria-current]');
+    const quiz = document.querySelector('.toolstrip-links a[data-tool="quiz"]');
     if (!sim || !quiz) return;
     sim.removeAttribute("aria-current");
     quiz.setAttribute("aria-current", "page");

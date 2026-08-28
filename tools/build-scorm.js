@@ -22,6 +22,7 @@ const ZIP = path.join(DIST, "refrigeration-course-scorm12.zip");
 const FILES = [
   "learn.html",
   "index.html",
+  "practice.html",
   "simulator.html",
   "teach.html",
   "service.html",
