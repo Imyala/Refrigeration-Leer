@@ -14,10 +14,17 @@ principles** stream, and a **capstone** stream that revises for the
 end-of-apprenticeship knowledge assessment. See [The course](#the-course-learnhtml) below, and
 `docs/SOURCE_COVERAGE.md` for the module-by-module breakdown.
 
-- **`index.html`** — "Start here": the front door. The staged pathway through
-  the core program, plus cards for the four specialist streams and the tools.
+The site nav offers three destinations — **Home**, **Learn** and **Practice** —
+with the instructor and institutional pages kept visibly secondary. The five
+hands-on workshops sit behind Practice, and carry a switcher strip so they stay
+one click from each other.
+
+- **`index.html`** — the front door: the staged pathway through the core
+  program, one pointer to Practice, and the specialist streams named and sized.
+- **`practice.html`** — the Practice hub: what each of the five workshops is
+  for, in the order a technician grows into the work.
 - **`simulator.html`** — the simulator: animated cycle, gauge manifold,
-  technician quiz, PT trainer.
+  technician quiz (entered as `?quiz=1`), PT trainer.
 - **`service.html`** — the Service Bay: a hands-on service-procedure trainer
   (choose and prove your gauges, fit and purge hoses, work the service valves),
   graded on the order of work.
@@ -504,7 +511,8 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 
 | File | Purpose |
 |------|---------|
-| `index.html` | "Start here" front door: the staged pathway, stream cards, tool cards |
+| `index.html` | Front door: the staged pathway, the Practice pointer, the stream chips |
+| `practice.html` | Practice hub: the five workshops, what each is for |
 | `simulator.html` | Simulator page structure; the schematic itself is drawn from data |
 | `service.html` | The Service Bay rig |
 | `build.html` | The System Builder: palette, loop and analysis panel |
@@ -527,7 +535,9 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/streams.js` | The five stream definitions; a module with no `stream` is `core` |
 | `js/course1.js` … `js/course410.js` | Course content: 64 modules, 516 lessons, 2,094 questions (`course1–3` core, `course101–116` Refrigeration 1, `course201–213` Refrigeration 2, `course301–314` Electrical, `course401–410` Capstone) |
 | `js/course-index.js` | **Generated** syllabus manifest (per-stream counts and titles) — `npm run build:index` |
-| `js/home.js` | Front-door pathway, stream cards and progress |
+| `js/home.js` | Front-door pathway, stream chips and progress |
+| `js/nav.js` | Site-nav menu toggle, and the quiz/simulator state of the practice switcher |
+| `js/howto.js` | The "How this works" disclosure each workshop opens with, remembered per tool |
 | `js/refdocs.js` | Reference-document library behind `!CITE[…]` and the `#reference` view |
 | `js/srs.js`, `js/cards.js` | Spaced-repetition scheduler and the extra card banks |
 | `js/servicebay.js`, `js/service-ui.js` | Service Bay state machine (pure, tested), including hose selection, the gauge zero check and order-of-work grading — and its UI |

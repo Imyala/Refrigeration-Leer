@@ -503,7 +503,9 @@ body {
 .controls {
   display: flex;
   align-items: center;
-  gap: var(--s2);
+  /* Wide enough that the small uppercase labels above each control read as
+     separate words rather than one run-on string. */
+  gap: var(--s3);
   flex-wrap: wrap;
   justify-content: flex-end;
   /* A flex item will not shrink below its content unless told to, and the
