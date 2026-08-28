@@ -223,6 +223,15 @@ body {
   .sitenav-links a { padding: 12px 13px; font-size: 15px; }
   .sitenav-links .nav-split { margin-left: 0; margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
 }
+@media (max-width: 430px) {
+  /* Brand and Menu share the top line rather than stacking into a two-storey
+     bar that eats the first screenful. */
+  .sitenav { padding: 6px 10px; }
+  .sitenav-brand { font-size: 13px; gap: 7px; min-width: 0; }
+  .sitenav-brand > span:not(.brand-mark) { overflow: hidden; text-overflow: ellipsis; }
+  .sitenav-brand .brand-mark { width: 24px; height: 24px; font-size: 13px; }
+  .sitenav-toggle { padding: 8px 10px; font-size: 12.5px; min-height: 36px; }
+}
 
 /* ---------- Practice tool switcher ----------
    Under the site nav on the four workshop pages. The workshops are siblings,
@@ -277,9 +286,19 @@ body {
 .toolstrip-links a:hover { color: var(--text); background: rgba(255, 255, 255, .05); }
 .toolstrip-links a[aria-current] { background: var(--accent); color: var(--accent-ink); }
 @media (max-width: 700px) {
-  .toolstrip-links { width: 100%; }
-  .toolstrip-links li { flex: 1; }
-  .toolstrip-links a { text-align: center; padding: 9px 8px; }
+  /* Wrapping left a ragged three-then-two block. One row that scrolls keeps the
+     five workshops reading as one set, and keeps the current one findable. */
+  .toolstrip { gap: var(--s2); }
+  .toolstrip-links {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .toolstrip-links::-webkit-scrollbar { display: none; }
+  .toolstrip-links li { flex: none; }
+  .toolstrip-links a { padding: 9px 12px; }
 }
 
 /* ---------- Practice hub ----------
@@ -487,7 +506,11 @@ body {
   gap: var(--s2);
   flex-wrap: wrap;
   justify-content: flex-end;
+  /* A flex item will not shrink below its content unless told to, and the
+     widest thing in here is usually a <select> full of long option text. */
+  min-width: 0;
 }
+.title-block { min-width: 0; }
 
 /* ---------- Form controls ---------- */
 .select-group {
@@ -518,6 +541,17 @@ input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* A <select> is as wide as its longest option, and a flex item will not shrink
+   below its content by default — together that let one long scenario name push
+   a narrow screen sideways. Let both shrink instead. */
+.controls .select-group,
+.controls .fault-select,
+.sim-setup-body .select-group,
+.unit-controls .select-group { min-width: 0; max-width: 100%; }
+.select-group select,
+.fault-select select,
+select.field { max-width: 100%; }
 
 /* ---------- Buttons ----------
    Exactly one filled button per view (.btn-tour). Everything else is an
@@ -622,6 +656,13 @@ input:focus-visible {
 .level-btn[aria-pressed="true"] {
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+@media (max-width: 560px) {
+  /* Three equal steps across the row, rather than two-and-a-stray. */
+  .level-switch { width: 100%; }
+  .level-switch-label { padding-left: 4px; padding-right: 6px; }
+  .level-btn { flex: 1; padding: 8px 4px; text-align: center; }
 }
 
 /* ---------- "How this works" ----------
