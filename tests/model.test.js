@@ -116,3 +116,31 @@ test("every fault has a label, diagnosis (except none), clues and a VIZ entry", 
     }
   }
 });
+
+/* Every fault marks the components it shows itself at, and says what a
+   technician would find at each of them. The two lists are written by hand in
+   js/data.js and are easy to let drift — a component that pulses on the drawing
+   with nothing to say about it teaches nothing, and a symptom attributed to a
+   component that never lights up is never read. */
+test("every flagged component has a field symptom, and every symptom a flag", () => {
+  for (const [fault, viz] of Object.entries(D.VIZ)) {
+    const flags = [...viz.flags].sort();
+    const signs = Object.keys(viz.signs || {}).sort();
+    assert.deepStrictEqual(signs, flags, `${fault}: flags and signs agree`);
+    for (const id of signs) {
+      assert.ok(viz.signs[id].length > 20, `${fault}/${id}: symptom says something`);
+    }
+  }
+});
+
+/* A symptom is attributed to a component id, and it is rendered with that
+   component's own caption — so an id no circuit has would print nothing. */
+test("every symptom names a component some circuit actually has", () => {
+  const known = new Set();
+  for (const c of Object.values(C.CIRCUITS)) c.components.forEach((k) => known.add(k.id));
+  for (const [fault, viz] of Object.entries(D.VIZ)) {
+    for (const id of Object.keys(viz.signs || {})) {
+      assert.ok(known.has(id), `${fault} names component "${id}", which no circuit has`);
+    }
+  }
+});

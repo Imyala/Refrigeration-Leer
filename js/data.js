@@ -232,23 +232,82 @@
      condenser / evaporator coil. liquidSpill / suctionSpill: 0..1 length of
      the *wrong* state spilling into the next pipe (hot gas down the liquid
      line; wet refrigerant up the suction line = floodback). flags: components
-     to mark with a warning pulse.                                            */
+     to mark with a warning pulse.
+
+     `signs` is what a technician would actually notice standing at that part —
+     before any gauge goes on. Reading the machine comes first and a drawing
+     that looks identical whatever is wrong cannot teach that, so every flagged
+     component says what it would look, sound and feel like. Keyed by the same
+     component ids the circuits use; every flag has a sign and every sign has a
+     flag (tests/model.test.js holds the two together).                        */
   const VIZ = {
     none:             { condFront: 0.55, evapFront: 0.65, liquidSpill: 0.00, suctionSpill: 0.00, flags: [] },
-    lowCharge:        { condFront: 0.80, evapFront: 0.30, liquidSpill: 0.38, suctionSpill: 0.00, flags: ["receiver", "evaporator"] },
-    overcharge:       { condFront: 0.45, evapFront: 0.78, liquidSpill: 0.00, suctionSpill: 0.16, flags: ["condenser"] },
-    dirtyCondenser:   { condFront: 0.93, evapFront: 0.58, liquidSpill: 0.16, suctionSpill: 0.00, flags: ["condenser"] },
-    condFanFail:      { condFront: 0.97, evapFront: 0.60, liquidSpill: 0.30, suctionSpill: 0.00, flags: ["condenser"] },
-    icedEvaporator:   { condFront: 0.40, evapFront: 0.95, liquidSpill: 0.00, suctionSpill: 0.42, flags: ["evaporator", "compressor"] },
-    restrictedDrier:  { condFront: 0.50, evapFront: 0.30, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["receiver", "metering"] },
-    txvStuckClosed:   { condFront: 0.50, evapFront: 0.18, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["metering", "evaporator"] },
-    txvStuckOpen:     { condFront: 0.50, evapFront: 0.92, liquidSpill: 0.00, suctionSpill: 0.50, flags: ["metering", "compressor"] },
-    nonCondensables:  { condFront: 0.85, evapFront: 0.60, liquidSpill: 0.12, suctionSpill: 0.00, flags: ["condenser", "receiver"] },
-    compressorValves: { condFront: 0.35, evapFront: 0.50, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["compressor"] },
-    solenoidShut:     { condFront: 0.35, evapFront: 0.10, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["solenoid", "evaporator"] },
-    floodback:        { condFront: 0.45, evapFront: 0.98, liquidSpill: 0.00, suctionSpill: 0.72, flags: ["accumulator", "compressor"] },
-    eprMisadjusted:   { condFront: 0.52, evapFront: 0.82, liquidSpill: 0.00, suctionSpill: 0.20, flags: ["epr", "evaporatorB"] },
-    cascadeFouled:    { condFront: 0.60, evapFront: 0.58, liquidSpill: 0.10, suctionSpill: 0.00, flags: ["cascadeHx", "compressorB"] },
+    lowCharge:        { condFront: 0.80, evapFront: 0.30, liquidSpill: 0.38, suctionSpill: 0.00, flags: ["receiver", "evaporator"],
+      signs: {
+        receiver: "Level down, and the sight glass beside it bubbling rather than clear.",
+        evaporator: "Only the first part of the coil is cold — the rest is doing nothing.",
+      } },
+    overcharge:       { condFront: 0.45, evapFront: 0.78, liquidSpill: 0.00, suctionSpill: 0.16, flags: ["condenser"],
+      signs: {
+        condenser: "Hot all the way to the bottom: liquid is backed up in it instead of draining away.",
+      } },
+    dirtyCondenser:   { condFront: 0.93, evapFront: 0.58, liquidSpill: 0.16, suctionSpill: 0.00, flags: ["condenser"],
+      signs: {
+        condenser: "Fins matted with dirt, and hardly any air coming off the coil.",
+      } },
+    condFanFail:      { condFront: 0.97, evapFront: 0.60, liquidSpill: 0.30, suctionSpill: 0.00, flags: ["condenser"], fanStopped: ["condenser"],
+      signs: {
+        condenser: "Fan not turning. The coil is hot and still, and head pressure is climbing to the cut-out.",
+      } },
+    icedEvaporator:   { condFront: 0.40, evapFront: 0.95, liquidSpill: 0.00, suctionSpill: 0.42, flags: ["evaporator", "compressor"],
+      signs: {
+        evaporator: "Coil iced over, with no air getting through it.",
+        compressor: "Suction line sweating, and cold much further back than it should be.",
+      } },
+    restrictedDrier:  { condFront: 0.50, evapFront: 0.30, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["receiver", "metering"],
+      signs: {
+        receiver: "Liquid standing high — it cannot get past the restriction downstream.",
+        metering: "Starved: the valve is hissing and not enough liquid is reaching it.",
+      } },
+    txvStuckClosed:   { condFront: 0.50, evapFront: 0.18, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["metering", "evaporator"],
+      signs: {
+        metering: "Nothing feeding through, and the valve body is at room temperature.",
+        evaporator: "Coil warm and dry — no frost, no cooling.",
+      } },
+    txvStuckOpen:     { condFront: 0.50, evapFront: 0.92, liquidSpill: 0.00, suctionSpill: 0.50, flags: ["metering", "compressor"],
+      signs: {
+        metering: "Overfeeding — you can hear liquid rushing straight through it.",
+        compressor: "Suction line frosted right back to the compressor, and the body cold.",
+      } },
+    nonCondensables:  { condFront: 0.85, evapFront: 0.60, liquidSpill: 0.12, suctionSpill: 0.00, flags: ["condenser", "receiver"],
+      signs: {
+        condenser: "Head pressure high, but the coil is not that hot — air is taking up room in it.",
+        receiver: "Pressure higher than the liquid temperature in it says it should be.",
+      } },
+    compressorValves: { condFront: 0.35, evapFront: 0.50, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["compressor"],
+      signs: {
+        compressor: "Running and warm, but barely opening a pressure split. It is turning without pumping.",
+      } },
+    solenoidShut:     { condFront: 0.35, evapFront: 0.10, liquidSpill: 0.00, suctionSpill: 0.00, flags: ["solenoid", "evaporator"],
+      signs: {
+        solenoid: "Valve shut and the coil dead — no click, and no pull on a screwdriver held to it.",
+        evaporator: "Pumped down: nothing is being fed to the coil at all.",
+      } },
+    floodback:        { condFront: 0.45, evapFront: 0.98, liquidSpill: 0.00, suctionSpill: 0.72, flags: ["accumulator", "compressor"],
+      signs: {
+        accumulator: "Liquid standing in it, and the shell cold and sweating.",
+        compressor: "Cold, sweating, and the crankcase being washed out with liquid.",
+      } },
+    eprMisadjusted:   { condFront: 0.52, evapFront: 0.82, liquidSpill: 0.00, suctionSpill: 0.20, flags: ["epr", "evaporatorB"],
+      signs: {
+        epr: "Set wrong — it is holding the coil behind it at the wrong pressure.",
+        evaporatorB: "Chiller coil running at the wrong temperature for its duty.",
+      } },
+    cascadeFouled:    { condFront: 0.60, evapFront: 0.58, liquidSpill: 0.10, suctionSpill: 0.00, flags: ["cascadeHx", "compressorB"],
+      signs: {
+        cascadeHx: "Fouled: the two stages are not handing the heat over properly.",
+        compressorB: "High stage working hard against a rising interstage temperature.",
+      } },
   };
 
   const api = { toRows, TABLES, CP_VAP, CP_LIQ, ATM_BAR, BASE_FLOW, REFRIGERANTS, FAULTS, VIZ };

@@ -315,40 +315,86 @@ const COMPONENTS = {
 /* ========================================================================= */
 /* Readouts                                                                  */
 /* ========================================================================= */
+/* How far a reading has to be off before it is worth pointing at, in the units
+   the model itself works in: bar absolute for pressures, K for everything else.
+   0.25 bar is 25 kPa, about the width of a gauge needle. Below this a
+   technician would call the reading normal, and so should the rail. */
+const READING_BAND = { p: 0.25, t: 1.5 };
+
 function renderReadouts() {
   const c = current;
+  /* The move every diagnosis turns on: what should this read, and what does it
+     read? The model can derive the same machine at the same duty without the
+     fault, so the rail can put expected beside actual instead of leaving a
+     learner to remember what normal looked like. Suppressed while a quiz
+     scenario is unanswered — the same rule the P–h comparison follows. */
+  const quizHide = Quiz.active && !Quiz.answered;
+  const healthy = (state.fault !== "none" && !quizHide)
+    ? deriveAt(state.refrigerant, state.speed, state.load, "none", state.circuit)
+    : null;
+
   // The dot ties each reading to the line on the schematic it is measured from,
   // so colour teaches the cycle instead of just decorating the number.
   const rows = [
-    { label: "High side",  value: U.fmtPGauge(c.pHigh),  dot: STATE_COLORS.liquid },
-    { label: "Low side",   value: U.fmtPGauge(c.pLow),   dot: STATE_COLORS.vapor  },
-    { label: "Condenser",  value: U.fmtT(c.tCond),       dot: STATE_COLORS.hotgas },
-    { label: "Evaporator", value: U.fmtT(c.tEvap),       dot: STATE_COLORS.flash  },
-    { label: "Discharge",  value: U.fmtT(c.tDischarge),  dot: STATE_COLORS.hotgas },
-    { label: "Superheat",  value: U.fmtDT(c.superheat),  dot: STATE_COLORS.vapor,  level: 2 },
-    { label: "Subcool",    value: U.fmtDT(c.subcool),    dot: STATE_COLORS.liquid, level: 2 },
+    { label: "High side",  pick: x => x.pHigh,      fmt: U.fmtPGauge, band: READING_BAND.p, dot: STATE_COLORS.liquid },
+    { label: "Low side",   pick: x => x.pLow,       fmt: U.fmtPGauge, band: READING_BAND.p, dot: STATE_COLORS.vapor  },
+    { label: "Condenser",  pick: x => x.tCond,      fmt: U.fmtT,      band: READING_BAND.t, dot: STATE_COLORS.hotgas },
+    { label: "Evaporator", pick: x => x.tEvap,      fmt: U.fmtT,      band: READING_BAND.t, dot: STATE_COLORS.flash  },
+    { label: "Discharge",  pick: x => x.tDischarge, fmt: U.fmtT,      band: 3,              dot: STATE_COLORS.hotgas },
+    { label: "Superheat",  pick: x => x.superheat,  fmt: U.fmtDT,     band: READING_BAND.t, dot: STATE_COLORS.vapor,  level: 2 },
+    { label: "Subcool",    pick: x => x.subcool,    fmt: U.fmtDT,     band: READING_BAND.t, dot: STATE_COLORS.liquid, level: 2 },
     { label: "Flow",       value: `${r0(c.flow)} L/min` },
   ];
   // A second coil at its own temperature is the whole point of the circuit
   // that has one, so it belongs in the rail from the first detail level.
   if (c.tEvapB != null) {
-    rows.splice(4, 0, { label: "Chiller coil", value: U.fmtT(c.tEvapB), dot: STATE_COLORS.flash });
+    rows.splice(4, 0, {
+      label: "Chiller coil", pick: x => x.tEvapB, fmt: U.fmtT,
+      band: READING_BAND.t, dot: STATE_COLORS.flash,
+    });
   }
   // Flash gas is the number that explains why subcooling matters
   rows.push({
     label: "Flash gas", dot: STATE_COLORS.flash, level: 2,
     value: c.flashBypassed ? "0 % (bypassed)" : `${r0(c.flashFraction * 100)} %`,
   });
-  // Split "1499 kPa g" into number + unit so the unit can sit back visually.
-  const split = (v) => String(v).replace(/^([\-\d.,]+)\s*(.*)$/, (m, n, u) =>
-    u ? `${n} <span class="unit">${u}</span>` : n);
 
-  document.getElementById("readouts").innerHTML = rows.map(row => `
+  // Split "1499 kPa g" into number + unit so the unit can sit back visually.
+  const UNIT = /^([\-\d.,]+)\s*(.*)$/;
+  const split = (v) => String(v).replace(UNIT, (m, n, u) =>
+    u ? `${n} <span class="unit">${u}</span>` : n);
+  // The reading directly above carries the unit, so the expected value only
+  // needs the number — with it, every comparison wrapped onto a second line.
+  const bare = (v) => String(v).replace(UNIT, (m, n) => n);
+
+  /* What to say underneath a reading that is being compared. Naming the
+     direction in words as well as an arrow matters: "high" and "low" are the
+     vocabulary the diagnosis is actually conducted in. */
+  const verdict = (row) => {
+    if (!healthy || !row.pick) return "";
+    const want = row.pick(healthy);
+    if (want == null) return "";
+    const delta = row.pick(c) - want;
+    if (Math.abs(delta) <= row.band) {
+      return '<span class="readout-expect ok">as expected</span>';
+    }
+    const dir = delta > 0 ? "high" : "low";
+    return `<span class="readout-expect ${dir}">`
+         + `<span aria-hidden="true">${delta > 0 ? "\u25B2" : "\u25BC"}</span> ${dir}`
+         + ` &middot; should be ${bare(row.fmt(want))}</span>`;
+  };
+
+  document.getElementById("readouts").innerHTML = rows.map(row => {
+    const value = row.pick ? row.fmt(row.pick(c)) : row.value;
+    return `
     <div class="readout"${row.level ? ` data-level="${row.level}"` : ""}>
-      <span class="label">${row.dot
-        ? `<span class="dot" style="background:${row.dot}"></span>` : `<span class="dot"></span>`}${row.label}</span>
-      <span class="value">${split(row.value)}</span>
-    </div>`).join("");
+      <div class="readout-line">
+        <span class="label">${row.dot
+          ? `<span class="dot" style="background:${row.dot}"></span>` : `<span class="dot"></span>`}${row.label}</span>
+        <span class="value">${split(value)}</span>
+      </div>${verdict(row)}
+    </div>`;
+  }).join("");
 
   const status = document.getElementById("railStatus");
   if (status) {
@@ -676,9 +722,16 @@ function renderFaultViz() {
   setSpill(viz.spillSuction, v.suctionSpill);
 
   // warning pulse on affected components (suppressed while a quiz scenario is live)
-  const flags = (Quiz.active && !Quiz.answered) ? [] : v.flags;
-  document.querySelectorAll(".component").forEach(c =>
-    c.classList.toggle("fault-flag", flags.includes(c.dataset.component)));
+  const quizHide = Quiz.active && !Quiz.answered;
+  const flags = quizHide ? [] : v.flags;
+  /* A fan that has failed should look like it has failed. Held to the same rule
+     as the warning pulse: while a quiz scenario is live the machine gives
+     nothing away, because spotting it would be the whole answer. */
+  const stopped = quizHide ? [] : (v.fanStopped || []);
+  document.querySelectorAll(".component").forEach(c => {
+    c.classList.toggle("fault-flag", flags.includes(c.dataset.component));
+    c.classList.toggle("fan-stopped", !state.running || stopped.includes(c.dataset.component));
+  });
 }
 
 /* ========================================================================= */
@@ -746,7 +799,7 @@ function renderPhChart() {
   const showCompare = state.showHealthy && state.fault !== "none" && !quizHide;
   document.getElementById("compareToggle").hidden = state.fault === "none" || quizHide;
   if (showCompare) {
-    const h = deriveAt(state.refrigerant, state.speed, state.load, "none");
+    const h = deriveAt(state.refrigerant, state.speed, state.load, "none", state.circuit);
     const H = [
       { x: hToX(h.h1), y: pToY(h.pLow) }, { x: hToX(h.h2), y: pToY(h.pHigh) },
       { x: hToX(h.h3), y: pToY(h.pHigh) }, { x: hToX(h.h4), y: pToY(h.pLow) },
@@ -807,7 +860,8 @@ function showInfo(key) {
         <div class="vals">${data.outVals}</div></div>
     </div>
     <p>${data.body}</p>
-    <ul>${data.points.map(p => `<li>${p}</li>`).join("")}</ul>`;
+    <ul>${data.points.map(p => `<li>${p}</li>`).join("")}</ul>
+    ${faultNoteFor(key)}`;
   document.querySelectorAll(".component").forEach(comp =>
     comp.classList.toggle("selected", comp.dataset.component === key));
   state.selected = key;
@@ -894,6 +948,8 @@ function setRunning(run) {
   btn.textContent = run ? "Stop compressor" : "Start compressor";
   btn.className = "btn " + (run ? "btn-stop" : "btn-start");
   renderReadouts();
+  // Fans run with the compressor, so stopping it has to reach the drawing.
+  renderFaultViz();
 }
 
 function updateFaultBanner() {
@@ -904,6 +960,36 @@ function updateFaultBanner() {
   if (Quiz.active || state.fault === "none" || !f.diag) { banner.hidden = true; return; }
   banner.hidden = false;
   document.getElementById("faultText").innerHTML = `<b>${f.label}.</b> ${f.diag}`;
+
+  /* What you would notice standing at each affected part. A learner who only
+     ever reads gauges is being taught half the job — most faults announce
+     themselves at the machine first, and the pulsing components on the drawing
+     are the ones this list is naming. */
+  const list = document.getElementById("faultSigns");
+  if (!list) return;
+  const signs = (VIZ[state.fault] || {}).signs || {};
+  const named = Object.keys(signs).filter(id => componentLabel(id));
+  list.hidden = named.length === 0;
+  list.innerHTML = named.map(id =>
+    `<li><b>${componentLabel(id)}</b> ${signs[id]}</li>`).join("");
+}
+
+/* If the active fault shows itself at this component, say so here — the moment
+   a learner clicks the part that is pulsing is the moment to tell them what
+   they would find at it. Suppressed while a quiz scenario is unanswered, like
+   every other giveaway. */
+function faultNoteFor(key) {
+  if (Quiz.active && !Quiz.answered) return "";
+  const sign = ((VIZ[state.fault] || {}).signs || {})[key];
+  if (!sign) return "";
+  return `<p class="info-fault"><span class="u-label">At the machine, with this fault</span>${sign}</p>`;
+}
+
+/* The circuit's own caption for a component, so this text and the drawing
+   always call the same part by the same name. */
+function componentLabel(id) {
+  const c = (CIRCUITS[state.circuit].components || []).find(k => k.id === id);
+  return c ? String(c.label).replace(/\n/g, " ") : null;
 }
 
 function refreshAll() {

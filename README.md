@@ -23,8 +23,11 @@ one click from each other.
   program, one pointer to Practice, and the specialist streams named and sized.
 - **`practice.html`** — the Practice hub: what each of the five workshops is
   for, in the order a technician grows into the work.
-- **`simulator.html`** — the simulator: animated cycle, gauge manifold,
-  technician quiz (entered as `?quiz=1`), PT trainer.
+- **`simulator.html`** — the simulator: animated cycle drawn either as a trade
+  schematic or as the equipment it represents (`?draw=equipment`), every reading
+  compared against what the same machine would read without the fault, the
+  field symptoms of the active fault, gauge manifold, technician quiz
+  (`?quiz=1`) and PT trainer.
 - **`service.html`** — the Service Bay: a hands-on service-procedure trainer
   (choose and prove your gauges, fit and purge hoses, work the service valves),
   graded on the order of work.
@@ -523,7 +526,8 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |
 | `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |
 | `js/circuits.js` | The seven system variations: pipe runs, components, captions, and what each adds to the cycle |
-| `js/schematic.js` | Draws a circuit definition into the SVG (pipes, components, hit areas, captions) |
+| `js/schematic.js` | Draws a circuit definition into the SVG (pipes, components, hit areas, captions) in either view |
+| `js/equipment.js` | Equipment artwork: the same circuit drawn as the plant it represents |
 | `js/model.js` | Interpolation, saturation lookups, operating-point derivation, per-circuit effects, two-stage cascade |
 | `js/units.js` | kPa/bar/psi and °C/°F display, gauge-vs-absolute, localStorage prefs |
 | `js/gauges.js` | Analog gauge manifold with PT rings |

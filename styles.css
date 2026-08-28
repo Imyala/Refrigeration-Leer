@@ -858,6 +858,49 @@ select.field { max-width: 100%; }
   line-height: 1.5;
 }
 .fault-banner[hidden] { display: none; }
+.fault-body { min-width: 0; }
+.fault-diag { margin: 0; }
+/* What you would notice standing at each affected part. Most faults announce
+   themselves at the machine before any gauge goes on, and these are the parts
+   pulsing on the drawing beside this. */
+.fault-signs {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.fault-signs[hidden] { display: none; }
+.fault-signs li {
+  position: relative;
+  padding-left: 16px;
+  color: #e6d3b0;
+}
+.fault-signs li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: .62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warn);
+}
+.fault-signs b { color: #fff3dd; font-weight: 650; letter-spacing: .02em; }
+
+/* The same observation, shown against the component itself when it is clicked */
+.info-fault {
+  margin: var(--s3) 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(224, 163, 58, .3);
+  border-left: 2px solid var(--warn);
+  border-radius: var(--r-sm);
+  background: rgba(224, 163, 58, .08);
+  color: #f0d5a5;
+  font-size: var(--fs-sm);
+  line-height: var(--lh);
+}
+.info-fault .u-label { display: block; color: var(--warn); margin-bottom: 3px; }
 .fault-tag {
   flex: none;
   font-size: var(--fs-micro);
@@ -889,14 +932,33 @@ select.field { max-width: 100%; }
   overflow: hidden;
 }
 .readout {
+  padding: 9px 12px;
+  background: var(--sunken);
+}
+.readout-line {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s3);
-  padding: 9px 12px;
-  background: var(--sunken);
 }
 .readout .label { display: flex; align-items: center; gap: 7px; }
+
+/* What the same machine would read without the fault. This line is the whole
+   of fault-finding in one row — a technician judges a reading against what it
+   ought to be, never against nothing — so it says the direction in words as
+   well as an arrow, because "high" and "low" is the vocabulary the diagnosis
+   is conducted in. */
+.readout-expect {
+  display: block;
+  margin: 3px 0 0 14px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--muted);
+}
+.readout-expect.high { color: var(--state-hotgas); }
+.readout-expect.low  { color: var(--state-vapor); }
+.readout-expect.ok   { color: var(--faint); font-weight: 500; }
 .readout .dot {
   width: 7px;
   height: 7px;
@@ -1158,6 +1220,12 @@ select.field { max-width: 100%; }
 .eq-fan-guard { fill: rgba(10, 16, 22, .55); stroke: #4a5866; stroke-width: 2; }
 .eq-fan-blade { fill: none; stroke: #7d8d9c; stroke-width: 4.5; stroke-linecap: round; opacity: .8; }
 .eq-fan-hub { stroke: #101820; stroke-width: 1; }
+/* Slow enough to read as a turning fan rather than a blur, and stopped the
+   moment the fan is: a still fan on a hot coil is the fault, visible. */
+.eq-fan-rotor { animation: eqfan 3.2s linear infinite; }
+@keyframes eqfan { to { transform: rotate(360deg); } }
+.component.fan-stopped .eq-fan-rotor { animation: none; }
+@media (prefers-reduced-motion: reduce) { .eq-fan-rotor { animation: none; } }
 
 /* Line components */
 .eq-capillary { fill: none; stroke: #b07a4a; stroke-width: 2; }

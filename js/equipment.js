@@ -84,13 +84,17 @@
      flagging the component when the fan-failure fault is active. */
   function fan(g, cx, cy, r) {
     g.appendChild(el("circle", { cx, cy, r, class: "eq-fan-guard" }));
+    // The blades turn, and stop when the fan does — which is the difference
+    // between a dirty coil and a failed fan, standing in front of the machine.
+    const rotor = el("g", { class: "eq-fan-rotor", style: `transform-origin: ${cx}px ${cy}px` });
     for (let i = 0; i < 5; i++) {
       const a = (Math.PI * 2 / 5) * i;
       const x1 = cx + Math.cos(a) * r * 0.22, y1 = cy + Math.sin(a) * r * 0.22;
       const x2 = cx + Math.cos(a + 0.85) * r * 0.9, y2 = cy + Math.sin(a + 0.85) * r * 0.9;
       const mx = cx + Math.cos(a + 0.3) * r * 0.75, my = cy + Math.sin(a + 0.3) * r * 0.75;
-      g.appendChild(el("path", { d: `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`, class: "eq-fan-blade" }));
+      rotor.appendChild(el("path", { d: `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`, class: "eq-fan-blade" }));
     }
+    g.appendChild(rotor);
     g.appendChild(el("circle", { cx, cy, r: r * 0.2, class: "eq-fan-hub", fill: paint("eqSteel") }));
   }
 
