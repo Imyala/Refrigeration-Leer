@@ -54,9 +54,13 @@
     </div>
   </header>
 
-  <section class="quickstart" aria-label="The service sequence">
-    <h2 class="quickstart-title">The sequence — in this order, every time</h2>
-    <ol class="quickstart-steps">
+  <details class="howto" data-howto="service" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">The order the job is done in, every time</span>
+    </summary>
+    <p class="howto-title">The sequence — in this order, every time</p>
+    <ol class="howto-steps">
       <li><b>Choose and prove.</b> Pick hoses rated for the machine in front of
         you, in good condition and with low-loss ends — then prove the gauges
         read zero before they go anywhere near the system.</li>
@@ -67,7 +71,7 @@
       <li><b>Pack up as found.</b> Back-seat the valves, refit the caps, and
         leave no venting, loose hose or unfinished job behind.</li>
     </ol>
-  </section>
+  </details>
 
   <main id="bayMain" class="bay-layout">
     <div class="bay-left">
@@ -101,6 +105,7 @@
   </footer>
 
   <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>

@@ -1002,7 +1002,6 @@ function focusSectionSoon(el) {
    the cycle. Gauges and the full instrument set are one click away, and the
    choice is remembered. Deep links from a lesson raise the level they need. */
 const LEVEL_KEY = "refrigSim.simLevel";
-const QUICKSTART_KEY = "simQuickstartDismissed";
 const CIRCUIT_KEY = "refrigSim.circuit";
 const MAX_LEVEL = 3;
 /* What each level is showing now, and what the next one would add. */
@@ -1169,24 +1168,11 @@ function init() {
     else gotoTourStep(state.tourIndex + 1);
   });
 
-  // Technician quiz
-  document.getElementById("quizBtn").addEventListener("click", () => Quiz.active ? endQuiz() : startQuiz());
+  // Technician quiz: entered from the practice switcher (?quiz=1) and left
+  // from inside the panel, so there is no header toggle to wire.
   document.getElementById("quizHintBtn").addEventListener("click", quizShowClues);
   document.getElementById("quizNextBtn").addEventListener("click", quizNextScenario);
   document.getElementById("quizEndBtn").addEventListener("click", endQuiz);
-
-  // Quick-start tips are scaffolding: once dismissed, they stay gone.
-  const qs = document.getElementById("quickstart");
-  const qsDismiss = document.getElementById("quickstartDismiss");
-  if (qs && qsDismiss) {
-    let hidden = false;
-    try { hidden = localStorage.getItem(QUICKSTART_KEY) === "1"; } catch (e) { /* no storage */ }
-    qs.hidden = hidden;
-    qsDismiss.addEventListener("click", () => {
-      qs.hidden = true;
-      try { localStorage.setItem(QUICKSTART_KEY, "1"); } catch (e) { /* no storage */ }
-    });
-  }
 
   // Circuit picker
   const csel = document.getElementById("circuitSelect");

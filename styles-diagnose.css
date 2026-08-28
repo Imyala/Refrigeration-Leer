@@ -1,7 +1,7 @@
 /* =========================================================================
    Fault Diagnosis Workshop — page-scoped styles.
 
-   Everything structural (nav, topbar, panel, btn, quickstart, footer) comes
+   Everything structural (nav, topbar, panel, btn, howto, footer) comes
    from styles.css; this file only adds what the workshop needs: the
    instrument overlay that has to sit exactly on the schematic, and the
    readings / derived / evidence panels.

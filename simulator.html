@@ -47,26 +47,27 @@
     </div>
     <div class="controls">
       <div class="level-switch" role="group" aria-label="How much detail to show">
-        <span class="level-switch-label" id="levelLabel">Detail</span>
-        <button class="level-btn" type="button" data-level="1" aria-pressed="true">Cycle</button>
+        <span class="level-switch-label" id="levelLabel">Show</span>
+        <button class="level-btn" type="button" data-level="1" aria-pressed="true">Just the cycle</button>
         <button class="level-btn" type="button" data-level="2" aria-pressed="false">+ Gauges</button>
         <button class="level-btn" type="button" data-level="3" aria-pressed="false">Everything</button>
       </div>
       <button id="tourBtn" class="btn btn-tour" type="button">Guided tour</button>
-      <button id="quizBtn" class="btn btn-quiz" type="button">Technician quiz</button>
     </div>
   </header>
 
-  <section class="quickstart" id="quickstart" aria-label="How to use the simulator">
-    <h2 class="quickstart-title">New here?</h2>
-    <ol class="quickstart-steps">
+  <details class="howto" data-howto="sim" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">Click a part, move a slider, break something on purpose</span>
+    </summary>
+    <p class="howto-title">Three things to try</p>
+    <ol class="howto-steps">
       <li><b>Click a component</b> to see what it does to the refrigerant.</li>
       <li><b>Move the sliders</b> and watch every reading respond together.</li>
       <li><b>Simulate a fault</b> and see what it does to the cycle.</li>
     </ol>
-    <button class="quickstart-dismiss" id="quickstartDismiss" type="button"
-            aria-label="Hide these tips">&times;</button>
-  </section>
+  </details>
 
   <div id="faultBanner" class="fault-banner" hidden>
     <span class="fault-tag">FAULT</span>
@@ -128,14 +129,6 @@
       <!-- Operating controls belong with the thing they operate -->
       <div class="workbench-controls">
         <div class="sim-controls" aria-label="Operating controls">
-          <label class="select-group select-circuit">
-            <span>System</span>
-            <select id="circuitSelect"></select>
-          </label>
-          <label class="select-group">
-            <span>Refrigerant</span>
-            <select id="refrigerantSelect"></select>
-          </label>
           <div class="slider-group">
             <label for="speedSlider">Compressor speed <output id="speedOut">100%</output></label>
             <input id="speedSlider" type="range" min="50" max="150" value="100" step="1" />
@@ -150,25 +143,43 @@
             <span>Fault to simulate</span>
             <select id="faultSelect"></select>
           </label>
-          <div class="unit-controls">
-            <label class="select-group">
-              <span>Units</span>
-              <select id="pUnitSelect" aria-label="Pressure unit">
-                <option value="kPa">kPa</option>
-                <option value="bar">bar</option>
-                <option value="psi">psi</option>
-              </select>
-            </label>
-            <label class="select-group">
-              <span class="u-hidden">Temperature</span>
-              <select id="tUnitSelect" aria-label="Temperature unit">
-                <option value="C">&deg;C</option>
-                <option value="F">&deg;F</option>
-              </select>
-            </label>
-            <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
-          </div>
         </div>
+
+        <!-- Settings, not controls: closed until someone wants them. -->
+        <details class="sim-setup">
+          <summary>
+            <span class="sim-setup-label">Setup</span>
+            <span class="sim-setup-note">which system, which refrigerant, which units</span>
+          </summary>
+          <div class="sim-setup-body">
+            <label class="select-group select-circuit">
+              <span>System</span>
+              <select id="circuitSelect"></select>
+            </label>
+            <label class="select-group">
+              <span>Refrigerant</span>
+              <select id="refrigerantSelect"></select>
+            </label>
+            <div class="unit-controls">
+              <label class="select-group">
+                <span>Units</span>
+                <select id="pUnitSelect" aria-label="Pressure unit">
+                  <option value="kPa">kPa</option>
+                  <option value="bar">bar</option>
+                  <option value="psi">psi</option>
+                </select>
+              </label>
+              <label class="select-group">
+                <span class="u-hidden">Temperature</span>
+                <select id="tUnitSelect" aria-label="Temperature unit">
+                  <option value="C">&deg;C</option>
+                  <option value="F">&deg;F</option>
+                </select>
+              </label>
+              <button id="resetBtn" class="btn btn-ghost" type="button">Reset</button>
+            </div>
+          </div>
+        </details>
       </div>
     </div><!-- /.workbench -->
 
@@ -270,6 +281,7 @@
   </div>
 
   <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/circuits.js"></script>
   <script src="js/schematic.js"></script>

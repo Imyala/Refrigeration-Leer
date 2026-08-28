@@ -223,13 +223,14 @@
     row.innerHTML = S.STREAMS.filter((st) => st.id !== "core" && (INDEX[st.id] || {}).modules)
       .map((st) => {
         const info = INDEX[st.id];
-        // Lessons complete in this stream, counted from the same progress store
-        // the course writes. Keys are "moduleId/lessonId", and every module of a
-        // stream is listed in the manifest by title only — so count by prefix.
-        return `<a class="tool-card stream-card" href="learn.html#stream-${esc(st.id)}">
-          <h3><span aria-hidden="true">${st.icon}</span> ${esc(st.title)}</h3>
-          <p>${esc(st.blurb)}</p>
-          <p class="stream-card-meta">${info.modules} modules · ${info.lessons} lessons</p>
+        // Name and size only. The blurb belongs on the course page, where a
+        // learner is actually choosing a stream rather than being told one
+        // exists — three paragraphs of it on the front door buries the one
+        // button this page is for.
+        return `<a class="stream-chip" href="learn.html#stream-${esc(st.id)}">
+          <span class="stream-chip-icon" aria-hidden="true">${st.icon}</span>
+          <span class="stream-chip-title">${esc(st.title)}</span>
+          <span class="stream-chip-meta">${info.modules} modules · ${info.lessons} lessons</span>
         </a>`;
       }).join("");
     // touch progress so the linter and future work see the intent

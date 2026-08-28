@@ -71,9 +71,13 @@
     </div>
   </header>
 
-  <section class="quickstart" aria-label="How the workshop works">
-    <h2 class="quickstart-title">The method — the same one that works on site</h2>
-    <ol class="quickstart-steps">
+  <details class="howto" data-howto="diagnose" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">Decide, measure, then commit to a diagnosis</span>
+    </summary>
+    <p class="howto-title">The method — the same one that works on site</p>
+    <ol class="howto-steps">
       <li><b>Decide, then measure.</b> Every point on the machine is a place you
         could put an instrument. Click one to fit it and see what it reads —
         but ask first what that reading could change your mind about.</li>
@@ -84,7 +88,7 @@
         machine healthy. Only then does the workshop tell you what was really
         wrong, and what you would have seen, heard and felt at the machine.</li>
     </ol>
-  </section>
+  </details>
 
   <main id="dgMain" class="dg-layout">
     <div class="dg-left">
@@ -304,6 +308,7 @@
   </footer>
 
   <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
   <script src="js/data.js"></script>
   <script src="js/units.js"></script>
   <script src="js/model.js"></script>

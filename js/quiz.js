@@ -45,12 +45,30 @@ function quizSetControlsDisabled(disabled) {
   });
 }
 
+/* The quiz is a mode of the simulator, not a page of its own — but it is
+   entered from the practice switcher as if it were one. Keep the URL and that
+   switcher in step so the highlighted tool, a reload and the Back button all
+   agree about which of the two you are in. */
+function quizSyncLocation(active) {
+  try {
+    const url = new URL(location.href);
+    if (active) url.searchParams.set("quiz", "1");
+    else url.searchParams.delete("quiz");
+    history.replaceState(null, "", url.pathname + url.search + url.hash);
+  } catch (e) { /* no history API (file://) — the switcher below still updates */ }
+  const sim = document.querySelector('.toolstrip-links a[data-tool="sim"]');
+  const quiz = document.querySelector('.toolstrip-links a[data-tool="quiz"]');
+  if (!sim || !quiz) return;
+  (active ? quiz : sim).setAttribute("aria-current", "page");
+  (active ? sim : quiz).removeAttribute("aria-current");
+}
+
 function startQuiz() {
   Quiz.active = true;
   Quiz.count = 0; Quiz.score = 0; Quiz.streak = 0;
   document.body.classList.add("quiz-active");
   document.getElementById("quizPanel").hidden = false;
-  document.getElementById("quizBtn").textContent = "Exit Technician Mode";
+  quizSyncLocation(true);
   quizSetControlsDisabled(true);
   if (!state.running) setRunning(true);
   quizNextScenario();
@@ -63,7 +81,7 @@ function endQuiz() {
   Quiz.answered = false;
   document.body.classList.remove("quiz-active");
   document.getElementById("quizPanel").hidden = true;
-  document.getElementById("quizBtn").textContent = "Technician Quiz";
+  quizSyncLocation(false);
   quizSetControlsDisabled(false);
   // back to a clean healthy state
   state.fault = "none"; state.speed = 100; state.load = 100;

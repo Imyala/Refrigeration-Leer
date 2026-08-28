@@ -33,6 +33,7 @@ const FILES = [
   "styles-build.css",
   "styles-diagnose.css",
   "js/nav.js",
+  "js/howto.js",
   "js/circuits.js",
   "js/schematic.js",
   "js/home.js",
