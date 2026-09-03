@@ -370,26 +370,17 @@ function renderHome() {
   const main = document.getElementById("learnMain");
   const done = totalDone(), total = totalLessons();
   const pct = Math.round(done / total * 100);
+  /* The stream a link brought you to opens; the core program is open on a
+     first visit. Everything else is one line — name, size, how far along —
+     until it is asked for. */
+  const wanted = (location.hash.match(/^#stream-([a-z0-9-]+)/) || [])[1];
+  const due = Srs.dueKeys().length;
   main.innerHTML = `
-    <div class="learn-hero">
+    <div class="learn-hero learn-hero-compact">
       <h2>Refrigeration: from first principles to the toolbag</h2>
-      <p>A structured course in how refrigeration systems work, how to read their
-      gauges, how to diagnose their faults and how to repair them — built around
-      the interactive simulator. Work through the modules in order, or jump to
-      what you need. Each lesson ends with a short quiz; pass it to mark the
-      lesson complete, then sit the final exam for a certificate.</p>
-      <p>Written for every learner — from first-year apprentices to career changers.
-      Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
-      demonstrations</b> in the simulator; if something doesn't click, mark it
-      🚩 for your review list — and the <a href="#practice">🔁 Practice deck</a>
-      brings questions back at spaced intervals so it truly sticks. When you're
-      ready to get your hands dirty, the <a href="service.html">🔧 Service Bay</a>
-      has you fitting gauges, purging hoses and working the service valves yourself.</p>
-      ${Srs.dueKeys().length ? `<p class="practice-due-note">🔁 <b>${Srs.dueKeys().length}</b> practice question${Srs.dueKeys().length === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
-      <p class="align-note">Aligned to Australian practice: every lesson lists its references —
-      the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
-      (3000, 5149, 4836) and the ARAC manuals (Boyle, Vols 1 &amp; 2, pub. AIRAH) —
-      cited at topic level; always work to the current editions.</p>
+      <p>Five streams, ${COURSE.length} modules, ${total} short lessons. Each lesson ends in a
+      quiz; pass it and the lesson is done. Work in order, or jump to what you need.</p>
+      ${due ? `<p class="practice-due-note">🔁 <b>${due}</b> practice question${due === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
       <div class="progress-line">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
@@ -408,32 +399,51 @@ function renderHome() {
           <span class="continue-meta">${up.mod.title} · ~${up.les.minutes} min</span>
         </div>`;
       })()}
-      <div class="hero-actions">
-        <label class="name-field">Your name
-          <input id="learnerName" value="${RefrigMd.esc(getLearnerName())}" placeholder="used on exports &amp; certificate" />
-        </label>
-        <button id="exportBtn" class="btn btn-ghost" type="button">Export progress</button>
-        <label class="btn btn-ghost file-btn">Import progress
-          <input id="importFile" type="file" accept=".json,application/json" hidden />
-        </label>
-        <a class="btn btn-ghost" href="teach.html">Instructor dashboard</a>
-        ${Flags.set.size ? `<a class="btn btn-ghost" href="#review">🚩 Review list (${Flags.set.size})</a>` : ""}
-        <span id="ioStatus" class="io-status" aria-live="polite"></span>
-      </div>
+      <details class="fold">
+        <summary>How the course works <span class="fold-hint">plain words, diagrams, the simulator, references</span></summary>
+        <p>Written for every learner — from first-year apprentices to career changers.
+        Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
+        demonstrations</b> in the simulator; if something doesn't click, mark it
+        🚩 for your review list — and the <a href="#practice">🔁 Practice deck</a>
+        brings questions back at spaced intervals so it truly sticks. When you're
+        ready to get your hands dirty, the <a href="service.html">🔧 Service Bay</a>
+        has you fitting gauges, purging hoses and working the service valves yourself.
+        Sit the final exam at the end for a certificate.</p>
+        <p class="align-note">Aligned to Australian practice: every lesson lists its references —
+        the ARCtick Refrigerant Handling Code of Practice, the AS/NZS standards
+        (3000, 5149, 4836) and the ARAC manuals (Boyle, Vols 1 &amp; 2, pub. AIRAH) —
+        cited at topic level; always work to the current editions.</p>
+      </details>
+      <details class="fold">
+        <summary>Your progress file <span class="fold-hint">name, export, import${Flags.set.size ? ", review list" : ""}</span></summary>
+        <div class="hero-actions">
+          <label class="name-field">Your name
+            <input id="learnerName" value="${RefrigMd.esc(getLearnerName())}" placeholder="used on exports &amp; certificate" />
+          </label>
+          <button id="exportBtn" class="btn btn-ghost" type="button">Export progress</button>
+          <label class="btn btn-ghost file-btn">Import progress
+            <input id="importFile" type="file" accept=".json,application/json" hidden />
+          </label>
+          <a class="btn btn-ghost" href="teach.html">Instructor dashboard</a>
+          ${Flags.set.size ? `<a class="btn btn-ghost" href="#review">🚩 Review list (${Flags.set.size})</a>` : ""}
+          <span id="ioStatus" class="io-status" aria-live="polite"></span>
+        </div>
+      </details>
     </div>
     ${activeStreams().map(st => {
       const mods = streamModules(st.id);
       const sdone = streamDoneCount(st.id), stotal = streamLessonCount(st.id);
       const spct = stotal ? Math.round(sdone / stotal * 100) : 0;
       const sx = Progress.get("exam", st.id);
-      return `<section class="stream-section" id="stream-${st.id}">
-        <div class="stream-head">
+      const open = wanted && Streams.BY_ID[wanted] ? wanted === st.id : st.id === "core";
+      return `<details class="stream-section" id="stream-${st.id}"${open ? " open" : ""}>
+        <summary class="stream-head">
+          <span class="stream-caret" aria-hidden="true"></span>
           <h3><span class="stream-icon" aria-hidden="true">${st.icon}</span> ${st.title}</h3>
-          <span class="stream-meta">${mods.length} modules \u00b7 ${stotal} lessons \u00b7 ${sdone} complete (${spct}%)</span>
-        </div>
-        <p class="stream-blurb">${st.blurb}</p>
-        <p class="stream-audience">${st.audience}</p>
-        <div class="progress-bar small"><div class="progress-fill" style="width:${spct}%"></div></div>
+          <span class="stream-meta">${mods.length} modules · ${stotal} lessons · ${spct}%</span>
+          <span class="progress-bar small stream-bar"><span class="progress-fill" style="width:${spct}%"></span></span>
+        </summary>
+        <p class="stream-blurb">${st.blurb} <span class="stream-audience">${st.audience}</span></p>
         <div class="module-grid">
           ${mods.map(mod => {
             const mdone = moduleDoneCount(mod);
@@ -442,24 +452,24 @@ function renderHome() {
               <h4>${mod.title}</h4>
               <p>${mod.blurb}</p>
               <div class="progress-bar small"><div class="progress-fill" style="width:${mpct}%"></div></div>
-              <span class="module-meta">${mod.lessons.length} lessons \u00b7 ${mdone} complete</span>
+              <span class="module-meta">${mod.lessons.length} lessons · ${mdone} complete</span>
             </a>`;
           }).join("")}
           <a class="module-card exam-card" href="#exam/${st.id}">
             <h4>${st.short} exam</h4>
-            <p>${mods.length * EXAM.perModule} questions drawn from this stream \u2014 ${EXAM.perModule} per module. Pass to add this stream to your certificate.</p>
-            <span class="module-meta">${sx ? (sx.done ? "passed \u2713 \u00b7 best " + sx.best + "/" + sx.total : "best " + sx.best + "/" + sx.total) : "not attempted"}</span>
+            <p>${mods.length * EXAM.perModule} questions, ${EXAM.perModule} per module. Pass to add this stream to your certificate.</p>
+            <span class="module-meta">${sx ? (sx.done ? "passed ✓ · best " + sx.best + "/" + sx.total : "best " + sx.best + "/" + sx.total) : "not attempted"}</span>
           </a>
         </div>
-      </section>`;
+      </details>`;
     }).join("")}
     <div class="module-grid">
       <a class="module-card exam-card final-card" href="#exam">
         <h4>Final exam &amp; certificate</h4>
-        <p>${COURSE.length * EXAM.perProgramModule} questions drawn from the whole program \u2014 ${EXAM.perProgramModule} per module across every stream. Score ${Math.round(EXAM.passPct * 100)}% to pass and generate a printable certificate of completion.</p>
+        <p>${COURSE.length * EXAM.perProgramModule} questions from the whole program, ${EXAM.perProgramModule} per module. ${Math.round(EXAM.passPct * 100)}% to pass, then a printable certificate.</p>
         <span class="module-meta">${(() => {
           const e = Progress.get("exam", "final");
-          return e ? (e.done ? "passed \u2713 \u00b7 best " + e.best + "/" + e.total : "best " + e.best + "/" + e.total) : "not attempted";
+          return e ? (e.done ? "passed ✓ · best " + e.best + "/" + e.total : "best " + e.best + "/" + e.total) : "not attempted";
         })()}</span>
       </a>
     </div>`;

@@ -558,6 +558,7 @@ body {
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--s3);
   counter-reset: none;
 }
@@ -612,13 +613,18 @@ body {
   color: var(--accent-2);
 }
 .practice-what {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   margin-top: 8px;
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  line-height: var(--lh);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
   max-width: 64ch;
 }
+.practice-title { font-size: var(--fs-md); }
+.practice-goal { font-size: var(--fs-sm); }
 .practice-meta {
   margin: 0;
   padding: 0 var(--s5) var(--s4) calc(var(--s5) + 34px + var(--s4));
@@ -1953,6 +1959,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   box-shadow: var(--shadow-md);
 }
 .learn-hero h2 { margin: 0 0 8px; font-size: 20px; }
+.learn-hero-compact { padding: 20px 24px; margin-bottom: 16px; }
+.learn-hero-compact > p:first-of-type { margin-bottom: 12px; }
+.learn-hero-compact details.fold > p { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 70ch; }
+.learn-hero-compact .hero-actions { margin-top: 8px; }
 .learn-hero a:not(.btn), .module-blurb a, .howto a {
   color: var(--accent);
   text-decoration-color: var(--accent-line);
@@ -2001,6 +2011,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .module-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .module-card h3, .module-card h4 { margin: 0 0 6px; font-size: 14px; }
 .module-card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.55; }
+/* On the overview a card is a title and a size; the blurb is a glance, not a
+   read — the module page has the full one. */
+.stream-section .module-card { padding: 14px 16px; border-radius: 14px; box-shadow: none; }
+.stream-section .module-card p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.stream-section .module-card .progress-bar.small { margin-top: 8px; }
 .module-meta { display: block; margin-top: 8px; font-size: 11px; color: var(--muted); }
 
 /* ---------- Learn: streams ----------
@@ -2008,25 +2028,43 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
    cards under a stream header and the sidebar makes each stream collapsible.
    Without this the sidebar is a fifty-item scroll. */
 .stream-section {
-  margin: 0 0 26px;
-  padding: 18px 18px 20px;
+  margin: 0 0 10px;
+  padding: 0;
   background: var(--sunken);
   border: 1px solid var(--line-soft);
-  border-radius: 20px;
+  border-radius: 16px;
+  overflow: hidden;
 }
+.stream-section[open] { margin-bottom: 18px; }
 .stream-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
 }
-.stream-head h3 { margin: 0; font-size: 17px; letter-spacing: .01em; }
+.stream-head::-webkit-details-marker { display: none; }
+.stream-head:hover { background: var(--hover); }
+.stream-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.stream-caret {
+  width: 7px; height: 7px;
+  border-right: 2px solid var(--faint);
+  border-bottom: 2px solid var(--faint);
+  transform: rotate(-45deg);
+  transition: transform .15s ease;
+}
+.stream-section[open] .stream-caret { transform: rotate(45deg); }
+.stream-head h3 { margin: 0; font-size: 16px; letter-spacing: .01em; }
 .stream-icon { margin-right: 6px; }
 .stream-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
-.stream-blurb { margin: 8px 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 78ch; }
-.stream-audience { margin: 0 0 12px; font-size: 12px; color: var(--accent-2); opacity: .85; }
-.stream-section .progress-bar.small { margin-bottom: 14px; }
+.stream-bar { grid-column: 2 / -1; display: block; margin: 0; background: var(--line); }
+.stream-section:not([open]) .stream-head { padding-bottom: 10px; }
+#aboutMain .module-grid { align-items: start; }
+.stream-blurb { margin: 4px 16px 10px 42px; font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 78ch; }
+.stream-audience { color: var(--accent-2); opacity: .85; }
+.stream-section .module-grid { padding: 0 16px 16px; }
 .exam-card { border-style: dashed; }
 .final-card { border-color: var(--accent-line); }
 
@@ -2575,30 +2613,44 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 .home-section-note { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
 
-/* ---- The five stages ---- */
-.stage-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+/* ---- The stages ----
+   Rows, not cards. One stage is open — the next one to do — and carries its
+   theory, its tool and its button; every other stage is a line you can read
+   in one look and open with one tap. */
+.stage-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .stage-card {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  gap: 18px;
-  padding: 22px 24px;
   border: 1px solid var(--card-line);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--card-bg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.stage-card.started { border-color: var(--accent-line); }
+.stage-card.is-next { border-color: var(--accent-line); box-shadow: var(--shadow-md); }
 .stage-card.complete { border-color: var(--good-line); }
+.stage-fold > summary { list-style: none; }
+.stage-fold > summary::-webkit-details-marker { display: none; }
+.stage-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px 12px 14px;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+.stage-row:hover { background: var(--hover); }
+.stage-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .stage-n {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   background: var(--accent-soft);
   border: 1px solid var(--accent-line);
   color: var(--accent-2);
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
 }
 .stage-card.complete .stage-n {
@@ -2606,8 +2658,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   border-color: var(--good-line);
   color: var(--good);
 }
-.stage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-.stage-head h3 { margin: 0; font-size: 19px; color: var(--text); }
+.stage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; min-width: 0; }
+.stage-title { font-size: 16px; font-weight: 650; color: var(--text); }
+.stage-card.is-next .stage-title { font-size: 18px; }
 .stage-status {
   font-size: 11.5px;
   font-weight: 600;
@@ -2618,8 +2671,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 .stage-status.done { color: var(--good); }
 .stage-status.going { color: var(--accent-2); }
-.stage-blurb { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: var(--muted); max-width: 74ch; }
-.stage-modules { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.stage-caret {
+  width: 8px; height: 8px;
+  border-right: 2px solid var(--faint);
+  border-bottom: 2px solid var(--faint);
+  transform: rotate(-45deg);
+  transition: transform .15s ease;
+  justify-self: center;
+}
+.stage-fold[open] .stage-caret { transform: rotate(45deg); }
+.stage-final .stage-caret { transform: rotate(-45deg); }
+.stage-body { padding: 0 18px 18px calc(14px + 40px + 14px); }
+.stage-blurb { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-2); max-width: 74ch; }
+.stage-modules { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
 .stage-modules span {
   text-transform: uppercase;
   letter-spacing: .1em;
@@ -2627,7 +2691,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   color: var(--faint);
   margin-right: 6px;
 }
-.stage-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+.stage-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
 .stage-go { font-size: 14px; }
 .stage-tool {
   display: flex;
@@ -2661,8 +2725,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
 @media (max-width: 640px) {
   .home-hero { padding: 26px 20px 24px; }
-  .stage-card { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
-  .stage-n { width: 44px; height: 44px; font-size: 18px; border-radius: 13px; }
+  .stage-row { grid-template-columns: 34px minmax(0, 1fr) 12px; gap: 10px; padding: 10px 12px; }
+  .stage-n { width: 34px; height: 34px; font-size: 15px; border-radius: 10px; }
+  .stage-body { padding: 0 12px 14px 12px; }
   .stage-actions { align-items: stretch; flex-direction: column; }
 }
 
@@ -2797,6 +2862,45 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   color: var(--accent-2);
   opacity: .9;
 }
+
+/* ---------- Fold ----------
+   The one disclosure the whole site uses for "more than you need at a
+   glance": a quiet line that opens into the explanation. The page reads at
+   a look with every fold shut, and nothing is more than one tap away. */
+details.fold {
+  margin: var(--s3) 0 0;
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--s2);
+}
+details.fold > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent);
+  user-select: none;
+}
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before {
+  content: "\25B8";
+  font-size: 11px;
+  align-self: center;
+  transition: transform .15s ease;
+}
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary:hover { color: var(--accent-2); }
+details.fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.fold-hint { font-weight: 400; color: var(--muted); font-size: var(--fs-xs); }
+details.fold > p, details.fold > .ph-caption { margin: var(--s2) 0 0; }
+details.fold > .ph-caption { margin-top: var(--s2); }
+.circuit-fold { margin: 0 auto; max-width: var(--maxw); padding-top: 0; border-top: 0; }
+.circuit-fold > summary { padding: 6px 2px; }
+.circuit-fold[open] > .circuit-note { margin-top: var(--s2); }
 
 /* ---------- Lesson: reveal-the-answer blocks ----------
    Written-answer practice only works if the model answer stays hidden until

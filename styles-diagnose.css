@@ -283,9 +283,12 @@
 }
 .dg-needwhy {
   grid-column: 1 / -1;
-  margin: 8px 0 0;
-  font-size: 12px; line-height: 1.6; color: var(--muted);
+  margin: 4px 0 0;
+  padding-top: 0;
+  border-top: 0;
 }
+.dg-needwhy > summary { font-size: 11.5px; padding: 2px 0; }
+.dg-needwhy > p { margin: 4px 0 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
 
 /* ---------- Evidence ---------- */
 .dg-ev {
@@ -326,13 +329,14 @@
 .dg-ev.key .dg-ev-text { font-size: 13.5px; color: var(--text); }
 
 /* ---------- Diagnosis, verdict and reveal ---------- */
-.dg-opts { display: grid; gap: 7px; margin: 12px 0; }
+.dg-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 12px 0; }
+@media (max-width: 480px) { .dg-opts { grid-template-columns: 1fr; } }
 .dg-opt {
   text-align: left;
   font: inherit;
-  font-size: 13px;
-  padding: 10px 13px;
-  min-height: 44px;
+  font-size: 12.5px;
+  padding: 9px 12px;
+  min-height: 42px;
   border-radius: 11px;
   border: 1px solid var(--line);
   background: var(--sunken);

@@ -119,15 +119,23 @@
     if (!list || !course.length) return;
 
     let grandTotal = 0, grandDone = 0;
-    let firstOpenStage = null;
+    let firstOpenStage;
 
-    const html = STAGES.map((stage) => {
-      const { total, done } = stageStats(stage, course, progress);
+    /* One stage is open — the one to do next — and shows its theory, its tool
+       and its button. Every other stage is a single line: number, name, how
+       far along it is. The whole page reads in one look, and the next thing to
+       do is the only thing on it with any weight. Any closed stage opens on a
+       click without leaving the page, so the detail is one tap away. */
+    const stats = STAGES.map((stage) => stageStats(stage, course, progress));
+    firstOpenStage = STAGES.find((st, i) => !(stats[i].total > 0 && stats[i].done === stats[i].total)) || null;
+
+    const html = STAGES.map((stage, i) => {
+      const { total, done } = stats[i];
       grandTotal += total;
       grandDone += done;
       const complete = total > 0 && done === total;
       const started = done > 0 && !complete;
-      if (!complete && firstOpenStage === null) firstOpenStage = stage;
+      const isNext = firstOpenStage === stage;
 
       const moduleNames = stage.modules
         .map((id) => (course.find((m) => m.id === id) || {}).title)
@@ -140,44 +148,50 @@
         ? '<span class="stage-status done">Complete ✓</span>'
         : started
           ? `<span class="stage-status going">${done} of ${total} lessons</span>`
-          : `<span class="stage-status">${total} lessons</span>`;
+          : isNext
+            ? `<span class="stage-status going">Up next · ${total} lessons</span>`
+            : `<span class="stage-status">${total} lessons</span>`;
 
-      return `<li class="stage-card ${complete ? "complete" : ""} ${started ? "started" : ""}">
-        <div class="stage-n" aria-hidden="true">${stage.n}</div>
-        <div class="stage-body">
-          <div class="stage-head">
-            <h3>${esc(stage.title)}</h3>
-            ${status}
+      return `<li class="stage-card ${complete ? "complete" : ""} ${started ? "started" : ""} ${isNext ? "is-next" : ""}">
+        <details class="stage-fold" ${isNext ? "open" : ""}>
+          <summary class="stage-row">
+            <span class="stage-n" aria-hidden="true">${complete ? "✓" : stage.n}</span>
+            <span class="stage-head">
+              <span class="stage-title">${esc(stage.title)}</span>
+              ${status}
+            </span>
+            <span class="stage-caret" aria-hidden="true"></span>
+          </summary>
+          <div class="stage-body">
+            <p class="stage-blurb">${esc(stage.blurb)}</p>
+            <p class="stage-modules"><span>Covers</span> ${moduleNames.map(esc).join(" · ")}</p>
+            <div class="stage-actions">
+              <a class="btn ${isNext ? "btn-tour" : "btn-ghost"} stage-go" href="${firstUnfinished(stage, course, progress)}">
+                ${complete ? "Revisit the theory" : started ? "Continue this stage" : "Start this stage"}
+              </a>
+              <a class="stage-tool" href="${stage.tool.href}">
+                <span class="stage-tool-label">${esc(stage.tool.label)}</span>
+                <span class="stage-tool-note">${esc(stage.toolNote)}</span>
+              </a>
+            </div>
           </div>
-          <p class="stage-blurb">${esc(stage.blurb)}</p>
-          <p class="stage-modules"><span>Covers</span> ${moduleNames.map(esc).join(" · ")}</p>
-          <div class="stage-actions">
-            <a class="btn btn-tour stage-go" href="${firstUnfinished(stage, course, progress)}">
-              ${complete ? "Revisit the theory" : started ? "Continue this stage" : "Start this stage"}
-            </a>
-            <a class="stage-tool" href="${stage.tool.href}">
-              <span class="stage-tool-label">${esc(stage.tool.label)}</span>
-              <span class="stage-tool-note">${esc(stage.toolNote)}</span>
-            </a>
-          </div>
-        </div>
+        </details>
       </li>`;
     }).join("");
 
     list.innerHTML = html;
 
-    // Final assessment sits after the five stages, not inside one.
+    // Final assessment sits after the stages, not inside one.
     list.insertAdjacentHTML("beforeend", `
       <li class="stage-card stage-final">
-        <div class="stage-n" aria-hidden="true">✓</div>
-        <div class="stage-body">
-          <div class="stage-head"><h3>Final exam &amp; certificate</h3></div>
-          <p class="stage-blurb">Questions drawn at random from every module of the program,
-          80% to pass, and a printable certificate of completion.</p>
-          <div class="stage-actions">
-            <a class="btn btn-ghost stage-go" href="learn.html#exam">Open the exam</a>
-          </div>
-        </div>
+        <a class="stage-row" href="learn.html#exam">
+          <span class="stage-n" aria-hidden="true">★</span>
+          <span class="stage-head">
+            <span class="stage-title">Final exam &amp; certificate</span>
+            <span class="stage-status">Every module · 80% to pass</span>
+          </span>
+          <span class="stage-caret" aria-hidden="true"></span>
+        </a>
       </li>`);
 
     renderTop(grandDone, grandTotal, firstOpenStage, course, progress);

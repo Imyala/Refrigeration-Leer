@@ -338,7 +338,7 @@ function dgRenderDerived() {
         <span class="dg-derived-value none">not yet</span>
         <ul class="dg-needs">${chips}</ul>
         ${oneAway}
-        <p class="dg-needwhy">${dgEsc(d.def.needsWhy)}</p>
+        <details class="fold dg-needwhy"><summary>What it tells you</summary><p>${dgEsc(d.def.needsWhy)}</p></details>
       </li>`);
   }
 
