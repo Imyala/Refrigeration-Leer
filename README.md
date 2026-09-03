@@ -15,7 +15,10 @@ end-of-apprenticeship knowledge assessment. See [The course](#the-course-learnht
 `docs/SOURCE_COVERAGE.md` for the module-by-module breakdown.
 
 The site nav offers three destinations — **Home**, **Learn** and **Practice** —
-with the instructor and institutional pages kept visibly secondary. The five
+with the instructor and institutional pages kept visibly secondary, and a
+theme switch: the site is light by default (it is read on classroom
+projectors and phones in daylight), dark by choice, and the drawn instruments
+keep a dark face in both. The five
 hands-on workshops sit behind Practice, and carry a switcher strip so they stay
 one click from each other.
 
@@ -521,7 +524,8 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `build.html` | The System Builder: palette, loop and analysis panel |
 | `diagnose.html` | The Fault Diagnosis Workshop: schematic, instruments, evidence and diagnosis panels |
 | `learn.html` | Course page (sidebar navigation + lesson view); loads every content file |
-| `styles.css` | Dark theme, layout, state colours, course styles |
+| `styles.css` | Theme tokens (light default, dark by choice), layout, state colours, course styles |
+| `js/theme.js` | Stamps the theme on `<html>` before first paint and wires the switch in the nav |
 | `styles-build.css` | System Builder layout: palette, the circuit drawing, drag states, findings |
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |
 | `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |

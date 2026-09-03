@@ -82,7 +82,7 @@ does, not a substitute for testing it.
 | 1.1.1 Non-text content | Partially supports | Schematic components, gauges and charts carry `role="img"` and `aria-label`s; all gauge/chart values are duplicated as text in the readout bar and captions. The P–h chart's *shape* itself has a text caption but not a full data table alternative. |
 | 1.3.1 Info & relationships | Supports | Semantic headings, lists, tables, fieldsets/legends for quizzes, labelled form controls. |
 | 1.4.1 Use of colour | Supports | Pipe states are labelled with text and a text legend; quiz feedback pairs colour with symbols (✓/✗) and words. |
-| 1.4.3 Contrast (minimum) | Partially supports | Body text and controls exceed 4.5:1 on the dark theme. A small number of muted caption texts sit near the threshold; under review. |
+| 1.4.3 Contrast (minimum) | Partially supports | Body text and controls exceed 4.5:1 on both the light and the dark theme; the light theme's accent (`#0b6fae`) and status inks were chosen for 4.5:1 or better as text on white. A small number of muted caption texts sit near the threshold; under review. |
 | 1.4.10 Reflow / 1.4.4 Resize | Supports | Responsive layout to 320px; wide tables scroll within their own container; text resizes without loss. |
 | 1.4.13 Content on hover/focus | Supports | No hover-only content. |
 
@@ -113,8 +113,13 @@ does, not a substitute for testing it.
 
 ## Known gaps and roadmap
 
-1. **Single (dark) theme** — no user-selectable light or high-contrast theme
-   yet. Planned.
+1. **Themes** — a light theme (the default) and a dark theme, chosen with a
+   toggle button in the site nav (`aria-pressed`, constant name) and
+   remembered per browser; the OS `prefers-color-scheme` setting applies
+   until a choice is made. Drawn instruments (the schematic, gauges, charts,
+   the service rig, lesson figures) keep a dark face in both themes. No
+   high-contrast theme yet, and the light theme has not been re-audited for
+   contrast beyond the token-level check above. Planned.
 2. **Chart data alternatives** — a tabular alternative for the P–h diagram
    and PT chart for screen-reader users. Planned.
 3. **Formal audit** — no third-party assessment or AT-user testing has been

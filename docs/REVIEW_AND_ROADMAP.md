@@ -118,7 +118,7 @@ total) with:
 | **Fault coverage** | 4 faults. Field-relevant missing ones: restricted filter-drier, TXV failed open/closed, non-condensables in the system, compressor valve failure, condenser/evaporator fan failure, undersized/oversized metering. |
 | **Accuracy ceiling** | Property tables are approximate; fine for intuition, but universities will probe. Needs either clearly-scoped "teaching mode" framing or real property data (CoolProp compiled to WASM runs fully client-side). |
 | **Compression model** | h2 is derived from discharge temperature heuristics, not isentropic efficiency — acceptable now, but an isentropic model with an efficiency slider is itself a teachable feature. |
-| **Accessibility for procurement** | Refrigerant state is encoded by colour alone (fails colour-blind users), no `prefers-reduced-motion` support, dark-theme-only. WCAG 2.1 AA is a hard procurement requirement at most institutions. |
+| **Accessibility for procurement** | Refrigerant state is encoded by colour alone (fails colour-blind users), no `prefers-reduced-motion` support, dark-theme-only (a light theme with a nav switch has since been added; see ACCESSIBILITY_CONFORMANCE.md). WCAG 2.1 AA is a hard procurement requirement at most institutions. |
 | **Engineering** | Single 770-line JS file, no modules, no tests, no CI. Fine today; will not survive a platform build-out. |
 | **LMS integration** | None. Universities/TAFEs run Moodle, Canvas, Blackboard, D2L. Without LTI 1.3 (and/or SCORM packages) the product is nearly unsellable to them regardless of quality. |
 
@@ -180,7 +180,8 @@ architecture.
    non-condensables, compressor valves, condenser fan failure, evaporator fan
    failure. The declarative `FAULTS`/`VIZ` structure makes each one cheap.
 6. **Accessibility pass** — pattern/texture or labels in addition to colour on
-   pipes and chips, `prefers-reduced-motion`, light theme, contrast audit.
+   pipes and chips, `prefers-reduced-motion`, light theme (done: light is
+   now the default, dark by choice), contrast audit.
 7. **Code restructure + tests** — split `app.js` into ES modules
    (`properties.js`, `model.js`, `faults.js`, `viz/*.js`), add unit tests for the
    thermodynamic model (Vitest), simple CI. Do this *before* Phase 2 content lands.

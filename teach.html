@@ -7,6 +7,7 @@
   <meta name="description" content="Instructor dashboard for the refrigeration course: load student progress exports to see cohort completion, exam results and who is stuck where." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="js/theme.js"></script>
 </head>
 <body class="learn-page teach-page">
   <a class="skip-link" href="#teachMain">Skip to content</a>
@@ -15,6 +16,10 @@
       <span class="brand-mark" aria-hidden="true">&#10052;</span>
       <span>Refrigeration Training</span>
     </a>
+    <button class="theme-toggle" id="themeToggle" type="button"
+            aria-pressed="false" aria-label="Dark theme" title="Switch to the dark theme">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
     <button class="sitenav-toggle" id="navToggle" type="button"
             aria-expanded="false" aria-controls="sitenavLinks">
       <span class="bars" aria-hidden="true"></span> Menu

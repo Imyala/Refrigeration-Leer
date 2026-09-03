@@ -56,8 +56,8 @@
   text-align: left;
   padding: 8px 10px;
   border-radius: 11px;
-  border: 1px solid rgba(125, 154, 181, 0.18);
-  background: rgba(255, 255, 255, .02);
+  border: 1px solid var(--line-soft);
+  background: var(--panel-2);
   color: var(--text);
   font-size: 12.5px;
   font-family: inherit;
@@ -65,7 +65,7 @@
   cursor: grab;
   min-height: 40px;
 }
-.palette-item:hover { border-color: var(--accent); background: rgba(79, 195, 247, .08); }
+.palette-item:hover { border-color: var(--accent); background: var(--accent-soft); }
 .palette-item:active { cursor: grabbing; }
 .palette-item .pi-icon {
   flex: none;
@@ -85,16 +85,16 @@
 .palette-note { font-size: 11.5px; color: var(--muted); margin: 0 0 6px; line-height: 1.5; }
 
 /* While a placed component is being dragged, the palette becomes the bin. */
-.palette-panel.is-bin { border-color: rgba(224, 64, 90, .55); }
+.palette-panel.is-bin { border-color: var(--bad-line); }
 .palette-panel.is-bin .palette-bin { display: block; }
 .palette-bin {
   display: none;
   margin: 8px 0 0;
   padding: 10px 12px;
-  border: 1px dashed rgba(224, 64, 90, .6);
+  border: 1px dashed var(--bad-line);
   border-radius: 12px;
   font-size: 12px;
-  color: #f09aa8;
+  color: var(--bad-text);
 }
 
 /* ---------- The loop ----------
@@ -103,7 +103,14 @@
    it is piped into. The SVG underneath carries the pipework and the run
    names; the components and drop targets are HTML positioned on top of it at
    the same coordinates, so drag, focus and keyboard editing all still work. */
-.loop-wrap { position: relative; overflow: hidden; margin-top: 4px; }
+.loop-wrap {
+  position: relative;
+  overflow: hidden;
+  margin-top: 4px;
+  background: var(--face);
+  border: 1px solid var(--face-line);
+  border-radius: 14px;
+}
 .loop-stage {
   position: relative;
   transform-origin: top left;
@@ -300,10 +307,10 @@
 .loop-note {
   margin: 0 0 12px;
   padding: 11px 13px;
-  border: 1px solid rgba(245, 166, 35, .35);
+  border: 1px solid var(--warn-line);
   border-left: 3px solid var(--warn);
   border-radius: 12px;
-  background: rgba(245, 166, 35, .07);
+  background: var(--warn-soft);
   font-size: 12.5px;
   color: var(--text);
   line-height: 1.55;
@@ -326,12 +333,12 @@
   text-transform: uppercase;
   margin-bottom: 5px;
 }
-.verdict.is-ok { border-color: var(--good); background: rgba(47, 158, 87, .12); }
+.verdict.is-ok { border-color: var(--good); background: var(--good-soft); }
 .verdict.is-ok .verdict-tag { color: var(--good); }
-.verdict.is-warn { border-color: var(--warn); background: rgba(245, 166, 35, .1); }
+.verdict.is-warn { border-color: var(--warn); background: var(--warn-soft); }
 .verdict.is-warn .verdict-tag { color: var(--warn); }
-.verdict.is-bad { border-color: var(--bad); background: rgba(224, 64, 90, .1); }
-.verdict.is-bad .verdict-tag { color: #f09aa8; }
+.verdict.is-bad { border-color: var(--bad); background: var(--bad-soft); }
+.verdict.is-bad .verdict-tag { color: var(--bad-text); }
 .verdict p { margin: 0; }
 .verdict-note { margin-top: 9px !important; color: var(--muted); font-size: 12.5px; }
 
@@ -353,14 +360,14 @@
   border-radius: 12px;
   border: 1px solid var(--line);
   border-left-width: 3px;
-  background: rgba(255, 255, 255, .02);
+  background: var(--sunken);
   color: var(--text);
   padding: 10px 12px;
   font-size: 12.5px;
   line-height: 1.55;
 }
 button.issue { cursor: pointer; }
-button.issue:hover { background: rgba(255, 255, 255, .05); }
+button.issue:hover { background: var(--hover); }
 .issue .sev {
   display: inline-block;
   font-size: 10px;
@@ -372,19 +379,19 @@ button.issue:hover { background: rgba(255, 255, 255, .05); }
 .issue .issue-msg { font-weight: 600; }
 .issue .issue-fix { margin: 6px 0 0; color: var(--muted); }
 .issue .issue-where { margin: 5px 0 0; font-size: 11px; color: var(--accent); }
-.issue.sev-error { border-color: rgba(224, 64, 90, .3); border-left-color: var(--bad); }
-.issue.sev-error .sev { color: #f09aa8; }
-.issue.sev-warning { border-color: rgba(245, 166, 35, .28); border-left-color: var(--warn); }
+.issue.sev-error { border-color: var(--bad-line); border-left-color: var(--bad); }
+.issue.sev-error .sev { color: var(--bad-text); }
+.issue.sev-warning { border-color: var(--warn-line); border-left-color: var(--warn); }
 .issue.sev-warning .sev { color: var(--warn); }
-.issue.sev-tip { border-color: rgba(125, 154, 181, .22); border-left-color: var(--accent); }
+.issue.sev-tip { border-color: var(--line); border-left-color: var(--accent); }
 .issue.sev-tip .sev { color: var(--accent); }
 
 .brief {
   margin: 0 0 14px;
   padding: 12px 14px;
-  border: 1px solid rgba(79, 195, 247, .3);
+  border: 1px solid var(--accent-line);
   border-radius: 12px;
-  background: rgba(79, 195, 247, .07);
+  background: var(--accent-soft);
   font-size: 12.5px;
   line-height: 1.6;
 }
