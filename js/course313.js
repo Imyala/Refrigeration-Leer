@@ -92,7 +92,7 @@
     {
       id: "elec-control-circuits",
       stream: "elec",
-      units: ["UEERA0031", "UEERA0060"],
+      units: ["UEERA0031", "UEECD0051", "UEERA0092", "UEERL0005"],
       title: "E.13 · Develop and connect electrical control circuits",
       blurb: "How control circuits are drawn, built, interlocked and fault-found: symbols, ladder schematics, contactors, timers, sensors, motor starters, emergency stops and PLCs.",
       lessons: [

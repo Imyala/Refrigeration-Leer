@@ -43,7 +43,7 @@
     {
       id: "cap-circuits-and-diagrams",
       stream: "capstone",
-      units: ["UEERA0031", "UEECD0051"],
+      units: ["UEERA0031", "UEECD0051", "UEERA0092", "UEERL0005"],
       title: "C.10 · Wiring diagrams, safeties and control circuits",
       blurb: "Reading a manufacturer's diagram under time pressure, naming every device in the lockout string, dead-testing to find which safety tripped, and drawing a control circuit from a written brief.",
       lessons: [

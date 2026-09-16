@@ -64,7 +64,7 @@
   {
     id: "elec-fundamentals",
     stream: "elec",
-    units: ["UEECD0042", "UEECD0046"],
+    units: ["UEECD0042", "UEERA0092"],
     title: "E.2 · Electrical fundamentals",
     blurb: "Where electricity comes from and what it actually is: atoms and electrons, static and current electricity, EMF, resistance, generation and supply, and the SI units and calculations the trade runs on.",
     lessons: [

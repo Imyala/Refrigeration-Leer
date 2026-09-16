@@ -19,7 +19,7 @@
     {
       id: "v1-specialised-tools",
       stream: "v1",
-      units: ["UEERA0059", "UEERA0064", "UEERA0062"],
+      units: ["UEERA0059", "UEERA0062"],
       title: "R1.9 · Specialised tools and service equipment",
       blurb: "The kit a refrigeration technician actually carries — from spanners and flaring blocks to gauge sets, leak detectors, vacuum pumps and recovery units — and the technique that makes each one work.",
       lessons: [

@@ -49,7 +49,7 @@
     {
       id: "v1-basic-principles",
       stream: "v1",
-      units: ["UEERA0036", "UEECD0048"],
+      units: ["UEERA0036"],
       title: "R1.1 · Refrigeration: basic principles",
       blurb:
         "The foundation chapter: where refrigeration came from, what it is used for, and the physics of heat, pressure, change of state and the vapour-compression cycle every technician works with.",

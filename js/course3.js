@@ -26,7 +26,7 @@
      ====================================================================== */
   {
     id: "code-of-practice",
-    units: ["UEECO0010", "UEERA0064", "UEERA0062", "UEERA0048"],
+    units: ["UEECO0010", "UEERA0062", "UEERA0007", "UEERA0079", "UEERA0084"],
     title: "11 · The Refrigerant Handling Code of Practice",
     blurb: "The rulebook your licence is measured against: what the Code covers, the rules that never bend, and the clause-level procedure for testing, evacuating, charging, recovering and storing refrigerant.",
     lessons: [

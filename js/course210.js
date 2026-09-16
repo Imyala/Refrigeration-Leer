@@ -37,7 +37,7 @@
   {
     id: "v2-commissioning",
     stream: "v2",
-    units: ["UEERA0052", "UEERA0053", "UEERA0051"],
+    units: ["UEERA0052", "UEERA0053", "UEERA0099", "UEERA0094"],
     title: "R2.10 · Commissioning and system balancing",
     blurb: "Bringing a finished installation up to specification: pre-start checks, start-up and control settings, duct design and pressures, outlet selection, air and water balancing, and chiller performance tests.",
     lessons: [

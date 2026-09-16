@@ -17,7 +17,7 @@
      ====================================================================== */
   {
     id: "fundamentals",
-    units: ["UEERA0036", "UEECD0048"],
+    units: ["UEERA0036"],
     title: "1 · Heat, temperature & pressure",
     blurb: "The physics every refrigeration mechanic uses daily: what heat actually is, why change of state moves so much of it, and how pressure controls boiling point.",
     lessons: [
@@ -539,7 +539,7 @@ to the condenser on the next lap.
      ====================================================================== */
   {
     id: "components",
-    units: ["UEERA0036", "UEERA0050", "UEECD0051"],
+    units: ["UEERA0036", "UEERA0050", "UEECD0051", "UEERA0081"],
     title: "3 · Components deep-dive",
     blurb: "Compressors, metering devices, heat exchangers and the supporting cast — what each one does, the main types, and how they fail.",
     lessons: [
@@ -882,7 +882,7 @@ long or safely without them.
      ====================================================================== */
   {
     id: "refrigerants",
-    units: ["UEECO0010", "UEERA0048", "UEECD0007"],
+    units: ["UEECO0010", "UEERA0007", "UEECD0007", "UEERA0079", "UEERE0001"],
     title: "4 · Refrigerants & the environment",
     blurb: "The refrigerant families and numbering, the environmental rules that reshaped the industry, and the safety classes that decide how each fluid must be handled.",
     lessons: [

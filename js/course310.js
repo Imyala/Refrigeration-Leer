@@ -77,7 +77,7 @@
   {
     id: "elec-ac-three-phase",
     stream: "elec",
-    units: ["UEERA0045", "UEECD0048"],
+    units: ["UEERA0045", "UEERL0002"],
     title: "E.10 · Alternating current: three phase",
     blurb: "Three-phase supply from the alternator to the switchboard: star and delta, the root-three relationships, the neutral, unbalanced loads, three-phase power, its measurement and correction, and fault-loop impedance.",
     lessons: [

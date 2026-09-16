@@ -18,7 +18,7 @@
     {
       id: "v2-service-procedure",
       stream: "v2",
-      units: ["UEERA0064", "UEERA0062", "UEECO0010"],
+      units: ["UEERA0062", "UEECO0010", "UEERA0079"],
       title: "R2.5 · Service procedure",
       blurb: "How a service call is actually run: safe refrigerant and cylinder handling, leak testing, contamination and evacuation, burn-out clean-up, charging, recovery, gauges, pump-down and lubricants.",
       lessons: [

@@ -1,6 +1,6 @@
 # Curriculum Mapping
 
-How the course's 64 modules and five interactive tools relate to formal
+How the course's 64 modules and seven interactive tools relate to formal
 training frameworks — first and foremost the current Australian
 qualification, **UEE32225 Certificate III in Air Conditioning and
 Refrigeration**.
@@ -59,7 +59,7 @@ streams. Module-by-module lesson and question counts are in
 
 Bare numbers are **core-program** modules; `R1.x` / `R2.x` / `E.x` / `C.x`
 are modules of the Refrigeration 1, Refrigeration 2, Electrical principles
-and Capstone streams. Tools are the five interactive workshops (see *The
+and Capstone streams. Tools are the seven interactive workshops (see *The
 interactive tools* below). The **status** column is what the sources
 checked said about the unit's placement in UEE32225: *core* and *elective*
 where a source stated it; *confirm* where the unit is known to sit in the
@@ -108,17 +108,17 @@ verified from the sources reachable when this was written.
 | UEERA0062 | Recover and charge refrigerants | confirm | 9, 11, R1.9, R2.5, C.6 + **Service Bay** |
 | UEERA0064 | Recover, pressure test, evacuate, charge and leak test refrigerants – split systems | confirm (named as a UEE32225 requirement) | 9, 11, R1.9, R2.5, C.5, C.6 + **Service Bay** |
 
-### Core units the platform does not reach
+### How the unit list was verified
 
-The published core set has 27 units. The table above accounts for the ones
-the sources checked named; a handful of the core set could not be identified
-from those sources and are therefore not tagged. An RTO adopting the platform
-should list the full core set from training.gov.au and note any unit with no
-row above — the gap analysis (`docs/GAP_ANALYSIS_2026.md`) already commits to
-an electrical and control-circuit diagnosis workshop for UEERA0031, and to
-procedure trainers (pressure test, evacuation, recovery and charging,
-brazing) for the recover/charge units, which are the two places the tools
-lag the lessons.
+The 39 units above are the 35 printed on a real UEE32225 Record of Results
+(TAFE Queensland, 2026 — the 27 core units plus that RTO's eight electives,
+which a record does not distinguish) and four electives of the training
+package that a module maps to. Where a source named a unit as core it is
+marked *core*; the rest of the record's units are *listed*. Nothing in the
+platform holds any learner's personal details — only the unit codes and
+titles were used. UEERA0031 (control-system fault-finding) is served by the
+Control Circuit Workshop and the recover/charge units by the procedure
+trainers, so every core unit now has both lessons and a tool behind it.
 
 ## The streams, module by module
 
@@ -224,7 +224,7 @@ should schedule it *after* delivery, not count it as coverage.
 
 ## The interactive tools
 
-Five tools sit alongside the lessons. All five are open at any time and can
+Seven tools sit alongside the lessons. All of them are open at any time and can
 be set as activities in their own right.
 
 | Tool | What the learner does | Skill it drills | Units |
@@ -234,6 +234,8 @@ be set as activities in their own right.
 | **PT trainer** (simulator) | Answers target-pressure and saturation-temperature questions on the selected refrigerant | The PT relationship on the gauge | UEERA0036 |
 | **Service Bay** (`service.html`) | Chooses a hose set off the van, proves the gauges read zero, **assesses the area as a flammable zone when the charge is A2L or A3**, fits, cracks, purges, reads and packs up — graded on the order of work against the taught steps | Service-procedure discipline, emission control, flammable-refrigerant practice, gauge hook-up | UEERA0064, UEERA0062, UEERA0048, UEECO0010 |
 | **System Builder** (`build.html`) | Pipes a circuit from a palette of thirty components in flow order, to a written brief or free-build; every misplacement is explained | Reading and producing a piping schematic; where accessories belong and why | UEERA0050, UEECD0051, UEERA0060 |
+| **Control Circuit Workshop** (`electrical.html`) | Finds a hidden electrical fault in a packaged unit from a ladder diagram: voltage tests live, dead tests only after isolate → prove → test for dead → prove, scored on the diagnosis and on the method | Control-circuit fault-finding, safe isolation (AS/NZS 4836), reading a ladder diagram | UEERA0031, UEERA0044, UEERA0092, UEERL0005, UEECD0042 |
+| **Procedure trainers** (`procedures.html`) | Works the four Code of Practice procedures — pressure test, evacuation, recovery and charging, brazing — on a rig that follows the Code's numbers and grades the order of work | Leak-tightness testing, evacuation, recovery and charging, brazing practice | UEERA0062, UEERA0079, UEERA0059, UEERA0094, UEERA0007, UEECO0010 |
 | **Diagnosis Workshop** (`diagnose.html`) | Chooses which of thirteen measurement points to instrument, works superheat, subcooling and TDs from readings actually taken, then commits to a diagnosis — scored on method as well as answer, **including whether the flammable zone was assessed before a gauge went on an A2L/A3 machine** | Systematic fault-finding with instruments; measurement technique | UEERA0036, UEERA0031, UEERA0032, UEERA0048 |
 
 **Where the hands-on tools sit against a training package.** The Service Bay,

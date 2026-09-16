@@ -18,7 +18,7 @@
     {
       id: "v1-refrigerant-controls",
       stream: "v1",
-      units: ["UEERA0036", "UEERA0050"],
+      units: ["UEERA0036", "UEERA0050", "UEERA0081"],
       title: "R1.5 · Refrigerant controls and metering devices",
       blurb: "How liquid refrigerant is metered into the evaporator: hand valves, floats, automatic and thermostatic expansion valves, electronic valves and the capillary tube.",
       lessons: [

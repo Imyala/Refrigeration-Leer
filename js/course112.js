@@ -18,7 +18,7 @@
     {
       id: "v1-electrical-components",
       stream: "v1",
-      units: ["UEERA0031", "UEERA0044"],
+      units: ["UEERA0031", "UEERA0044", "UEERA0092"],
       title: "R1.12 · Electrical components",
       blurb: "Every switch, sensor, control, overload, capacitor, relay and controller bolted to a refrigeration plant — what it does, how it is rated, how it fails and how you test it.",
       lessons: [

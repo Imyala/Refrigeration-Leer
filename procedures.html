@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Procedure Trainers — Refrigeration Training</title>
+  <meta name="description" content="Pressure test, evacuate, recover and charge, and braze — the Code of Practice procedures as hands-on trainers, with the Code's own numbers in the rules and the order of work graded." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="styles-procedure.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#prMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">&#10052;</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" type="button"
+            aria-pressed="false" aria-label="Dark theme" title="Switch to the dark theme">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Home</a></li>
+      <li><a href="learn.html" data-nav="learn">Learn</a></li>
+      <li><a href="practice.html" data-nav="practice" aria-current="true">Practice</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+  <nav class="toolstrip" aria-label="Practice tools">
+    <a class="toolstrip-back" href="practice.html">
+      <span aria-hidden="true">&#8592;</span> All practice tools</a>
+    <ul class="toolstrip-links">
+      <li><a href="simulator.html" data-tool="sim">Simulator</a></li>
+      <li><a href="service.html" data-tool="service">Service Bay</a></li>
+      <li><a href="build.html" data-tool="build">Build</a></li>
+      <li><a href="diagnose.html" data-tool="diagnose">Diagnose</a></li>
+      <li><a href="electrical.html" data-tool="electrical">Electrical</a></li>
+      <li><a href="procedures.html" data-tool="procedures" aria-current="page">Procedures</a></li>
+      <li><a href="simulator.html?quiz=1" data-tool="quiz">Quiz</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1 id="prTitle">Procedure trainers</h1>
+      <p class="subtitle">The Code of Practice procedures, step by step, with the Code's numbers in the rules and the order of work graded</p>
+    </div>
+    <div class="controls">
+      <label class="select-group">
+        <span>Procedure</span>
+        <select id="prProcedure"></select>
+      </label>
+      <label class="select-group">
+        <span>Job</span>
+        <select id="prScenario"></select>
+      </label>
+      <button id="prResetBtn" class="btn btn-ghost" type="button">Reset the job</button>
+    </div>
+  </header>
+
+  <details class="howto" data-howto="procedures" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">Every button is an action on the rig; the order is the skill</span>
+    </summary>
+    <p class="howto-title">Do the job the way the Code says, and watch what the shortcuts cost</p>
+    <ol class="howto-steps">
+      <li><b>Read the job.</b> The brief gives you the nameplate numbers — PS, cut-out
+        setting, charge — and the Code references the rules come from.</li>
+      <li><b>Take the actions.</b> Choose the medium, set the pressure, pull the vacuum,
+        weigh the charge. The rig answers each one the way a real one would: a wrong
+        cylinder is refused, a repair under pressure is called out, a leak shows in the numbers.</li>
+      <li><b>Advance the clock.</b> Holds and pumps take time; the wait buttons move it, and the
+        gauge follows the ambient, the leak, or the moisture.</li>
+      <li><b>Read the order of work.</b> Every step you were taught is listed; a step done out
+        of turn says what that cost.</li>
+    </ol>
+  </details>
+
+  <main id="prMain" class="pr-layout">
+    <div class="pr-left">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>The job</h2>
+          <span class="hint">brief and references</span>
+        </div>
+        <div id="prBrief"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>The rig</h2>
+          <span class="hint">live readouts</span>
+        </div>
+        <div id="prRig"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Actions</h2>
+          <span class="hint">in the order you choose</span>
+        </div>
+        <div id="prActions"></div>
+      </div>
+    </div>
+    <div class="pr-right">
+      <div id="prCoach" class="bay-coach" aria-live="polite"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Order of work</h2>
+          <span class="hint">what you did, in what order</span>
+        </div>
+        <div id="prSequence"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Educational procedure trainers · the rules follow the 2025 Refrigerant Handling Code of Practice; numbers are representative, and the current edition of the Code is the authority. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
+  <script src="js/refdocs.js"></script>
+  <script src="js/procedures.js"></script>
+  <script src="js/procedure-ui.js"></script>
+</body>
+</html>

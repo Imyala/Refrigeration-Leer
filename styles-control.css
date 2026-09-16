@@ -1,0 +1,69 @@
+/* =========================================================================
+   Control Circuit Workshop — page-scoped styles.
+
+   Structure (nav, topbar, panel, btn, howto, footer) and the diagnosis
+   panel classes (dg-*) come from styles.css and styles-diagnose.css; this
+   file only adds the ladder's frame, the meter and the machine chips.
+   The ladder is drawn on an instrument face (dark in both themes) with its
+   colours as SVG attributes, the same convention as the other schematics.
+   ========================================================================= */
+.ct-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: 20px;
+  max-width: var(--maxw);
+  margin: 18px auto 0;
+  align-items: start;
+}
+.ct-left, .ct-right { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+@media (max-width: 1100px) { .ct-layout { grid-template-columns: minmax(0, 1fr); } }
+
+.ct-ladder-wrap {
+  background: var(--face);
+  border: 1px solid var(--face-line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.ct-ladder-wrap svg { display: block; width: 100%; height: auto; }
+.ct-tp { cursor: pointer; }
+.ct-tp:focus-visible circle { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.ct-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ct-chip {
+  font-size: var(--fs-xs); padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--sunken); color: var(--text-2);
+}
+.ct-chip b { color: var(--muted); font-weight: 600; margin-right: 4px; }
+.ct-chip.good { border-color: var(--good-line); background: var(--good-soft); }
+.ct-chip.watch { border-color: var(--warn-line); background: var(--warn-soft); }
+.ct-iso { font-size: var(--fs-xs); color: var(--muted); margin: 10px 0 0; line-height: 1.6; }
+.ct-iso b.good { color: var(--good-text); }
+
+.ct-insts { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 10px; }
+.ct-inst {
+  display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--sunken);
+  font-size: var(--fs-sm); cursor: pointer; line-height: 1.35;
+}
+.ct-inst.on { border-color: var(--accent-line); background: var(--accent-soft); }
+.ct-inst input { accent-color: var(--accent); margin-top: 3px; }
+.ct-inst small { display: block; color: var(--muted); font-size: var(--fs-xs); }
+.ct-probes { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px; }
+.ct-probes label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-xs); color: var(--muted); }
+.ct-probes select {
+  background: var(--sunken); color: var(--text); border: 1px solid var(--line);
+  border-radius: 10px; padding: 8px 10px; font-size: var(--fs-sm); min-height: 40px; max-width: 100%;
+}
+
+.ct-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: var(--fs-sm); line-height: 1.5; }
+.ct-log li { padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--line); background: var(--sunken); color: var(--text-2); }
+.ct-log li.ok { border-left-color: var(--good); }
+.ct-log li.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.ct-log li.block { border-left-color: var(--bad); background: var(--bad-soft); }
+.ct-log li.info { border-left-color: var(--accent); }
+.ct-log li:first-child { color: var(--text); }
+
+.ct-note { margin: 6px 0 0; font-size: var(--fs-sm); }
+.ct-note.bad { color: var(--bad-text); }
+.ct-note.watch { color: var(--warn-text); }
+.ct-note.good { color: var(--good-text); }

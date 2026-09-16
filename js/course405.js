@@ -76,7 +76,7 @@
     {
       id: "cap-install-commission",
       stream: "capstone",
-      units: ["UEERA0064", "UEERA0052", "UEERA0053", "UEERA0051"],
+      units: ["UEERA0062", "UEERA0052", "UEERA0053", "UEERA0099", "UEERA0094"],
       title: "C.5 · Installation, pressure testing and commissioning",
       blurb:
         "Exam revision on the mandatory tests that close out a new installation: strength, tightness, safety-device function and electrical verification, plus nitrogen practice, design-pressure tables, evacuation, charging and airflow measurement.",

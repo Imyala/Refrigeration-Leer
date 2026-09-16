@@ -24,7 +24,7 @@
     {
       id: "cap-electrical-verification",
       stream: "capstone",
-      units: ["UEERA0031", "UEERA0044"],
+      units: ["UEERA0031", "UEERA0044", "UEERA0094", "UEERL0005", "UEERL0004"],
       title: "C.3 · Mandatory electrical tests and verification",
       blurb: "The mandatory tests after electrical work, their order, their acceptance values under AS/NZS 3000 and 3760, and the sequence that proves a system truly dead before you touch it.",
       lessons: [

@@ -18,13 +18,13 @@ The site nav offers three destinations — **Home**, **Learn** and **Practice** 
 with the instructor and institutional pages kept visibly secondary, and a
 theme switch: the site is light by default (it is read on classroom
 projectors and phones in daylight), dark by choice, and the drawn instruments
-keep a dark face in both. The five
+keep a dark face in both. The seven
 hands-on workshops sit behind Practice, and carry a switcher strip so they stay
 one click from each other.
 
 - **`index.html`** — the front door: the staged pathway through the core
   program, one pointer to Practice, and the specialist streams named and sized.
-- **`practice.html`** — the Practice hub: what each of the five workshops is
+- **`practice.html`** — the Practice hub: what each of the seven workshops is
   for, in the order a technician grows into the work.
 - **`simulator.html`** — the simulator: animated cycle drawn either as a trade
   schematic or as the equipment it represents (`?draw=equipment`), every reading
@@ -40,6 +40,13 @@ one click from each other.
 - **`diagnose.html`** — the Fault Diagnosis Workshop: a machine with a hidden
   fault and no numbers given. Choose what to measure, fit the instrument, work
   the numbers, commit to a diagnosis.
+- **`electrical.html`** — the Control Circuit Workshop: a packaged unit that
+  has stopped, a ladder diagram with test points, a meter that only reads
+  where you put it, safe isolation graded the way it is taught, and a hidden
+  electrical fault to name.
+- **`procedures.html`** — the Procedure Trainers: pressure test, evacuation,
+  recovery and charging, and brazing as rigs you work on, with the 2025 Code
+  of Practice's numbers in the rules and the order of work graded.
 - **`learn.html`** — the course: lessons, quizzes, per-stream and
   whole-program exams & certificate, progress tracking, with deep links that
   open the simulator pre-configured.
@@ -280,6 +287,53 @@ instrument, and work out what the reading means.
 The diagnostic logic is pure and unit-tested (`js/diagnose.js`), driven by the
 same refrigerant tables and cycle model as the simulator; the UI lives in
 `js/diagnose-ui.js` and `styles-diagnose.css`.
+
+## The Control Circuit Workshop (electrical.html)
+
+The Diagnosis Workshop's electrical sibling, built for the core unit
+UEERA0031 (diagnose and rectify faults in control systems). A single-phase
+packaged condensing unit has stopped; the learner gets a **ladder diagram**
+of its control chain (fuse → thermostat → HP → LP → overload → contactor
+coil) and power chain (contactor → compressor with its run capacitor, and
+the condenser fan), fourteen **test points**, and a meter.
+
+- **Look and listen first** — contactor in or out, compressor running,
+  humming or silent, fan turning: the machine's own evidence, free.
+- **Voltage tests, live** — between any two points. The engine computes what
+  every node reads to neutral for the hidden fault, so the classic pictures
+  come out the way the trade teaches them: 230 V across the one open contact
+  in a series chain; 230 V everywhere with an open coil; T1 dead with the
+  coil pulled in on burnt contacts.
+- **Dead tests need safe isolation** — ohms, capacitance and insulation
+  resistance are refused on a live circuit (and counted against the method),
+  and are only proven safe after **isolate → prove the tester → test for dead
+  → prove again**, the AS/NZS 4836 order. Skipping it costs a quarter mark.
+- **Thirteen faults** including the ones that look alike: a run capacitor and
+  a start relay (both hum at locked-rotor current — the capacitance test
+  separates them), an LP switch open on genuinely low pressure and one that
+  has failed (the low-side gauge separates them), an HP switch open because
+  the condenser fan winding is open. A safety that is open is usually doing
+  its job.
+- Scored like the Diagnosis Workshop: full mark, half within a family, hints
+  cost a quarter, and the method is rated.
+
+The engine is pure and tested (`js/control.js`); the UI is `js/control-ui.js`
+with `styles-control.css`.
+
+## The Procedure Trainers (procedures.html)
+
+The Service Bay's pattern — every step is the learner's action, the rig
+behaves the way a real one would when a step is skipped, the order of work
+is graded — applied to the four procedures the 2025 Code of Practice
+governs (`js/procedures.js`, pure and tested; UI in `js/procedure-ui.js`).
+Each cites the clauses it follows, linked into the reference library.
+
+| Procedure | What the rig checks | The Code's numbers in the rules |
+|---|---|---|
+| **Pressure test** | Medium (refrigerant and standard nitrogen refused), regulator and gauge range, test pressure against PS, the cut-out and the maximum operating pressure, pressurising in stages with joint checks, isolate and record pressure *and* ambient, the full hold, temperature-corrected verdict; leak found, depressurise before repair, retest | 24 h commissioning / 1 h repair holds; 25–90 % of PS for a repair test; 5 g/year detector; a hidden leak on half the jobs |
+| **Evacuation** | Recover first (a pump against refrigerant is venting), dedicated hoses and a micron gauge, deep or triple method, isolate the pump before the decay test, and reading the shape of the rise | 500 microns, hold 60 min under 600, 100-micron rise; 4,500 microns per triple stage; moisture plateaus, a leak keeps climbing |
+| **Recovery & charging** | Identify (or treat as unknown: flammable and toxic), cylinder checks (in date, rated, marked, clean), safe fill, liquid then vapour, weigh and record, evacuate before charging, leak-check the hose, blends as liquid, charge to mass, logbook; flammable zone and earthing on an A2L job | fill ratio × water capacity less 20 % ullage; entire charge recovered; disposables never refilled |
+| **Brazing** | Never on a charged line, protect heat-sensitive parts, prepare the joint, gentle nitrogen purge, the right alloy for the metals, heat the fitting not the rod, purge until cool, test before charging | Phos-copper self-fluxes on copper-to-copper; brass needs silver with flux; a high-flow purge blows the alloy out |
 
 ## The course (learn.html)
 
@@ -542,7 +596,7 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | File | Purpose |
 |------|---------|
 | `index.html` | Front door: the staged pathway, the Practice pointer, the stream chips |
-| `practice.html` | Practice hub: the five workshops, what each is for |
+| `practice.html` | Practice hub: the seven workshops, what each is for |
 | `simulator.html` | Simulator page structure; the schematic itself is drawn from data |
 | `service.html` | The Service Bay rig |
 | `build.html` | The System Builder: palette, loop and analysis panel |
@@ -576,13 +630,15 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/servicebay.js`, `js/service-ui.js` | Service Bay state machine (pure, tested), including hose selection, the gauge zero check and order-of-work grading — and its UI |
 | `js/circuit.js`, `js/build-ui.js` | System Builder rules engine (component library, pipe runs, placement findings, scenarios — pure, tested) and the drawn circuit it is edited on |
 | `js/diagnose.js`, `js/diagnose-ui.js` | Diagnosis Workshop engine (measurement points, derived values, evidence, scoring — pure, tested) and its UI |
+| `js/control.js`, `js/control-ui.js`, `styles-control.css`, `electrical.html` | Control Circuit Workshop engine (ladder nodes, faults, what every instrument reads, safe-isolation grading — pure, tested) and its UI |
+| `js/procedures.js`, `js/procedure-ui.js`, `styles-procedure.css`, `procedures.html` | The four Code of Practice procedure trainers (pressure test, evacuation, recovery and charging, brazing — pure, tested) and their UI |
 | `js/learn.js` | Course UI: routing, progress store, lesson quizzes, stream & final exams, certificate, export/import |
 | `js/exam.js` | Exam sampling + certificate code (pure, tested) |
 | `js/scorm.js` | SCORM 1.2 runtime adapter (LMS reporting + progress in suspend_data) |
 | `js/teach.js`, `teach.html` | Instructor cohort dashboard |
 | `tools/build-scorm.js` | SCORM 1.2 package builder (`npm run build:scorm`); discovers the course content files automatically |
 | `tools/build-course-index.js` | Writes `js/course-index.js` (`npm run build:index`) |
-| `tests/` | Node built-in test-runner suites: model, units, markdown, course, course index, exam, SCORM, packaging, Service Bay, circuit rules, diagnosis, script-rendered pages, SRS, figures, nav |
+| `tests/` | Node built-in test-runner suites: model, units, markdown, course, course index, exam, SCORM, packaging, Service Bay, circuit rules, diagnosis, control circuit, procedures, editions, competency, script-rendered pages, SRS, figures, nav |
 | `docs/SOURCE_COVERAGE.md` | Which source chapter every module was written from, and how the content was produced and originality-checked |
 | `docs/REFERENCES.md` | Bibliography, alignment policy and the originality statement |
 | `docs/REVIEW_AND_ROADMAP.md` | Platform review, phased roadmap and status |

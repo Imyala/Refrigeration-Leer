@@ -30,7 +30,7 @@
   {
     id: "v2-service-diagnosis",
     stream: "v2",
-    units: ["UEERA0032", "UEERA0031", "UEERA0053"],
+    units: ["UEERA0032", "UEERA0031", "UEERA0053", "UEERA0070"],
     title: "R2.8 · Service diagnosis and repair",
     blurb: "How a technician finds the real fault before touching a spanner: field checks, compressor testing, control and heat-exchanger faults, repair procedures and symptom tables.",
     lessons: [

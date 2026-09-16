@@ -18,7 +18,7 @@
     {
       id: "v1-ancillary-equipment",
       stream: "v1",
-      units: ["UEERA0050", "UEERA0053"],
+      units: ["UEERA0050", "UEERA0053", "UEERA0081"],
       title: "R1.6 · Ancillary equipment",
       blurb: "The valves, vessels, filters and protection devices bolted around the four main components — what each one does, how it is set, and what fails when it is left out.",
       lessons: [

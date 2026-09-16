@@ -26,7 +26,7 @@
     {
       id: "cap-calculations",
       stream: "capstone",
-      units: ["UEECD0048", "UEERA0036"],
+      units: ["UEERA0036", "UEERA0092"],
       title: "C.4 · Calculations under exam conditions",
       blurb: "The eight calculations a written assessment actually asks for, each taught as a repeatable method, worked twice with different numbers, then practised — with the sanity checks that catch a slipped decimal point.",
       lessons: [

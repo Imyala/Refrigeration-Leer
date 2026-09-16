@@ -33,6 +33,16 @@ tools with CoolProp-derived tables; and the Service Bay and Diagnosis
 Workshop carry a graded **flammable-zone** step on A2L/A3 charges. The
 scorecard and §2 are left as written, as the record of what was found.
 
+**Later the same day:** groups 3.3 and 3.4 have landed too. The **Control
+Circuit Workshop** (`electrical.html`) closes the UEERA0031 gap — a ladder
+diagram with test points, thirteen electrical faults, voltage tests live,
+dead tests only behind isolate → prove → test for dead → prove, scored on
+method as well as answer. The **Procedure Trainers** (`procedures.html`)
+apply the Service Bay pattern to the pressure test, evacuation, recovery and
+charging, and brazing, with the Code's numbers in the rules. The unit
+registry was rebuilt from a real UEE32225 Record of Results (35 units), so
+the mapping now rests on the qualification as actually delivered.
+
 ---
 
 ## 1. Scorecard — the vision against what exists

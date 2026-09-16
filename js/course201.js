@@ -37,7 +37,7 @@
     {
       id: "v2-alternative-systems",
       stream: "v2",
-      units: ["UEERA0046", "UEERA0047", "UEERA0048"],
+      units: ["UEERA0005", "UEERA0006", "UEERA0007", "UEERA0070"],
       title: "R2.1 · Alternative refrigeration systems",
       blurb:
         "Every way of making cold that is not a plain vapour-compression circuit: chilled water and brine, ice storage, cryogenic expendables, absorption, steam-jet, air-cycle, vortex tubes and Peltier modules.",

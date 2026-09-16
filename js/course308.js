@@ -63,7 +63,7 @@
     {
       id: "elec-sustainability",
       stream: "elec",
-      units: ["UEECO0010"],
+      units: ["UEECO0010", "UEERE0001"],
       title: "E.8 · Sustainable practice in the energy sector",
       blurb: "Why sustainability matters to an electrical worker, the law and targets behind it, how to cut energy and waste on the job, and how renewables and storage work.",
       lessons: [

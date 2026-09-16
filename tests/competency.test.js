@@ -23,9 +23,9 @@ test("the qualification is the current one and says where it came from", () => {
 
 test("every unit in the registry is well-formed", () => {
   for (const [code, u] of Object.entries(C.UNITS)) {
-    assert.match(code, /^UEE(CD|CO|RA)\d{4}$/, `${code}: UEE unit code`);
+    assert.match(code, /^(UEE(CD|CO|RA|RE|RL)\d{4}|HLTAID\d{3}|UETDRMP\d{3})$/, `${code}: training-package unit code`);
     assert.ok(u.title && u.title.length > 15, `${code}: title`);
-    assert.ok(["core", "elective", "unconfirmed"].includes(u.status), `${code}: status`);
+    assert.ok(["core", "listed", "elective"].includes(u.status), `${code}: status`);
   }
   assert.ok(Object.values(C.UNITS).filter(u => u.status === "core").length >= 10, "a real core set");
 });

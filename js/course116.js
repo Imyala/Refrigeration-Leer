@@ -20,7 +20,7 @@
     {
       id: "v1-measuring-instruments",
       stream: "v1",
-      units: ["UEERA0036", "UEERA0031"],
+      units: ["UEERA0036", "UEERA0031", "UEERL0005"],
       title: "R1.16 · Measuring and test instruments",
       blurb: "Every instrument a refrigeration technician carries — thermometers, gauges, micron gauges, manometers, anemometers, psychrometers, electrical meters, leak detectors and sound meters — and how to read them honestly.",
       lessons: [

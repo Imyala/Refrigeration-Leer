@@ -19,7 +19,7 @@
     {
       id: "v1-system-types",
       stream: "v1",
-      units: ["UEERA0052", "UEERA0053", "UEERA0035"],
+      units: ["UEERA0052", "UEERA0053", "UEERA0035", "UEERA0099"],
       title: "R1.7 · Domestic, commercial and industrial systems",
       blurb: "How the same vapour-compression cycle is packaged three different ways — the household fridge, the supermarket rack, and the industrial booster plant — and what a technician does with each.",
       lessons: [

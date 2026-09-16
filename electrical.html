@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Circuit Workshop — Refrigeration Training</title>
+  <meta name="description" content="Find the fault in a packaged unit's control circuit: a ladder diagram with test points, a meter that only reads where you put it, safe isolation graded the way it is taught, and a hidden fault to name." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="styles-diagnose.css" />
+  <link rel="stylesheet" href="styles-control.css" />
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#ctMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">&#10052;</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" type="button"
+            aria-pressed="false" aria-label="Dark theme" title="Switch to the dark theme">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Home</a></li>
+      <li><a href="learn.html" data-nav="learn">Learn</a></li>
+      <li><a href="practice.html" data-nav="practice" aria-current="true">Practice</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+  <nav class="toolstrip" aria-label="Practice tools">
+    <a class="toolstrip-back" href="practice.html">
+      <span aria-hidden="true">&#8592;</span> All practice tools</a>
+    <ul class="toolstrip-links">
+      <li><a href="simulator.html" data-tool="sim">Simulator</a></li>
+      <li><a href="service.html" data-tool="service">Service Bay</a></li>
+      <li><a href="build.html" data-tool="build">Build</a></li>
+      <li><a href="diagnose.html" data-tool="diagnose">Diagnose</a></li>
+      <li><a href="electrical.html" data-tool="electrical" aria-current="page">Electrical</a></li>
+      <li><a href="procedures.html" data-tool="procedures">Procedures</a></li>
+      <li><a href="simulator.html?quiz=1" data-tool="quiz">Quiz</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Control Circuit Workshop</h1>
+      <p class="subtitle">A packaged unit that has stopped. A ladder diagram, a meter, and a fault you have to find — safely.</p>
+    </div>
+    <div class="controls">
+      <button id="ctNewJobBtn" class="btn btn-tour" type="button">New job</button>
+    </div>
+  </header>
+
+  <details class="howto" data-howto="electrical" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">Look, measure where it counts, isolate before ohms, name the fault</span>
+    </summary>
+    <p class="howto-title">The meter only reads where you put it</p>
+    <ol class="howto-steps">
+      <li><b>Look and listen first.</b> Contactor in or out, compressor running, humming or silent,
+        fan turning or not. Thirty seconds at the machine rules out half the list.</li>
+      <li><b>Voltage tests, live.</b> Pick two test points on the ladder and read volts. Along a
+        series chain every node up to the open contact reads 230 V to neutral and every node
+        after it reads 0; the one open contact has 230 V <i>across</i> it.</li>
+      <li><b>Isolate before anything on ohms.</b> Resistance, capacitance and insulation tests
+        are dead tests: isolate and lock off, prove the tester on a known live source, test for
+        dead, prove the tester again. The order is graded, and a meter on ohms across a live
+        circuit is refused.</li>
+      <li><b>Commit.</b> Name the fault. A safety that is open is usually doing its job — the
+        gauges tell you whether the LP switch is faulty or the charge is.</li>
+    </ol>
+  </details>
+
+  <main id="ctMain" class="ct-layout">
+    <div class="ct-left">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>The job</h2>
+          <span class="hint" id="ctJobMode">Live job · fault hidden</span>
+        </div>
+        <p class="dg-job-line" id="ctJobLine"></p>
+        <div class="dg-job-actions">
+          <button id="ctHintBtn" class="btn btn-ghost" type="button">Hint — where should I look next? <span class="dg-cost">costs ¼ mark</span></button>
+          <label class="dg-check">
+            <input id="ctPractice" type="checkbox" />
+            <span>Practice mode — I choose the fault and study its signature</span>
+          </label>
+          <label class="dg-check dg-practice-only" id="ctFaultPick" hidden>
+            <span>Fault to study</span>
+            <select id="ctFaultSelect"></select>
+          </label>
+        </div>
+        <div id="ctCoach" class="dg-coach" aria-live="polite"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>The machine</h2>
+          <span class="hint">what you can see, hear and do without a meter</span>
+        </div>
+        <div id="ctMachine"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Ladder diagram</h2>
+          <span class="hint">click test points to place probes A and B</span>
+        </div>
+        <div class="ct-ladder-wrap" id="ctLadder"></div>
+      </div>
+    </div>
+
+    <div class="ct-right">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Meter</h2>
+          <span class="hint">choose the instrument</span>
+        </div>
+        <div id="ctMeter"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Readings</h2>
+          <span class="hint" id="ctReadCount"></span>
+        </div>
+        <div id="ctReadings" aria-live="polite"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Diagnosis</h2>
+          <span class="hint" id="ctScoreLine"></span>
+        </div>
+        <div id="ctDiagnosis"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Educational fault-finding trainer · readings are representative, for training not design. Nothing here replaces a licensed electrician where the work requires one. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
+  <script src="js/control.js"></script>
+  <script src="js/control-ui.js"></script>
+</body>
+</html>

@@ -19,7 +19,7 @@
     {
       id: "v1-electrical-wiring",
       stream: "v1",
-      units: ["UEECD0051", "UEERA0031"],
+      units: ["UEECD0051", "UEERA0031", "UEERL0001", "UEERL0004", "UEERA0092"],
       title: "R1.13 · Electrical wiring",
       blurb: "The wiring side of refrigeration work: the Wiring Rules, diagrams, cables and sizing, terminations, earthing and the MEN system, protection, isolation, control circuits and testing.",
       lessons: [

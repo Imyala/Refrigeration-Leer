@@ -91,7 +91,7 @@
   {
     id: "elec-ac-single-phase",
     stream: "elec",
-    units: ["UEERA0044", "UEECD0048"],
+    units: ["UEERA0044", "UEERL0001", "UEERA0092"],
     title: "E.9 · Alternating current: single phase",
     blurb: "Single-phase a.c. from first principles: how the sine wave is generated, RMS and peak values, phasors, reactance and impedance, resonance, power factor and how to correct it.",
     lessons: [

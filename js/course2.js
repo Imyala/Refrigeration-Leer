@@ -12,7 +12,7 @@
      ====================================================================== */
   {
     id: "system-types",
-    units: ["UEERA0035", "UEERA0052", "UEERA0053", "UEERA0049"],
+    units: ["UEERA0035", "UEERA0052", "UEERA0053", "UEERA0099", "UEERA0070"],
     title: "6 · System types in the field",
     blurb: "The same cycle wears many uniforms: split air conditioners and heat pumps, cool rooms and freezers, supermarket racks and chillers.",
     lessons: [
@@ -183,7 +183,7 @@ which simplifies safety and lets one machine serve an entire building.
      ====================================================================== */
   {
     id: "electrical",
-    units: ["UEECD0042", "UEERA0031", "UEERA0044"],
+    units: ["UEECD0042", "UEERA0031", "UEERA0044", "UEERA0092", "UEERL0005"],
     title: "7 · Electrical fundamentals for RAC",
     blurb: "Motors and their starting gear, the control and safety devices around them, and how to work through a ladder diagram without guessing.",
     lessons: [
@@ -664,7 +664,7 @@ more for your gauge-reading than any chapter of theory.
      ====================================================================== */
   {
     id: "repair",
-    units: ["UEERA0064", "UEERA0062", "UEERA0059", "UEERA0050"],
+    units: ["UEERA0062", "UEERA0059", "UEERA0050", "UEERA0079"],
     title: "9 · Repair procedures",
     blurb: "The core service procedures in the right order: recovery, evacuation, charging, and leak detection with brazing basics.",
     lessons: [
@@ -1113,7 +1113,7 @@ acceptance criteria.
      ====================================================================== */
   {
     id: "safety",
-    units: ["UEECD0007", "UEECD0016"],
+    units: ["UEECD0007", "UEECD0016", "UEERA0079", "UETDRMP007", "HLTAID009"],
     title: "10 · Safety",
     blurb: "The hazards that actually hurt refrigeration technicians — pressure, cold, asphyxiation, flammables and electricity — and the habits that neutralise them.",
     lessons: [

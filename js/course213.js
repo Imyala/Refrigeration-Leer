@@ -34,7 +34,7 @@
   {
     id: "v2-controls-drawings",
     stream: "v2",
-    units: ["UEERA0031", "UEERA0060", "UEECD0051"],
+    units: ["UEERA0031", "UEECD0051", "UEERA0092"],
     title: "R2.13 · Controls and control drawings",
     blurb: "How automatic control systems sense, decide and act — the terminology, the control actions, the electrical drawings, and a repeatable method for tracing and fault-finding a circuit.",
     lessons: [

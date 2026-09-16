@@ -77,7 +77,7 @@
     {
       id: "cap-recovery-and-code",
       stream: "capstone",
-      units: ["UEERA0064", "UEERA0062"],
+      units: ["UEERA0062", "UEERA0079"],
       title: "C.6 · Recovery, evacuation and the Code of Practice",
       blurb:
         "Exam revision on emptying and re-preparing a system: the recovery kit and why each item is on the list, recovery technique, cylinder rules, the prohibitions, the two evacuation methods, disposal routes and hydrocarbons.",

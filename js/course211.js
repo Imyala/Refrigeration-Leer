@@ -37,7 +37,7 @@
   {
     id: "v2-technical-communication",
     stream: "v2",
-    units: ["UEECO0010", "UEECD0051"],
+    units: ["UEECO0010", "UEECD0051", "UEECO0015"],
     title: "R2.11 · Technical communication",
     blurb: "How a technician deals with people and paperwork: appearance and attitude, running a service call, telephone technique, reports and quotations, and the contract and consumer-law rules behind the work.",
     lessons: [

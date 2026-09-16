@@ -40,7 +40,7 @@
   {
     id: "cap-licence-and-law",
     stream: "capstone",
-    units: ["UEECD0007", "UEECO0010"],
+    units: ["UEECD0007", "UEECO0010", "UEERL0004", "UEERL0005"],
     title: "C.2 · Restricted electrical licence, duty of care and the law",
     blurb: "What a restricted electrical licence lets a refrigeration mechanic do and where it stops, the Acts and standards behind it, how ARCtick sits alongside it, and the duty of care and paperwork that go with the job.",
     lessons: [
