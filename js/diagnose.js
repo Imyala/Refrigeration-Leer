@@ -133,16 +133,65 @@
   /* ---- Reading a point for a given operating point -------------------------
      `cyc` is a RefrigModel.deriveAt() result. Air temperatures are derived
      from the cycle so they move with the fault the way they would on site. */
+  /* ---- Compound faults and difficulty ------------------------------------
+     Real machines are allowed two things wrong at once. A compound fault is
+     a fault object built from two library faults — multipliers multiplied,
+     offsets added — so the model and every reading treat it like any other
+     fault. Level 3 of the workshop draws from these as well. */
+  const COMPOUNDS = [
+    ["dirtyCondenser", "lowCharge"],
+    ["restrictedDrier", "dirtyCondenser"],
+    ["icedEvaporator", "nonCondensables"],
+    ["overcharge", "condFanFail"],
+  ];
+  function compound(a, b) {
+    const A = D.FAULTS[a], B = D.FAULTS[b];
+    if (!A || !B) return null;
+    return {
+      key: a + "+" + b, parts: [a, b], compound: true,
+      label: `${A.label} — and ${B.label}`,
+      mLow: A.mLow * B.mLow, mHigh: A.mHigh * B.mHigh,
+      dSuper: A.dSuper + B.dSuper, dSub: A.dSub + B.dSub, dDisch: A.dDisch + B.dDisch,
+      ampScale: (A.ampScale || 1) * (B.ampScale || 1),
+      diag: `Two faults at once, and the readings are the sum of them. ${A.diag} ${B.diag}`,
+      clues: A.clues.concat(B.clues),
+      family: null,
+    };
+  }
+  const faultOf = (k) => (k && typeof k === "object") ? k : (D.FAULTS[k] || D.FAULTS.none);
+  const partsOf = (k) => { const f = faultOf(k); return f.parts || [(typeof k === "string" && D.FAULTS[k]) ? k : "none"]; };
+  const keyOf = (k) => (k && typeof k === "object") ? k.key : k;
+
+  /* Faults whose gauge signature stands on its own — no look-alike family —
+     for the first level; everything for the second; compounds join at the third. */
+  const LEVELS = {
+    1: { label: "Level 1 — one clear fault, rated conditions", conditions: "fixed", pool: () =>
+      Object.keys(D.FAULTS).filter(k => !D.FAULTS[k].family && !D.FAULTS[k].needsCircuitDevice) },
+    2: { label: "Level 2 — any fault, site conditions vary", conditions: "vary", pool: () =>
+      Object.keys(D.FAULTS).filter(k => !D.FAULTS[k].needsCircuitDevice) },
+    3: { label: "Level 3 — look-alikes and two faults at once", conditions: "vary", pool: () =>
+      Object.keys(D.FAULTS).filter(k => !D.FAULTS[k].needsCircuitDevice && (D.FAULTS[k].family || k === "none" || k === "lowCharge"))
+        .concat(COMPOUNDS.map(([a, b]) => compound(a, b))) },
+  };
+  function pickFault(level, current, rand) {
+    const rng = rand || Math.random;
+    const pool = (LEVELS[level] || LEVELS[2]).pool();
+    let k = current;
+    for (let i = 0; i < 12 && keyOf(k) === keyOf(current); i++) k = pool[Math.floor(rng() * pool.length)];
+    return k;
+  }
+
   function readingAt(pointId, cyc, env, faultKey) {
-    const f = D.FAULTS[faultKey] || D.FAULTS.none;
+    const f = faultOf(faultKey);
+    const parts = partsOf(faultKey);
     const ambient = (env && env.ambient != null) ? env.ambient : 32;
     const boxAir = (env && env.boxAir != null) ? env.boxAir : cyc.tEvap + 8;
 
     /* A fault that chokes condenser airflow raises air-off and cuts the flow;
        one that ices the evaporator cuts the air split the same way. */
-    const condAirflow = (faultKey === "condFanFail") ? 0.12
-      : (faultKey === "dirtyCondenser") ? 0.45 : 1;
-    const evapAirflow = (faultKey === "icedEvaporator") ? 0.3 : 1;
+    const condAirflow = parts.includes("condFanFail") ? 0.12
+      : parts.includes("dirtyCondenser") ? 0.45 : 1;
+    const evapAirflow = parts.includes("icedEvaporator") ? 0.3 : 1;
 
     switch (pointId) {
       case "suctionLine":   return cyc.tSuction + 3;                 // line gain on the way back
@@ -245,8 +294,25 @@
     "feed-restriction": "A restricted drier and a starved TX valve read the same on gauges. Feel along the liquid line for the temperature drop: across the drier means the drier; right at the valve means the valve.",
   };
 
+  /* A compound fault is answered with one or two faults: both right is the
+     mark, one of the two is half, neither is nothing. */
+  function judgeCompound(answerKeys, actual) {
+    const answers = [].concat(answerKeys || []).filter(Boolean);
+    const hit = actual.parts.filter(p => answers.includes(p));
+    const wrongExtra = answers.filter(a => !actual.parts.includes(a));
+    if (hit.length === 2 && !wrongExtra.length) return { score: 1, verdict: "correct", text: `Both faults named. ${actual.diag}` };
+    if (hit.length >= 1) {
+      const missed = actual.parts.find(p => !answers.includes(p));
+      return { score: 0.5, verdict: "close", text: `Half a mark — ${D.FAULTS[hit[0]].label} was there, but so was ${D.FAULTS[missed].label}, and it was hiding behind the first. ${D.FAULTS[missed].diag}` };
+    }
+    return { score: 0, verdict: "wrong", text: `Not this time — there were two faults: ${actual.label}. ${actual.diag}` };
+  }
+
   function judge(answerKey, actualKey) {
+    if (actualKey && typeof actualKey === "object" && actualKey.compound) return judgeCompound(answerKey, actualKey);
+    if (Array.isArray(answerKey)) answerKey = answerKey.length === 1 ? answerKey[0] : "__two__";
     const actual = D.FAULTS[actualKey], answer = D.FAULTS[answerKey];
+    if (actual && answerKey === "__two__") return { score: 0, verdict: "wrong", text: `Two faults named, and there was one: ${actual.label}. ${actual.diag || "The system was healthy."} Naming a second fault you cannot show in the readings is how a customer pays for a part they did not need.` };
     if (!actual || !answer) return { score: 0, verdict: "unknown", text: "Unknown fault." };
     if (answerKey === actualKey) {
       return {
@@ -311,8 +377,9 @@
     };
   }
 
-  const api = { POINTS, DERIVED, readingAt, derive, interpret, judge, efficiency, FAMILY_TIP,
-    siteRequirements, zoneVerdict, ZONE_PENALTY };
+  const api = { POINTS, DERIVED, readingAt, derive, interpret, judge, judgeCompound, efficiency, FAMILY_TIP,
+    siteRequirements, zoneVerdict, ZONE_PENALTY,
+    COMPOUNDS, LEVELS, compound, faultOf, partsOf, keyOf, pickFault };
   root.RefrigDiagnose = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

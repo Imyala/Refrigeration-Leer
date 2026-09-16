@@ -43,11 +43,22 @@
       }
 
       const day = 1 + Math.floor(rng() * 9);
+      /* Workshop jobs, more of them the further along the student is. */
+      const tools = ["servicebay", "diagnose", "control", "procedures", "builder", "quiz"];
+      const evidence = [];
+      const nJobs = Math.round(frac * 9);
+      for (let j = 0; j < nJobs; j++) {
+        const tool = tools[Math.floor(rng() * tools.length)];
+        evidence.push({ id: `demo${i}${j}`.padEnd(8, "0"), tool, at: `2026-07-0${day}T0${j % 9}:00:00Z`,
+          score: Math.round((0.5 + rng() * 0.5) * 4) / 4, detail: { demo: true } });
+      }
       return {
         format: "refrig-progress-v1",
         name,
         exported: `2026-07-0${day}T00:00:00Z`,
         progress,
+        evidence,
+        placement: {},
       };
     });
   }

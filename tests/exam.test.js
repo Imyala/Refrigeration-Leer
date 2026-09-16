@@ -47,3 +47,22 @@ test("certificate codes are deterministic and input-sensitive", () => {
   assert.notStrictEqual(a, c);
   assert.match(a, /^[0-9A-F]{16}$/);
 });
+
+/* ---- Placement ------------------------------------------------------------- */
+test("a placement report reads each module as known, revise or start, and marks nothing complete", () => {
+  const mods = [
+    { id: "a", title: "A", lessons: [{ quiz: [{ q: "a1", options: ["x", "y"], answer: 0, explain: "" }, { q: "a2", options: ["x", "y"], answer: 1, explain: "" }] }] },
+    { id: "b", title: "B", lessons: [{ quiz: [{ q: "b1", options: ["x", "y"], answer: 0, explain: "" }, { q: "b2", options: ["x", "y"], answer: 0, explain: "" }] }] },
+    { id: "c", title: "C", lessons: [{ quiz: [{ q: "c1", options: ["x", "y"], answer: 1, explain: "" }, { q: "c2", options: ["x", "y"], answer: 1, explain: "" }] }] },
+  ];
+  const qs = E.pickExamQuestions(mods, 2, () => 0.5);
+  assert.strictEqual(qs.length, 6);
+  assert.ok(qs.every(q => q.moduleId), "questions carry their module id");
+  const answers = qs.map(q => q.moduleId === "a" ? q.answer : q.moduleId === "b" ? (q.q === "b1" ? 0 : 1) : (q.answer === 1 ? 0 : 1));
+  const r = E.placementReport(mods, qs, answers);
+  const by = Object.fromEntries(r.modules.map(m => [m.id, m.verdict]));
+  assert.deepStrictEqual(by, { a: "known", b: "revise", c: "start" });
+  assert.strictEqual(r.known + r.revise + r.start, 3);
+  assert.strictEqual(r.score, 3);
+  assert.strictEqual(r.total, 6);
+});

@@ -36,7 +36,7 @@ const TOOL_PAGES = {
   "build.html": "build",
   "diagnose.html": "diagnose",
 };
-const EXPECTED_TOOLS = ["sim", "service", "build", "diagnose", "electrical", "procedures", "quiz"];
+const EXPECTED_TOOLS = ["sim", "service", "build", "diagnose", "electrical", "procedures", "capstone", "quiz"];
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const blockOf = (src, cls, label) => {

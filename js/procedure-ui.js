@@ -10,8 +10,11 @@
 
 const PR = {
   proc: "pressureTest", scenario: null, state: null,
-  log: [], openWhy: {}, stepSeen: {}, refocus: null,
+  log: [], openWhy: {}, stepSeen: {}, refocus: null, recorded: false,
 };
+/* Opened as a stage of the capstone job? The scenario is the job's, the brief
+   shows, and the finished procedure is reported back. */
+const PR_CAP = (typeof RefrigCapstone !== "undefined") ? RefrigCapstone.stageFromLocation() : null;
 
 function prEsc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 const prP = () => RefrigProcedures.PROCEDURES[PR.proc];
@@ -145,8 +148,26 @@ function prReset() {
   const P = prP();
   if (!PR.scenario || !P.scenarios[PR.scenario]) PR.scenario = Object.keys(P.scenarios)[0];
   PR.state = P.newState(PR.scenario);
-  PR.log = []; PR.openWhy = {}; PR.stepSeen = {};
+  PR.log = []; PR.openWhy = {}; PR.stepSeen = {}; PR.recorded = false;
   prRender();
+}
+
+/* When the rig closes the job, record it — once — and report a capstone stage. */
+function prOnDone() {
+  if (!PR.state.done || PR.recorded) return;
+  PR.recorded = true;
+  const rep = RefrigProcedures.sequenceReport(prP().SEQUENCE, PR.state);
+  const outOfOrder = Object.values(PR.stepSeen).filter(Boolean).length;
+  const score = Math.max(0, 1 - 0.1 * outOfOrder - 0.05 * PR.state.warns);
+  if (typeof RefrigEvidence !== "undefined") {
+    RefrigEvidence.record({ tool: "procedures", score, detail: {
+      procedure: PR.proc, scenario: PR.scenario, warns: PR.state.warns, outOfOrder, steps: rep.total,
+      capstone: PR_CAP ? PR_CAP.id : null } });
+  }
+  if (PR_CAP && PR_CAP.href.includes("p=" + PR.proc)) {
+    const st = RefrigCapstone.complete(PR_CAP.id, { score, detail: { procedure: PR.proc, warns: PR.state.warns, outOfOrder } });
+    PR.log.unshift({ kind: "ok", msg: `Capstone stage ${PR_CAP.n} recorded: ${PR_CAP.done} ${st.next ? "Next: " + st.next.title + " — open it from the job overview." : "The job is complete."}` });
+  }
 }
 
 function prDo(action, ...args) {
@@ -158,6 +179,7 @@ function prDo(action, ...args) {
     if (st.complete && !(st.id in PR.stepSeen)) PR.stepSeen[st.id] = st.outOfOrder;
   });
   PR.refocus = `[data-action="${action}"]`;
+  prOnDone();
   prRender();
 }
 
@@ -230,12 +252,14 @@ function prRenderActions() {
 function prRenderCoach() {
   const el = document.getElementById("prCoach");
   const last = PR.log[0];
+  const cap = PR_CAP && PR_CAP.href.includes("p=" + PR.proc)
+    ? (PR.state.done ? RefrigCapstone.doneHtml(PR_CAP, RefrigCapstone.status()) : RefrigCapstone.introHtml(PR_CAP)) : "";
   if (!last) {
-    el.innerHTML = `<div class="quiz-feedback good"><p>Start where the job starts. Every button is an action on the rig; do them in the order you were taught and the order panel will show it. Do them in a different order and the rig will behave the way the real one would.</p></div>`;
+    el.innerHTML = cap + `<div class="quiz-feedback good"><p>Start where the job starts. Every button is an action on the rig; do them in the order you were taught and the order panel will show it. Do them in a different order and the rig will behave the way the real one would.</p></div>`;
     return;
   }
   const cls = last.kind === "warn" ? "partial" : last.kind === "block" ? "bad" : "good";
-  el.innerHTML = `<div class="quiz-feedback ${cls}" aria-live="polite"><p>${prEsc(last.msg)}</p></div>
+  el.innerHTML = cap + `<div class="quiz-feedback ${cls}" aria-live="polite"><p>${prEsc(last.msg)}</p></div>
     ${PR.log.length > 1 ? `<ul class="sb-log">${PR.log.slice(1, 7).map(l => `<li class="${l.kind}">${prEsc(l.msg)}</li>`).join("")}</ul>` : ""}`;
 }
 
@@ -301,6 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const q = new URLSearchParams(location.search || "");
   if (q.get("p") && RefrigProcedures.PROCEDURES[q.get("p")]) PR.proc = q.get("p");
+  if (PR_CAP && PR_CAP.href.includes("p=" + PR.proc) && prP().scenarios[PR_CAP.scenario]) PR.scenario = PR_CAP.scenario;
   pSel.value = PR.proc;
   pSel.addEventListener("change", () => { PR.proc = pSel.value; PR.scenario = null; prReset(); fillScenarios(); });
   sSel.addEventListener("change", () => { PR.scenario = sSel.value; prReset(); });

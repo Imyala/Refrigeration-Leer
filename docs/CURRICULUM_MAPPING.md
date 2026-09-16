@@ -236,6 +236,7 @@ be set as activities in their own right.
 | **System Builder** (`build.html`) | Pipes a circuit from a palette of thirty components in flow order, to a written brief or free-build; every misplacement is explained | Reading and producing a piping schematic; where accessories belong and why | UEERA0050, UEECD0051, UEERA0060 |
 | **Control Circuit Workshop** (`electrical.html`) | Finds a hidden electrical fault in a packaged unit from a ladder diagram: voltage tests live, dead tests only after isolate → prove → test for dead → prove, scored on the diagnosis and on the method | Control-circuit fault-finding, safe isolation (AS/NZS 4836), reading a ladder diagram | UEERA0031, UEERA0044, UEERA0092, UEERL0005, UEECD0042 |
 | **Procedure trainers** (`procedures.html`) | Works the four Code of Practice procedures — pressure test, evacuation, recovery and charging, brazing — on a rig that follows the Code's numbers and grades the order of work | Leak-tightness testing, evacuation, recovery and charging, brazing practice | UEERA0062, UEERA0079, UEERA0059, UEERA0094, UEERA0007, UEECO0010 |
+| **Capstone job** (`capstone.html`) | One plant through seven stages in the tools above — pipe, pressure test, evacuate, charge, commission, diagnose a call-back, find the electrical fault — scored into one evidence record | Working a job end to end, in order | UEERA0050, UEERA0094, UEERA0062, UEERA0036, UEERA0053, UEERA0031, UEECO0010 |
 | **Diagnosis Workshop** (`diagnose.html`) | Chooses which of thirteen measurement points to instrument, works superheat, subcooling and TDs from readings actually taken, then commits to a diagnosis — scored on method as well as answer, **including whether the flammable zone was assessed before a gauge went on an A2L/A3 machine** | Systematic fault-finding with instruments; measurement technique | UEERA0036, UEERA0031, UEERA0032, UEERA0048 |
 
 **Where the hands-on tools sit against a training package.** The Service Bay,
@@ -249,6 +250,14 @@ taken out of turn, which readings were taken before a diagnosis was
 committed to. They therefore map to the **practical side** of a unit rather
 than to its knowledge evidence, and are worth listing as such when planning
 delivery.
+
+**The evidence record and the instructor's unit view.** Every finished
+workshop job is recorded with the units its tool practises (`js/evidence.js`),
+the course home shows the learner's standing per unit, and the instructor
+dashboard's *By unit of competency* view puts knowledge (lessons passed in
+the tagged modules) and workshop evidence (jobs recorded, mean score) side by
+side for every student, with a CSV. The **placement quiz** per stream reads
+each module as known, revise or start here and is stored with progress.
 
 Two cautions. These are simulations: they do not replace supervised workshop
 time, they do not demonstrate psychomotor competence on real plant, and no

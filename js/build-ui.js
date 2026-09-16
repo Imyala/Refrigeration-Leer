@@ -671,6 +671,29 @@ function renderExplain(res) {
 }
 
 /* ---- Render ------------------------------------------------------------- */
+/* Opened as a stage of the capstone job? The scenario is the job's, and a
+   correct, complete circuit reports the stage done. A clean scenario build is
+   also a piece of evidence in its own right, recorded once per session. */
+const BUILD_CAP = (typeof RefrigCapstone !== "undefined") ? RefrigCapstone.stageFromLocation() : null;
+const BUILD_RECORDED = new Set();
+function recordBuild(res) {
+  const sc = res.scenario;
+  if (!sc || !res.ok || (res.missing && res.missing.length)) return;
+  const key = sc.id;
+  if (BUILD_RECORDED.has(key)) return;
+  BUILD_RECORDED.add(key);
+  const warns = res.issues.filter((i) => i.severity === RC.SEVERITY.WARN).length;
+  const score = Math.max(0, 1 - 0.1 * warns);
+  if (typeof RefrigEvidence !== "undefined") {
+    RefrigEvidence.record({ tool: "builder", score, detail: { scenario: key, components: BUILD.seq.length, warnings: warns, capstone: BUILD_CAP ? BUILD_CAP.id : null } });
+  }
+  if (BUILD_CAP && BUILD_CAP.scenario === key) {
+    const st = RefrigCapstone.complete(BUILD_CAP.id, { score, detail: { scenario: key, warnings: warns } });
+    const host = document.getElementById("buildBrief");
+    if (host) host.insertAdjacentHTML("afterbegin", RefrigCapstone.doneHtml(BUILD_CAP, st));
+  }
+}
+
 function render() {
   const pal = document.getElementById("palettePanel");
   if (pal) pal.classList.remove("is-bin");
@@ -680,6 +703,11 @@ function render() {
   renderAnalysis(res);
   renderDetail(res);
   renderExplain(res);
+  recordBuild(res);
+  if (BUILD_CAP && !BUILD_RECORDED.has(BUILD_CAP.scenario)) {
+    const host = document.getElementById("buildBrief");
+    if (host) host.insertAdjacentHTML("afterbegin", RefrigCapstone.introHtml(BUILD_CAP));
+  }
 
   /* Editing from the keyboard destroys and rebuilds the button that was
      focused, so put focus back on the equivalent control or the Tab position
@@ -852,6 +880,7 @@ document.addEventListener("DOMContentLoaded", () => {
     RC.SCENARIOS.map((s) => `<option value="${esc(s.id)}">${esc(s.title)}</option>`).join("");
 
   loadSaved();
+  if (BUILD_CAP && RC.SCENARIOS.some((s) => s.id === BUILD_CAP.scenario)) BUILD.scenario = BUILD_CAP.scenario;
   if (!RC.SCENARIOS.some((s) => s.id === BUILD.scenario)) BUILD.scenario = "free";
   sel.value = BUILD.scenario;
 

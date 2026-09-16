@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capstone Job — Refrigeration Training</title>
+  <meta name="description" content="One plant, seven stages, one record: pipe a cool room, pressure test and evacuate it, charge and commission it, come back to a fault, and fix the electrics when it stops — each stage in the tool that does that work." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/theme.js"></script>
+</head>
+<body class="learn-page">
+  <a class="skip-link" href="#cpMain">Skip to content</a>
+  <nav class="sitenav" aria-label="Site">
+    <a class="sitenav-brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">&#10052;</span>
+      <span>Refrigeration Training</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" type="button"
+            aria-pressed="false" aria-label="Dark theme" title="Switch to the dark theme">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <button class="sitenav-toggle" id="navToggle" type="button"
+            aria-expanded="false" aria-controls="sitenavLinks">
+      <span class="bars" aria-hidden="true"></span> Menu
+    </button>
+    <ul class="sitenav-links" id="sitenavLinks">
+      <li><a href="index.html" data-nav="home">Home</a></li>
+      <li><a href="learn.html" data-nav="learn">Learn</a></li>
+      <li><a href="practice.html" data-nav="practice" aria-current="true">Practice</a></li>
+      <li class="nav-secondary nav-split"><a href="teach.html" data-nav="teach">Instructor</a></li>
+      <li class="nav-secondary"><a href="about.html" data-nav="about">For institutions</a></li>
+    </ul>
+  </nav>
+  <nav class="toolstrip" aria-label="Practice tools">
+    <a class="toolstrip-back" href="practice.html">
+      <span aria-hidden="true">&#8592;</span> All practice tools</a>
+    <ul class="toolstrip-links">
+      <li><a href="simulator.html" data-tool="sim">Simulator</a></li>
+      <li><a href="service.html" data-tool="service">Service Bay</a></li>
+      <li><a href="build.html" data-tool="build">Build</a></li>
+      <li><a href="diagnose.html" data-tool="diagnose">Diagnose</a></li>
+      <li><a href="electrical.html" data-tool="electrical">Electrical</a></li>
+      <li><a href="procedures.html" data-tool="procedures">Procedures</a></li>
+      <li><a href="capstone.html" data-tool="capstone" aria-current="page">Capstone</a></li>
+      <li><a href="simulator.html?quiz=1" data-tool="quiz">Quiz</a></li>
+    </ul>
+  </nav>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Capstone job</h1>
+      <p class="subtitle">One plant, seven stages, one record — every tool in the order a real job uses them</p>
+    </div>
+    <div class="controls">
+      <button id="cpResetBtn" class="btn btn-ghost" type="button" hidden>Start the job over</button>
+    </div>
+  </header>
+
+  <details class="howto" data-howto="capstone" open>
+    <summary>
+      <span class="howto-label">How this works</span>
+      <span class="howto-gist">Each stage opens the tool that does that work, and reports back here</span>
+    </summary>
+    <p class="howto-title">A butcher's cool room, from empty pipework to the second call-back</p>
+    <ol class="howto-steps">
+      <li><b>Take the stages in order.</b> Pipe the circuit, pressure test it, evacuate, charge,
+        commission and record the healthy readings, then come back to a fault, and later to a
+        dead unit. Each one opens in its own workshop with the job's brief showing.</li>
+      <li><b>Finish the job in the tool.</b> When the workshop closes the job, the stage is
+        recorded here with its score and you are pointed at the next one.</li>
+      <li><b>The record is the point.</b> The whole job goes into your evidence record, by unit
+        of competency, and travels with your progress export to your instructor. A stage can
+        be done again; the best score is kept.</li>
+    </ol>
+  </details>
+
+  <main id="cpMain" class="practice-main">
+    <div id="cpStatus"></div>
+    <ol class="cp-list" id="cpStages"></ol>
+    <p class="practice-footnote">The tools grade method as well as answer, and so does this job: a stage
+      passed with the order of work wrong scores lower than one done cleanly.</p>
+  </main>
+
+  <footer class="footer">
+    <span>Educational capstone · a simulated job, not practical assessment evidence on its own. ·
+      <a class="footer-link" href="about.html">For institutions</a></span>
+  </footer>
+
+  <script src="js/nav.js" defer></script>
+  <script src="js/howto.js" defer></script>
+  <script src="js/competency.js"></script>
+  <script src="js/evidence.js"></script>
+  <script src="js/capstone.js"></script>
+  <script src="js/capstone-ui.js"></script>
+</body>
+</html>

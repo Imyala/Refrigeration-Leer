@@ -30,6 +30,7 @@ const FILES = [
   "diagnose.html",
   "electrical.html",
   "procedures.html",
+  "capstone.html",
   "about.html",
   "styles.css",
   "styles-build.css",
@@ -53,6 +54,10 @@ const FILES = [
   "js/control-ui.js",
   "js/procedures.js",
   "js/procedure-ui.js",
+  "js/evidence.js",
+  "js/capstone.js",
+  "js/capstone-ui.js",
+  "js/competency.js",
   "js/md.js",
   "js/figures.js",
   "js/srs.js",
@@ -60,7 +65,6 @@ const FILES = [
   "js/scorm.js",
   "js/exam.js",
   "js/streams.js",
-  "js/competency.js",
   "js/course-index.js",
   // Course content files are discovered, not listed: a new module file is
   // packaged the day it lands. Order matches the <script> order in learn.html.

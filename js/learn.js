@@ -138,6 +138,31 @@ const Srs = {
   },
 };
 
+/* ---- Placement --------------------------------------------------------------
+   A short paper across a stream, read per module: known, revise, or start
+   here. A recommendation only — it marks nothing complete. */
+const Placement = {
+  KEY: "refrigSim.placement",
+  data: {},
+  load() {
+    try { this.data = JSON.parse(localStorage.getItem(this.KEY) || "{}"); }
+    catch (e) { this.data = {}; }
+    if (!this.data || typeof this.data !== "object") this.data = {};
+  },
+  save() {
+    try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); }
+    catch (e) { /* storage unavailable */ }
+  },
+  get(sid) { return this.data[sid] || null; },
+  set(sid, report) { this.data[sid] = report; this.save(); },
+  verdictFor(sid, modId) {
+    const r = this.get(sid);
+    const m = r && r.modules.find(x => x.id === modId);
+    return m ? m.verdict : null;
+  },
+};
+const PLACEMENT_WORDS = { known: "known", revise: "revise", start: "start here" };
+
 const NAME_KEY = "refrigSim.learnerName";
 function getLearnerName() {
   try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; }
@@ -217,6 +242,7 @@ function route() {
   else if (m === "review") renderReview();
   else if (m === "practice") renderPractice();
   else if (m === "reference") renderReference(l);
+  else if (m === "placement") renderPlacement(l && Streams.BY_ID[l] ? l : "core");
   else {
     const mod = COURSE.find(x => x.id === m);
     if (!mod) renderHome();
@@ -399,6 +425,7 @@ function renderHome() {
           <span class="continue-meta">${up.mod.title} · ~${up.les.minutes} min</span>
         </div>`;
       })()}
+      ${unitMasteryFoldHtml()}
       <details class="fold">
         <summary>How the course works <span class="fold-hint">plain words, diagrams, the simulator, references</span></summary>
         <p>Written for every learner — from first-year apprentices to career changers.
@@ -444,17 +471,24 @@ function renderHome() {
           <span class="progress-bar small stream-bar"><span class="progress-fill" style="width:${spct}%"></span></span>
         </summary>
         <p class="stream-blurb">${st.blurb} <span class="stream-audience">${st.audience}</span></p>
+        ${placementSummaryHtml(st.id)}
         <div class="module-grid">
           ${mods.map(mod => {
             const mdone = moduleDoneCount(mod);
             const mpct = Math.round(mdone / mod.lessons.length * 100);
+            const pv = Placement.verdictFor(st.id, mod.id);
             return `<a class="module-card" href="#${mod.id}">
-              <h4>${mod.title}</h4>
+              <h4>${mod.title}${pv ? ` <span class="placement-badge placement-${pv}">${PLACEMENT_WORDS[pv]}</span>` : ""}</h4>
               <p>${mod.blurb}</p>
               <div class="progress-bar small"><div class="progress-fill" style="width:${mpct}%"></div></div>
               <span class="module-meta">${mod.lessons.length} lessons · ${mdone} complete</span>
             </a>`;
           }).join("")}
+          <a class="module-card exam-card" href="#placement/${st.id}">
+            <h4>Placement quiz</h4>
+            <p>${Placement.get(st.id) ? "Sit it again to update your starting point." : `Twenty-odd questions across the stream, read module by module: what you already know, what to revise, where to start.`}</p>
+            <span class="module-meta">${(() => { const r = Placement.get(st.id); return r ? `${r.known} known · ${r.revise} revise · ${r.start} start here` : "not sat yet"; })()}</span>
+          </a>
           <a class="module-card exam-card" href="#exam/${st.id}">
             <h4>${st.short} exam</h4>
             <p>${mods.length * EXAM.perModule} questions, ${EXAM.perModule} per module. Pass to add this stream to your certificate.</p>
@@ -552,6 +586,15 @@ function renderLesson(mod, les) {
       <p>Topic-level alignment: this lesson paraphrases publicly available requirements and
       general trade knowledge — it does not reproduce standards text. Always work to the
       current editions.</p>
+    </aside>` : ""}
+    ${mod.deeper && mod.deeper.length ? `
+    <aside class="lesson-refs lesson-deeper" aria-label="Go deeper">
+      <h3>Go deeper</h3>
+      <p>The trade-depth modules on this topic, in the technical streams:</p>
+      <ul class="deeper-links">${mod.deeper.map(id => {
+        const t = COURSE.find(x => x.id === id);
+        return t ? `<li><a href="#${t.id}">${t.title}</a> — ${t.lessons.length} lessons, ${moduleDoneCount(t)} done</li>` : "";
+      }).join("")}</ul>
     </aside>` : ""}
     <section class="lesson-quiz" aria-label="Lesson quiz">
       <h3>Check your understanding</h3>
@@ -980,6 +1023,8 @@ function exportProgress() {
     name: name || null,
     exported: new Date().toISOString(),
     progress: Progress.data,
+    placement: Placement.data,
+    evidence: (typeof RefrigEvidence !== "undefined") ? RefrigEvidence.all() : [],
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
@@ -1006,6 +1051,12 @@ function importProgress(e) {
       }
       Progress.data = mergeProgress(Progress.data, data.progress);
       Progress.save();
+      if (data.placement && typeof data.placement === "object") {
+        Object.entries(data.placement).forEach(([sid, r]) => { if (r && r.modules && !Placement.get(sid)) Placement.set(sid, r); });
+      }
+      if (Array.isArray(data.evidence) && typeof RefrigEvidence !== "undefined") {
+        RefrigEvidence.save(RefrigEvidence.merge(RefrigEvidence.all(), data.evidence));
+      }
       if (data.name && !getLearnerName()) setLearnerName(data.name);
       route();
       document.getElementById("ioStatus").textContent = "Progress imported and merged.";
@@ -1015,6 +1066,128 @@ function importProgress(e) {
   };
   reader.readAsText(file);
   e.target.value = "";
+}
+
+/* ---- Placement quiz -------------------------------------------------------------- */
+const PLACEMENT = { stream: null, questions: null };
+
+function placementSummaryHtml(sid) {
+  const r = Placement.get(sid);
+  if (!r) return "";
+  const when = r.at ? new Date(r.at).toLocaleDateString() : "";
+  return `<p class="placement-summary">
+    <span><b>Placement</b> ${when ? "· " + when : ""}</span>
+    <span class="placement-known">${r.known} known</span>
+    <span class="placement-revise">${r.revise} to revise</span>
+    <span class="placement-start">${r.start} to start with</span>
+    <a href="#placement/${sid}">sit it again</a>
+  </p>`;
+}
+
+function renderPlacement(sid) {
+  const main = document.getElementById("learnMain");
+  const st = Streams.BY_ID[sid];
+  const mods = streamModules(sid);
+  const prev = Placement.get(sid);
+  const perModule = 2;
+  const n = mods.reduce((k, m) => k + Math.min(perModule, m.lessons.reduce((q, l) => q + l.quiz.length, 0)), 0);
+
+  if (!PLACEMENT.questions || PLACEMENT.stream !== sid) {
+    main.innerHTML = `
+      <div class="crumbs"><a href="#">Course</a> › <span>Placement · ${st.title}</span></div>
+      <h2>Where should you start in ${st.title}?</h2>
+      <div class="learn-hero exam-intro">
+        <p><b>${n} questions</b>, two from every module of the stream, in about ten minutes. It is read
+        <b>module by module</b>: both right and the module is probably <b>known</b> — go straight to
+        its exam questions when you sit the stream exam; one right and it is worth a <b>revise</b>;
+        neither right and that is where to <b>start</b>. It marks nothing complete and nothing
+        wrong — it just tells you where your time is best spent.</p>
+        ${prev ? `<p class="module-blurb">Last sat ${new Date(prev.at).toLocaleDateString()}: ${prev.known} known · ${prev.revise} revise · ${prev.start} start here (${prev.score}/${prev.total}).</p>` : ""}
+        <div class="quiz-controls">
+          <button id="placementStartBtn" class="btn btn-tour" type="button">${prev ? "Sit it again" : "Start the placement quiz"}</button>
+          <a class="btn btn-ghost" href="#">Back to the course</a>
+        </div>
+      </div>
+      ${prev ? placementReportHtml(prev, mods) : ""}`;
+    document.getElementById("placementStartBtn").addEventListener("click", () => {
+      PLACEMENT.stream = sid;
+      PLACEMENT.questions = RefrigExam.pickExamQuestions(mods, perModule);
+      renderPlacement(sid);
+    });
+    return;
+  }
+
+  main.innerHTML = `
+    <div class="crumbs"><a href="#">Course</a> › <span>Placement · ${st.title}</span></div>
+    <h2>Placement — ${PLACEMENT.questions.length} questions</h2>
+    <p class="module-blurb">Answer what you can; a guess you are unsure of is information too. Nothing here counts against you.</p>
+    <section class="lesson-quiz" aria-label="Placement quiz">
+      <div id="placementQuiz">${renderQuizHtml(PLACEMENT.questions, true)}</div>
+      <div class="quiz-controls">
+        <button id="placementSubmitBtn" class="btn btn-tour" type="button">See where to start</button>
+        <button id="placementCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+        <span id="quizResult" class="quiz-result" aria-live="polite"></span>
+      </div>
+      <div id="placementOutcome"></div>
+    </section>`;
+  document.getElementById("placementCancelBtn").addEventListener("click", () => {
+    PLACEMENT.questions = null; renderPlacement(sid);
+  });
+  document.getElementById("placementSubmitBtn").addEventListener("click", () => {
+    const box = document.getElementById("placementQuiz");
+    const answers = Array.from(box.querySelectorAll(".quiz-q")).map(f => {
+      const sel = f.querySelector("input:checked");
+      return sel ? parseInt(sel.value, 10) : null;
+    });
+    markQuiz(box, PLACEMENT.questions);      // shows the explanations; unanswered count as wrong here
+    const report = RefrigExam.placementReport(mods, PLACEMENT.questions, answers);
+    Placement.set(sid, report);
+    document.getElementById("placementSubmitBtn").disabled = true;
+    document.getElementById("quizResult").innerHTML = `${report.score}/${report.total} — read the verdict by module below.`;
+    document.getElementById("quizResult").className = "quiz-result good";
+    document.getElementById("placementOutcome").innerHTML = placementReportHtml(report, mods) +
+      `<div class="quiz-controls" style="margin-top:14px"><a class="btn btn-tour" href="#stream-${sid}">Back to the stream</a></div>`;
+    renderSidebar();
+  });
+}
+
+function placementReportHtml(report, mods) {
+  const first = report.modules.find(m => m.verdict === "start") || report.modules.find(m => m.verdict === "revise");
+  const row = (m) => {
+    const mod = mods.find(x => x.id === m.id);
+    return `<li><a href="#${m.id}">${mod ? mod.title : m.id}</a>
+      <span class="placement-badge placement-${m.verdict}">${PLACEMENT_WORDS[m.verdict]}</span>
+      <span class="mastery-ev">${m.correct}/${m.total}</span></li>`;
+  };
+  return `<section class="cert-section" aria-label="Placement result">
+    <h3>Your starting point</h3>
+    <p class="placement-summary">
+      <span class="placement-known">${report.known} known</span>
+      <span class="placement-revise">${report.revise} to revise</span>
+      <span class="placement-start">${report.start} to start with</span></p>
+    ${first ? `<p class="module-blurb">Begin with <a href="#${first.id}"><b>${(mods.find(x => x.id === first.id) || {}).title || first.id}</b></a>; the modules marked known can wait for the stream exam.</p>` : `<p class="module-blurb">Every module read as known. Sit the stream exam — and the lessons are there if a question surprises you.</p>`}
+    <ul class="mastery-list placement-list">${report.modules.map(row).join("")}</ul>
+  </section>`;
+}
+
+/* ---- Units of competency: the learner's standing per unit ---------------------- */
+function unitMasteryFoldHtml() {
+  const C = (typeof RefrigCompetency !== "undefined") ? RefrigCompetency : null;
+  if (!C) return "";
+  const ev = (typeof RefrigEvidence !== "undefined") ? RefrigEvidence.all() : [];
+  const rows = C.mastery(COURSE, Progress.data, ev).filter(u => u.lessons || u.attempts);
+  const started = rows.filter(u => u.done || u.attempts).length;
+  const item = (u) => `<li>
+      <b title="${RefrigMd.esc(u.title)}">${u.code}</b>
+      <span class="mastery-title">${RefrigMd.esc(u.title)}
+        <span class="progress-bar small"><span class="progress-fill" style="width:${Math.round(u.knowledge * 100)}%"></span></span></span>
+      <span class="mastery-ev">${u.done}/${u.lessons} lessons${u.attempts ? ` · ${u.attempts} tool job${u.attempts === 1 ? "" : "s"}, ${Math.round(u.mean * 100)}%` : ""}</span>
+    </li>`;
+  return `<details class="fold">
+    <summary>Units of competency <span class="fold-hint">${C.QUALIFICATION.code} · ${started} of ${rows.length} units started</span></summary>
+    <p class="module-blurb">Your standing against the units of the ${RefrigMd.esc(C.QUALIFICATION.title)}: lessons passed in the modules tagged with each unit, and the jobs you have finished in the workshops that practise it. Knowledge evidence and practice — your RTO assesses the practical side on real plant.</p>
+    <ul class="mastery-list">${rows.map(item).join("")}</ul>
+  </details>`;
 }
 
 /* ---- Practice (spaced repetition) sessions ------------------------------------ */
@@ -1210,6 +1383,7 @@ document.addEventListener("DOMContentLoaded", () => {
   Progress.load();
   Flags.load();
   Srs.load();
+  Placement.load();
   NavOpen.load();
   buildFlat();
   window.addEventListener("hashchange", route);

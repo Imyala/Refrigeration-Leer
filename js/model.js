@@ -77,7 +77,9 @@
   function deriveAt(refKey, speed, load, faultKey, circuitKey) {
     const base = D.REFRIGERANTS[refKey];
     const s = speed / 100, L = load / 100;
-    const f = D.FAULTS[faultKey] || D.FAULTS.none;
+    /* A fault is normally a key into the library; the Diagnosis Workshop's
+       compound faults arrive as ready-made fault objects. */
+    const f = (faultKey && typeof faultKey === "object") ? faultKey : (D.FAULTS[faultKey] || D.FAULTS.none);
     const tbl = base.satTable;
     const cpv = base.cpVap || D.CP_VAP;
     const circuit = (C && C.CIRCUITS[circuitKey]) || null;

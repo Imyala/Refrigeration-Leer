@@ -58,6 +58,15 @@ function sbDo(action) {
   }
   if ((SB.phase === "packup" || SB.phase === "read") && SB.readingsSeen && RefrigService.packedUp(SB.state)) {
     SB.phase = "done";
+    if (typeof RefrigEvidence !== "undefined") {
+      const rep = RefrigService.sequenceReport(SB.state);
+      const s = SB.state;
+      const outOfOrder = Object.values(SB.stepSeen).filter(Boolean).length;
+      const score = Math.max(0, 1 - 0.1 * outOfOrder - 0.05 * s.warns - 0.1 * s.zoneMissed);
+      RefrigEvidence.record({ tool: "servicebay", score, detail: {
+        refrigerant: SB.refrigerant, flammable: s.flammable, emissionG: s.emissionG, warns: s.warns,
+        outOfOrder, steps: rep.total, zoneMissed: s.zoneMissed } });
+    }
   }
   sbRender();
 }

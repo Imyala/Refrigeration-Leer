@@ -110,6 +110,8 @@
     pt:         { label: "PT trainer", units: ["UEERA0036"] },
     control:    { label: "Control Circuit Workshop", units: ["UEERA0031", "UEERA0044", "UEERA0092", "UEERL0005", "UEECD0042"] },
     procedures: { label: "Procedure trainers", units: ["UEERA0062", "UEERA0079", "UEERA0059", "UEERA0094", "UEERA0007", "UEECO0010"] },
+    capstone:   { label: "Capstone job", units: ["UEERA0050", "UEERA0094", "UEERA0062", "UEERA0036", "UEERA0053", "UEERA0031", "UEECO0010"] },
+    quiz:       { label: "Technician Quiz", units: ["UEERA0036"] },
   };
 
   const api = {
@@ -118,6 +120,26 @@
     title(code) { return UNITS[code] ? UNITS[code].title : null; },
     /* The modules of `course` tagged with `code`. */
     modulesFor(course, code) { return (course || []).filter(m => Array.isArray(m.units) && m.units.includes(code)); },
+    /* A learner's standing per unit: knowledge from lesson progress across
+       the modules tagged with the unit, and evidence from the tools. Pure:
+       `progress` is the course's progress map, `evidence` the evidence list. */
+    mastery(course, progress, evidence) {
+      const prog = progress || {};
+      const ev = evidence || [];
+      return Object.keys(UNITS).map(code => {
+        const mods = api.modulesFor(course, code);
+        let lessons = 0, done = 0;
+        mods.forEach(m => m.lessons.forEach(l => { lessons += 1; if ((prog[m.id + "/" + l.id] || {}).done) done += 1; }));
+        const mine = ev.filter(e => {
+          const units = (Array.isArray(e.units) && e.units.length) ? e.units : ((TOOLS[e.tool] || {}).units || []);
+          return units.includes(code);
+        });
+        const mean = mine.length ? mine.reduce((n, e) => n + (Number(e.score) || 0), 0) / mine.length : 0;
+        return { code, title: UNITS[code].title, status: UNITS[code].status,
+          modules: mods.length, lessons, done, knowledge: lessons ? done / lessons : 0,
+          attempts: mine.length, mean, best: mine.reduce((b, e) => Math.max(b, Number(e.score) || 0), 0) };
+      });
+    },
     /* Every unit with the modules and tools that support it. */
     coverage(course) {
       return Object.keys(UNITS).map(code => ({

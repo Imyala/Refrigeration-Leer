@@ -14,7 +14,7 @@
     course.forEach(mod => {
       const pool = [];
       mod.lessons.forEach(les => les.quiz.forEach(q => pool.push({
-        q: q.q, options: q.options, answer: q.answer, explain: q.explain, module: mod.title,
+        q: q.q, options: q.options, answer: q.answer, explain: q.explain, module: mod.title, moduleId: mod.id,
       })));
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
@@ -39,7 +39,30 @@
     return (h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0")).toUpperCase();
   }
 
-  const api = { pickExamQuestions, certificateCode };
+  /* ---- Placement -----------------------------------------------------------
+     A short paper across a stream's modules, read per module: every question
+     right means the module is probably known and can be tested out of at the
+     exam; some right means revise; none right means start there. The verdict
+     is a recommendation — it marks nothing complete. `answers[i]` is the
+     option index chosen for `questions[i]`, or null. */
+  function placementReport(modules, questions, answers) {
+    const per = {};
+    (modules || []).forEach(m => { per[m.id] = { id: m.id, title: m.title, correct: 0, total: 0 }; });
+    (questions || []).forEach((q, i) => {
+      const m = per[q.moduleId]; if (!m) return;
+      m.total += 1;
+      if (answers && answers[i] === q.answer) m.correct += 1;
+    });
+    const list = Object.values(per).map(m => Object.assign(m, {
+      verdict: !m.total ? "start" : m.correct === m.total ? "known" : m.correct > 0 ? "revise" : "start",
+    }));
+    const count = (v) => list.filter(m => m.verdict === v).length;
+    const score = list.reduce((n, m) => n + m.correct, 0), total = list.reduce((n, m) => n + m.total, 0);
+    return { modules: list, known: count("known"), revise: count("revise"), start: count("start"), score, total,
+      at: new Date().toISOString() };
+  }
+
+  const api = { pickExamQuestions, certificateCode, placementReport };
   root.RefrigExam = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

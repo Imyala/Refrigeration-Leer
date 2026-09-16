@@ -13,6 +13,7 @@
   {
     id: "system-types",
     units: ["UEERA0035", "UEERA0052", "UEERA0053", "UEERA0099", "UEERA0070"],
+    deeper: ["v1-system-types", "v2-ac-systems", "v2-alternative-systems"],
     title: "6 · System types in the field",
     blurb: "The same cycle wears many uniforms: split air conditioners and heat pumps, cool rooms and freezers, supermarket racks and chillers.",
     lessons: [
@@ -184,6 +185,7 @@ which simplifies safety and lets one machine serve an entire building.
   {
     id: "electrical",
     units: ["UEECD0042", "UEERA0031", "UEERA0044", "UEERA0092", "UEERL0005"],
+    deeper: ["v1-electrical-principles", "v1-electrical-components", "v1-electric-motors", "elec-control-circuits"],
     title: "7 · Electrical fundamentals for RAC",
     blurb: "Motors and their starting gear, the control and safety devices around them, and how to work through a ladder diagram without guessing.",
     lessons: [
@@ -394,6 +396,7 @@ same ritual described below, formalised.
   {
     id: "diagnosis",
     units: ["UEERA0036", "UEERA0031", "UEERA0032"],
+    deeper: ["v2-service-diagnosis", "v1-electrical-testing", "cap-circuits-and-diagrams"],
     title: "8 · Fault diagnosis",
     blurb: "A repeatable diagnostic routine, the gauge signatures of the classic faults, and deliberate practice with the Technician Quiz.",
     lessons: [
@@ -665,6 +668,7 @@ more for your gauge-reading than any chapter of theory.
   {
     id: "repair",
     units: ["UEERA0062", "UEERA0059", "UEERA0050", "UEERA0079"],
+    deeper: ["v2-service-procedure", "v1-specialised-tools", "v1-brazing-welding", "cap-recovery-and-code"],
     title: "9 · Repair procedures",
     blurb: "The core service procedures in the right order: recovery, evacuation, charging, and leak detection with brazing basics.",
     lessons: [
@@ -1114,6 +1118,7 @@ acceptance criteria.
   {
     id: "safety",
     units: ["UEECD0007", "UEECD0016", "UEERA0079", "UETDRMP007", "HLTAID009"],
+    deeper: ["elec-energy-sector", "cap-refrigerants-and-site", "cap-licence-and-law"],
     title: "10 · Safety",
     blurb: "The hazards that actually hurt refrigeration technicians — pressure, cold, asphyxiation, flammables and electricity — and the habits that neutralise them.",
     lessons: [

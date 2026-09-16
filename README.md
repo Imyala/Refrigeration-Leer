@@ -335,6 +335,44 @@ Each cites the clauses it follows, linked into the reference library.
 | **Recovery & charging** | Identify (or treat as unknown: flammable and toxic), cylinder checks (in date, rated, marked, clean), safe fill, liquid then vapour, weigh and record, evacuate before charging, leak-check the hose, blends as liquid, charge to mass, logbook; flammable zone and earthing on an A2L job | fill ratio × water capacity less 20 % ullage; entire charge recovered; disposables never refilled |
 | **Brazing** | Never on a charged line, protect heat-sensitive parts, prepare the joint, gentle nitrogen purge, the right alloy for the metals, heat the fitting not the rod, purge until cool, test before charging | Phos-copper self-fluxes on copper-to-copper; brass needs silver with flux; a high-flow purge blows the alloy out |
 
+## The Capstone Job (capstone.html)
+
+One plant, seven stages, one record. A butcher's cool room goes from empty
+pipework to its second call-back, and every stage opens in the workshop
+that does that work, with the job's brief showing and the result reported
+back: pipe the circuit (System Builder), pressure test it and evacuate it
+and charge it (Procedure Trainers), commission it and record the healthy
+readings (Diagnosis Workshop, where the learner has to be willing to call a
+healthy machine healthy), come back six months later to a hidden fault
+(Diagnosis Workshop), and fix the electrics when it stops altogether
+(Control Circuit Workshop). Each stage is scored by its tool; the best
+score is kept; the finished job is one entry in the evidence record. The
+script lives in `js/capstone.js` (pure, tested); the tools read a
+`?capstone=<stage>` parameter and report through it.
+
+## The evidence record
+
+Lesson progress says which quizzes were passed. It says nothing about how a
+learner hooked up a manifold, which readings they took before committing to
+a diagnosis, or whether they isolated before putting a meter on ohms — and
+that is what an RTO's practical units are about. Every workshop now records
+one entry per finished job (`js/evidence.js`): the tool, a score in 0..1,
+and the detail that job produced (the fault and the answer, readings taken,
+hints used, steps out of order, refrigerant lost, whether the circuit was
+proven dead). Entries carry the **units of competency** their tool
+practises, so:
+
+- the course home shows the learner's standing **per UEE32225 unit**:
+  lessons passed in the modules tagged with the unit, and the jobs recorded
+  against it;
+- the progress export carries the record, and the **instructor dashboard**
+  has a **By unit of competency** view — one row per unit, one column per
+  student, knowledge and workshop jobs side by side, with a CSV.
+
+Storage is the browser's and nothing leaves the machine on its own. The
+record is practice, not assessment: the RTO assesses the practical side on
+real plant.
+
 ## The course (learn.html)
 
 A structured curriculum of **64 modules / 517 lessons / 2,098 quiz
@@ -377,6 +415,28 @@ passing marks the lesson complete, and progress is saved in the browser.
 Lessons embed **deep links** that open the simulator pre-configured
 (`simulator.html?r=R404A&fault=lowCharge&speed=120&load=80`, plus `quiz=1`,
 `tour=1` and `view=pt`).
+
+### Adaptive: placement, difficulty, go deeper
+
+- **Placement quiz per stream** (`#placement/<stream>`): two questions from
+  every module of the stream, read **module by module** — both right and the
+  module is probably *known*; one right, *revise*; neither, *start here*.
+  It marks nothing complete: the verdict badges the module cards and names
+  a starting point, and the stream exam is where a known module is tested
+  out of. The report is stored beside progress and travels in the export.
+- **Difficulty ladder.** The Diagnosis Workshop has three levels: clear
+  signatures at rated conditions; any fault with site conditions varying
+  job to job; and look-alike faults plus **two faults at once** (compound
+  faults, built from two library faults — multipliers multiplied, offsets
+  added — so every reading is the honest sum), where the learner may name
+  up to two faults and is marked on both. The Technician Quiz has the same
+  three rungs: distinct faults on the two textbook fluids at rated
+  conditions, everything at a random operating point, or only the
+  look-alike families.
+- **Go deeper.** Every core-program lesson ends with links to the
+  trade-depth modules on the same topic in the Refrigeration 1 and 2,
+  Electrical and Capstone streams (the `deeper:` tag on the module) — the
+  inverse of "In plain words".
 
 ### Built for every learner — apprentices to adults
 
@@ -492,8 +552,10 @@ licence.
   so it follows the learner's LMS account across machines.
 - **Instructor dashboard** — `teach.html` loads any number of student
   progress exports (Course overview → *Export progress*) into a cohort
-  table: per-module completion, exam results, overall %, CSV download.
-  Entirely client-side; no student data leaves the browser.
+  table: per-module completion, exam results, overall %, workshop jobs,
+  placement, CSV download — and a **By unit of competency** view (UEE32225
+  units as rows, students as columns, knowledge and workshop evidence side
+  by side). Entirely client-side; no student data leaves the browser.
 - **Curriculum mapping** — see `docs/CURRICULUM_MAPPING.md` for indicative
   mapping of all five streams to **UEE32225** Certificate III in Air
   Conditioning and Refrigeration (the release that superseded UEE32220 in
@@ -630,6 +692,8 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/servicebay.js`, `js/service-ui.js` | Service Bay state machine (pure, tested), including hose selection, the gauge zero check and order-of-work grading — and its UI |
 | `js/circuit.js`, `js/build-ui.js` | System Builder rules engine (component library, pipe runs, placement findings, scenarios — pure, tested) and the drawn circuit it is edited on |
 | `js/diagnose.js`, `js/diagnose-ui.js` | Diagnosis Workshop engine (measurement points, derived values, evidence, scoring — pure, tested) and its UI |
+| `js/evidence.js` | The evidence record: one entry per finished workshop job, with the units it counts towards; summaries and merge (pure, tested) |
+| `js/capstone.js`, `js/capstone-ui.js`, `capstone.html` | The capstone job: seven stages, each opened in its tool with `?capstone=<stage>`, and the record of how it went (pure, tested) |
 | `js/control.js`, `js/control-ui.js`, `styles-control.css`, `electrical.html` | Control Circuit Workshop engine (ladder nodes, faults, what every instrument reads, safe-isolation grading — pure, tested) and its UI |
 | `js/procedures.js`, `js/procedure-ui.js`, `styles-procedure.css`, `procedures.html` | The four Code of Practice procedure trainers (pressure test, evacuation, recovery and charging, brazing — pure, tested) and their UI |
 | `js/learn.js` | Course UI: routing, progress store, lesson quizzes, stream & final exams, certificate, export/import |

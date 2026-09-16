@@ -43,6 +43,17 @@ charging, and brazing, with the Code's numbers in the rules. The unit
 registry was rebuilt from a real UEE32225 Record of Results (35 units), so
 the mapping now rests on the qualification as actually delivered.
 
+**And then groups 3.5 and 3.6:** a **placement quiz** per stream (known /
+revise / start here, per module); **mastery per UEE32225 unit** on the course
+home and a *By unit of competency* view on the instructor dashboard; a
+**difficulty ladder** in the Diagnosis Workshop (three levels, the third with
+two faults at once) and the Technician Quiz; **go deeper** links from every
+core lesson into the trade-depth modules; the **capstone job**
+(`capstone.html`) chaining seven stages through the real tools; and an
+**evidence record** (`js/evidence.js`) that every workshop writes to and the
+progress export carries. Of §3.6 only the photo library remains, because it
+needs photographs the repository does not have.
+
 ---
 
 ## 1. Scorecard — the vision against what exists

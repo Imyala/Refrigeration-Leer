@@ -129,3 +129,18 @@ test("the course teaches and cites the reference documents it ships", () => {
     }
   }
 });
+
+test("every \"go deeper\" link on a core module names a real module in another stream", () => {
+  let linked = 0;
+  for (const mod of COURSE) {
+    if (!mod.deeper) continue;
+    assert.ok(Array.isArray(mod.deeper) && mod.deeper.length, `${mod.id}: deeper is a non-empty list`);
+    for (const id of mod.deeper) {
+      const target = COURSE.find(m => m.id === id);
+      assert.ok(target, `${mod.id}: deeper target ${id} exists`);
+      assert.notStrictEqual(target.stream || "core", mod.stream || "core", `${mod.id} → ${id}: points into another stream`);
+    }
+    linked += 1;
+  }
+  assert.ok(linked >= 10, `the core modules carry go-deeper links (${linked})`);
+});

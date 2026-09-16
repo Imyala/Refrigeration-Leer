@@ -53,7 +53,13 @@ const DG_HINT_ORDER = DG_CORE.concat([
    a whole mark would make hints pointless rather than expensive. */
 const DG_HINT_COST = 0.25;
 
+/* Opened as a stage of the capstone job? Commissioning is a healthy machine
+   the learner must be willing to call healthy; the call-back is a hidden fault. */
+const DG_CAP = (typeof RefrigCapstone !== "undefined") ? RefrigCapstone.stageFromLocation() : null;
+const DG_LEVEL_KEY = "refrigSim.diagnoseLevel";
+
 const DG = {
+  level: 1,                 // 1 clear faults at rated conditions · 2 any fault, conditions vary · 3 look-alikes and compounds
   refrigerant: "R404A",     // a commercial cold-room fluid — the job this page models
   ambient: 32,
   boxAir: -3,
@@ -88,6 +94,10 @@ function dgSaveTotal() {
 
 /* ---- The job ------------------------------------------------------------ */
 const dgCycle = () => RefrigModel.deriveAt(DG.refrigerant, 100, 100, DG.fault);
+const dgFaultObj = (k) => RefrigDiagnose.faultOf(k == null ? DG.fault : k);
+const dgFaultKey = () => RefrigDiagnose.keyOf(DG.fault);
+const dgAnswerList = () => [].concat(DG.answer || []).filter(Boolean);
+const dgAnswerLabel = () => dgAnswerList().map(k => RefrigData.FAULTS[k].label).join(" and ") || "—";
 const dgEnv = () => ({ ambient: DG.ambient, boxAir: DG.boxAir });
 
 /* Site conditions that make a healthy machine read healthy for this fluid.
@@ -101,18 +111,28 @@ function dgResetConditions() {
 }
 
 function dgPickFault() {
-  const keys = Object.keys(RefrigData.FAULTS);
-  let k = DG.fault;
-  /* Two identical jobs in a row read as a broken shuffle, not as chance. */
-  for (let i = 0; i < 12 && k === DG.fault; i++) {
-    k = keys[Math.floor(Math.random() * keys.length)];
+  if (DG_CAP && DG_CAP.id === "commission") return "none";
+  const level = DG_CAP ? 2 : DG.level;
+  let k = RefrigDiagnose.pickFault(level, DG.fault);
+  if (DG_CAP && DG_CAP.id === "callback") {
+    for (let i = 0; i < 12 && RefrigDiagnose.keyOf(k) === "none"; i++) k = RefrigDiagnose.pickFault(level, DG.fault);
   }
   return k;
+}
+
+/* Site conditions vary from job to job above level 1 — a machine is not
+   always seen on the day it was designed for. */
+function dgVaryConditions() {
+  dgResetConditions();
+  if (DG.level === 1 && !DG_CAP) return;
+  DG.ambient = Math.max(5, Math.min(55, DG.ambient + Math.round((Math.random() - 0.5) * 16)));
+  DG.boxAir = Math.max(-30, Math.min(25, DG.boxAir + Math.round((Math.random() - 0.5) * 8)));
 }
 
 function dgNewJob() {
   DG.jobNo += 1;
   DG.fault = DG.practice ? DG.fault : dgPickFault();
+  if (!DG.practice) dgVaryConditions();
   DG.placed = [];
   DG.hints = 0;
   DG.answer = null;
@@ -122,6 +142,8 @@ function dgNewJob() {
   DG.gaugesBeforeZone = [];    // gauge points fitted before it was
   DG.coach = DG.practice
     ? "Practice mode: pick a fault and fit instruments to see the signature it leaves on the gauges."
+    : DG_CAP ? RefrigCapstone.introHtml(DG_CAP)
+    : DG.level === 3 ? "A machine has been reported not holding temperature. At this level there may be two things wrong at once — you can name up to two faults."
     : "A machine has been reported not holding temperature. Nothing has been measured yet. Where would you start?";
   dgRender();
 }
@@ -180,10 +202,10 @@ function dgHint() {
 const DG_HEALTHY_NOTE = "There was nothing wrong with this machine. Being willing to say so — and hand it back untouched — is part of the job; fitting gauges to a healthy system and adjusting something is how faults get created.";
 
 function dgSubmit() {
-  if (!DG.answer || DG.result) return;
-  const j = RefrigDiagnose.judge(DG.answer, DG.fault);
+  if (!dgAnswerList().length || DG.result) return;
+  const j = RefrigDiagnose.judge(dgAnswerList(), DG.fault);
   let text = (j.text || "").replace(/\s*null\s*$/, "").trim();
-  if (!text || DG.fault === "none") text = (text ? text + " " : "") + DG_HEALTHY_NOTE;
+  if (!text || dgFaultKey() === "none") text = (text ? text + " " : "") + DG_HEALTHY_NOTE;
 
   const zone = RefrigDiagnose.zoneVerdict(RefrigData.REFRIGERANTS[DG.refrigerant], DG.gaugesBeforeZone);
   const earned = Math.max(0, j.score - DG_HINT_COST * DG.hints - (zone ? zone.penalty : 0));
@@ -196,6 +218,16 @@ function dgSubmit() {
   DG.total.points += earned;
   DG.total.hints += DG.hints;
   dgSaveTotal();
+  if (typeof RefrigEvidence !== "undefined") {
+    RefrigEvidence.record({ tool: "diagnose", score: earned, detail: {
+      fault: dgFaultKey(), answer: dgAnswerList(), verdict: j.verdict, level: DG.level, refrigerant: DG.refrigerant,
+      readings: DG.placed.length, hints: DG.hints, zonePenalty: zone ? zone.penalty : 0,
+      capstone: DG_CAP ? DG_CAP.id : null } });
+  }
+  if (DG_CAP) {
+    const st = RefrigCapstone.complete(DG_CAP.id, { score: earned, detail: { fault: dgFaultKey(), verdict: j.verdict } });
+    DG.coach = RefrigCapstone.doneHtml(DG_CAP, st);
+  }
   dgRender();
 }
 
@@ -399,7 +431,7 @@ function dgRenderDiagnosis() {
     : "no jobs finished yet";
 
   if (DG.practice) {
-    const f = RefrigData.FAULTS[DG.fault];
+    const f = dgFaultObj();
     el.innerHTML = `
       <p class="dg-empty">Practice mode — the fault is on the table, so there is nothing to guess.
       Fit instruments and watch what <b>${dgEsc(f.label)}</b> does to them.</p>
@@ -408,19 +440,27 @@ function dgRenderDiagnosis() {
   }
 
   if (!DG.result) {
-    const opts = Object.entries(RefrigData.FAULTS).map(([k, f]) => `
-      <button type="button" class="dg-opt${DG.answer === k ? " on" : ""}" data-fault="${k}"
-        aria-pressed="${DG.answer === k}">${dgEsc(f.label)}</button>`).join("");
+    const chosen = dgAnswerList();
+    const two = DG.level === 3 && !DG_CAP;
+    const opts = Object.entries(RefrigData.FAULTS).filter(([k, f]) => !f.needsCircuitDevice).map(([k, f]) => `
+      <button type="button" class="dg-opt${chosen.includes(k) ? " on" : ""}" data-fault="${k}"
+        aria-pressed="${chosen.includes(k)}">${dgEsc(f.label)}</button>`).join("");
     el.innerHTML = `
-      <p class="dg-empty">Name the fault. Committing is the point: a diagnosis you will not
+      <p class="dg-empty">${two ? "Name the fault — or both faults, if the readings show two. Naming a second fault you cannot show is a miss." : "Name the fault."} Committing is the point: a diagnosis you will not
       write on the sheet is not a diagnosis.</p>
       <div class="dg-opts" role="group" aria-label="Candidate faults">${opts}</div>
       <div class="quiz-actions dg-submit-row">
-        <button id="dgSubmitBtn" class="btn btn-tour" type="button" ${DG.answer ? "" : "disabled"}>Commit to this diagnosis</button>
+        <button id="dgSubmitBtn" class="btn btn-tour" type="button" ${chosen.length ? "" : "disabled"}>Commit to ${chosen.length === 2 ? "these two" : "this diagnosis"}</button>
       </div>`;
     el.querySelectorAll(".dg-opt").forEach(b => b.addEventListener("click", () => {
-      DG.answer = b.dataset.fault;
-      DG.refocus = `.dg-opt[data-fault="${b.dataset.fault}"]`;
+      const k = b.dataset.fault;
+      if (two) {
+        const list = dgAnswerList();
+        if (list.includes(k)) DG.answer = list.filter(x => x !== k);
+        else if (k === "none") DG.answer = ["none"];
+        else DG.answer = list.filter(x => x !== "none").concat(k).slice(-2);
+      } else DG.answer = [k];
+      DG.refocus = `.dg-opt[data-fault="${k}"]`;
       dgRender();
     }));
     const sub = document.getElementById("dgSubmitBtn");
@@ -433,12 +473,12 @@ function dgRenderDiagnosis() {
   const word = r.verdict === "correct" ? "Correct" : r.verdict === "close" ? "Half a mark — right family, wrong fault" : "Not this one";
   el.innerHTML = `
     <div class="dg-verdict ${cls}">
-      <p class="dg-verdict-head"><b>${word}</b> · you said ${dgEsc(RefrigData.FAULTS[DG.answer].label)}</p>
+      <p class="dg-verdict-head"><b>${word}</b> · you said ${dgEsc(dgAnswerLabel())}</p>
       <p class="dg-verdict-score">${r.score.toFixed(1)} mark${r.score === 1 ? "" : "s"}${DG.hints ? `, less ${(DG_HINT_COST * DG.hints).toFixed(2)} for ${DG.hints} hint${DG.hints === 1 ? "" : "s"}` : ""}${r.zone && r.zone.penalty ? `, less ${r.zone.penalty.toFixed(2)} for the flammable zone` : ""} → <b>${r.earned.toFixed(2)}</b></p>
       <p>${r.text}</p>
     </div>
     ${r.zone ? `<div class="dg-efficiency ${r.zone.penalty ? "incomplete" : "sharp"}"><p><b>Flammable refrigerant — ${r.zone.penalty ? "zone assessed late" : "zone assessed first"}</b></p><p>${dgEsc(r.zone.text)}</p></div>` : ""}
-    ${dgFaultDossier(DG.fault, "The fault was", !r.text.includes(RefrigData.FAULTS[DG.fault].diag || DG_HEALTHY_NOTE))}
+    ${dgFaultDossier(DG.fault, "The fault was", !r.text.includes(dgFaultObj().diag || DG_HEALTHY_NOTE))}
     <div class="dg-efficiency ${r.eff.rating}">
       <p><b>How you went about it — ${dgEsc(r.eff.rating)}</b></p>
       <p>${dgEsc(r.eff.text)}</p>
@@ -453,7 +493,7 @@ function dgRenderDiagnosis() {
 /* The clues are what the gauges never tell you: what the machine looked,
    sounded and felt like. They belong with the reveal, not with the readings. */
 function dgFaultDossier(key, lead, showDiag) {
-  const f = RefrigData.FAULTS[key];
+  const f = dgFaultObj(key);
   return `
     <div class="dg-dossier">
       <h3>${lead}: ${dgEsc(f.label)}</h3>
@@ -470,9 +510,12 @@ function dgRenderJob() {
   mode.textContent = DG.practice ? "Practice · fault visible"
     : DG.result ? "Job closed · fault revealed" : "Live job · fault hidden";
   line.innerHTML = DG.practice
-    ? `Studying <b>${dgEsc(RefrigData.FAULTS[DG.fault].label)}</b> on ${dgEsc(RefrigData.REFRIGERANTS[DG.refrigerant].label)} — nothing is scored here.`
-    : `Job ${DG.jobNo} · ${dgEsc(RefrigData.REFRIGERANTS[DG.refrigerant].label)} · compressor at rated duty ·
+    ? `Studying <b>${dgEsc(dgFaultObj().label)}</b> on ${dgEsc(RefrigData.REFRIGERANTS[DG.refrigerant].label)} — nothing is scored here.`
+    : `Job ${DG.jobNo} · ${dgEsc(RefrigData.REFRIGERANTS[DG.refrigerant].label)} · compressor at rated duty · ${DG_CAP ? "capstone" : "level " + DG.level} ·
        ${DG.result ? "closed" : "the fault is hidden until you commit"}`;
+  const lvl = document.getElementById("dgLevel");
+  lvl.value = String(DG.level);
+  lvl.disabled = !!DG_CAP;
 
   document.getElementById("dgAmbientOut").textContent = RefrigUnits.fmtT(DG.ambient);
   document.getElementById("dgBoxAirOut").textContent = RefrigUnits.fmtT(DG.boxAir);
@@ -493,7 +536,7 @@ function dgRenderJob() {
     : "";
   /* Only mirror the hidden fault into the picker in practice mode — during a
      live job the answer should not be sitting in the DOM waiting to be read. */
-  if (DG.practice) document.getElementById("dgFaultSelect").value = DG.fault;
+  if (DG.practice) document.getElementById("dgFaultSelect").value = dgFaultKey();
 
   const coach = document.getElementById("dgCoach");
   coach.innerHTML = DG.coach ? `<div class="quiz-feedback good"><p>${DG.coach}</p></div>` : "";
@@ -519,6 +562,16 @@ document.addEventListener("DOMContentLoaded", () => {
   rSel.addEventListener("change", () => {
     DG.refrigerant = rSel.value;
     dgResetConditions();     // site conditions belong to the machine, not the last job
+    dgNewJob();
+  });
+
+  try { const v = parseInt(localStorage.getItem(DG_LEVEL_KEY), 10); if (RefrigDiagnose.LEVELS[v]) DG.level = v; } catch (e) { /* ignore */ }
+  const lSel = document.getElementById("dgLevel");
+  lSel.innerHTML = Object.entries(RefrigDiagnose.LEVELS).map(([k, l]) => `<option value="${k}">${l.label}</option>`).join("");
+  lSel.value = String(DG.level);
+  lSel.addEventListener("change", () => {
+    DG.level = parseInt(lSel.value, 10) || 1;
+    try { localStorage.setItem(DG_LEVEL_KEY, String(DG.level)); } catch (e) { /* ignore */ }
     dgNewJob();
   });
 

@@ -17,6 +17,10 @@ const CT_HINT_ORDER = [
   { text: "Before any ohms, capacitance or insulation test: isolate, prove the tester, test for dead, prove again." },
 ];
 
+/* Opened as a stage of the capstone job? Then the brief shows, and the
+   result is reported back to the job when the diagnosis is committed. */
+const CT_CAP = (typeof RefrigCapstone !== "undefined") ? RefrigCapstone.stageFromLocation() : null;
+
 const CT = {
   fault: "none", state: null, practice: false, jobNo: 0,
   instrument: "volts", probeA: "n0", probeB: "N", conductor: "compressor", gaugeSide: "low",
@@ -50,8 +54,10 @@ function ctNewJob() {
   CT.state = RefrigControl.newState(CT.fault);
   CT.log = [];
   CT.answer = null; CT.result = null; CT.hints = 0;
+  if (CT_CAP && !CT.practice && CT.fault === "none") CT.fault = ctPickFault();   // the capstone's dead unit has a fault
   CT.coach = CT.practice
     ? "Practice mode: pick a fault and take readings to see the signature it leaves on the meter."
+    : CT_CAP ? RefrigCapstone.introHtml(CT_CAP)
     : "Call-out: the cool room is warm and the customer says the unit \"just stopped\". The isolator is closed and the unit is live. Where would you start?";
   ctRender();
 }
@@ -99,6 +105,16 @@ function ctSubmit() {
   CT.result = { verdict: j.verdict, score: j.score, earned, text: j.text, method: m };
   CT.total.jobs += 1; CT.total.points += earned; CT.total.hints += CT.hints;
   ctSaveTotal();
+  if (typeof RefrigEvidence !== "undefined") {
+    RefrigEvidence.record({ tool: "control", score: earned, detail: {
+      fault: CT.fault, answer: CT.answer, verdict: j.verdict, readings: CT.state.measurements.length,
+      hints: CT.hints, liveOhms: CT.state.liveOhms, provenDead: K.provenDead(CT.state) || CT.state.unprovedOhms === 0,
+      capstone: CT_CAP ? CT_CAP.id : null } });
+  }
+  if (CT_CAP) {
+    const st = RefrigCapstone.complete(CT_CAP.id, { score: earned, detail: { fault: CT.fault, verdict: j.verdict } });
+    CT.coach = RefrigCapstone.doneHtml(CT_CAP, st);
+  }
   ctRender();
 }
 

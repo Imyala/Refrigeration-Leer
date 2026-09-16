@@ -44,6 +44,7 @@
       <li><a href="diagnose.html" data-tool="diagnose">Diagnose</a></li>
       <li><a href="electrical.html" data-tool="electrical">Electrical</a></li>
       <li><a href="procedures.html" data-tool="procedures">Procedures</a></li>
+      <li><a href="capstone.html" data-tool="capstone">Capstone</a></li>
       <li><a href="simulator.html?quiz=1" data-tool="quiz">Quiz</a></li>
     </ul>
   </nav>
@@ -97,6 +98,10 @@
         <p id="quizScenario" class="quiz-scenario"></p>
       </div>
       <div class="quiz-score" id="quizScore"></div>
+      <label class="select-group quiz-level">
+        <span>Difficulty</span>
+        <select id="quizLevel" aria-label="Quiz difficulty"></select>
+      </label>
     </div>
     <div class="quiz-options" id="quizOptions"></div>
     <div class="quiz-actions">
@@ -309,6 +314,8 @@
   <script src="js/srs.js"></script>
   <script src="js/gauges.js"></script>
   <script src="js/pt.js"></script>
+  <script src="js/competency.js"></script>
+  <script src="js/evidence.js"></script>
   <script src="js/quiz.js"></script>
   <script src="js/app.js"></script>
 </body>

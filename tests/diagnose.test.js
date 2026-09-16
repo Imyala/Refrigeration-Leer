@@ -174,3 +174,48 @@ test("gauges fitted before the zone was assessed cost a quarter mark; temperatur
   assert.strictEqual(Dg.zoneVerdict(r32, []).penalty, 0);
   assert.strictEqual(Dg.zoneVerdict(D.REFRIGERANTS.R134a, ["lowGauge"]), null, "no verdict at all on an A1 machine");
 });
+
+/* ---- Compound faults and levels ------------------------------------------- */
+test("a compound fault reads like the sum of its parts and every reading stays finite", () => {
+  const c = Dg.compound("dirtyCondenser", "lowCharge");
+  assert.ok(c && c.compound && c.parts.length === 2);
+  const cyc = M.deriveAt("R404A", 100, 100, c);
+  const env = { ambient: cyc.tCond - 12, boxAir: cyc.tEvap + 8 };
+  const d = Dg.derive(ALL, cyc, env, c);
+  for (const k of Object.keys(d)) assert.ok(Number.isFinite(d[k].value), `${k} finite`);
+  assert.ok(d.superheat.value > 10, "the low charge starves the coil");
+  assert.ok(cyc.pHigh > M.deriveAt("R404A", 100, 100, "lowCharge").pHigh, "the dirty condenser lifts the head pressure above a plain low charge");
+  assert.ok(cyc.pLow < M.deriveAt("R404A", 100, 100, "dirtyCondenser").pLow, "and the low charge pulls the suction below a plain dirty condenser");
+  for (const [a, b] of Dg.COMPOUNDS) {
+    const x = Dg.compound(a, b);
+    const cy = M.deriveAt("R134a", 100, 100, x);
+    assert.ok(cy.pHigh > cy.pLow && Number.isFinite(cy.cop), `${x.key}: sane cycle`);
+    for (const id of ALL) assert.ok(Number.isFinite(Dg.readingAt(id, cy, env, x)), `${x.key}/${id}`);
+  }
+});
+
+test("judging a compound fault: both, one, or neither", () => {
+  const c = Dg.compound("dirtyCondenser", "lowCharge");
+  assert.strictEqual(Dg.judge(["dirtyCondenser", "lowCharge"], c).score, 1);
+  assert.strictEqual(Dg.judge(["lowCharge"], c).score, 0.5);
+  assert.strictEqual(Dg.judge(["lowCharge", "overcharge"], c).score, 0.5);
+  assert.strictEqual(Dg.judge(["overcharge"], c).score, 0);
+  /* naming two faults when there was one is a miss */
+  assert.strictEqual(Dg.judge(["lowCharge", "dirtyCondenser"], "lowCharge").score, 0);
+  assert.strictEqual(Dg.judge(["lowCharge"], "lowCharge").score, 1);
+});
+
+test("the levels draw from the right pools", () => {
+  const l1 = Dg.LEVELS[1].pool(), l2 = Dg.LEVELS[2].pool(), l3 = Dg.LEVELS[3].pool();
+  assert.ok(l1.every(k => !D.FAULTS[k].family), "level 1 has no look-alike families");
+  assert.ok(l1.includes("none") && l1.includes("lowCharge"));
+  assert.ok(l2.length > l1.length && l2.includes("condFanFail"));
+  assert.ok(l3.some(k => typeof k === "object" && k.compound), "level 3 includes compounds");
+  assert.ok(l3.filter(k => typeof k === "string").every(k => D.FAULTS[k].family || k === "none" || k === "lowCharge"));
+  for (const lvl of [1, 2, 3]) {
+    let seq = 0;
+    const rand = () => ((seq++ * 7919) % 97) / 97;
+    const f = Dg.pickFault(lvl, "none", rand);
+    assert.ok(Dg.keyOf(f) !== "none", `level ${lvl} moves off the current fault`);
+  }
+});

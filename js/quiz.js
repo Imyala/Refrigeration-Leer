@@ -11,7 +11,33 @@
    ========================================================================= */
 "use strict";
 
-const Quiz = { active: false, answered: false, fault: null, count: 0, score: 0, streak: 0 };
+const Quiz = { active: false, answered: false, fault: null, count: 0, score: 0, streak: 0, level: 2 };
+
+/* Three rungs. Level 1 keeps to faults with a signature of their own, at
+   rated conditions, on the two textbook fluids; level 2 is the whole library
+   at a random operating point; level 3 is only the look-alikes — the faults
+   that share a gauge picture with another — so the half-marks have to be
+   earned back by reading the machine, not the needles. */
+const QUIZ_LEVELS = {
+  1: { label: "Level 1 — clear signatures, rated conditions" },
+  2: { label: "Level 2 — any fault, any operating point" },
+  3: { label: "Level 3 — look-alike faults only" },
+};
+const QUIZ_LEVEL_KEY = "refrigSim.quizLevel";
+function quizLoadLevel() {
+  try { const v = parseInt(localStorage.getItem(QUIZ_LEVEL_KEY), 10); if (QUIZ_LEVELS[v]) Quiz.level = v; } catch (e) { /* ignore */ }
+}
+function quizSetLevel(v) {
+  if (!QUIZ_LEVELS[v]) return;
+  Quiz.level = v;
+  try { localStorage.setItem(QUIZ_LEVEL_KEY, String(v)); } catch (e) { /* ignore */ }
+}
+function quizPool() {
+  const all = Object.keys(RefrigData.FAULTS).filter(k => k !== "none" && faultAvailable(k));
+  if (Quiz.level === 1) return all.filter(k => !RefrigData.FAULTS[k].family);
+  if (Quiz.level === 3) return all.filter(k => RefrigData.FAULTS[k].family);
+  return all;
+}
 
 const QUIZ_FAMILY_HINTS = {
   "cond-airflow": "A dirty coil and a failed fan give nearly the same gauge picture — in the field, look and listen: is the fan actually spinning, and is the coil matted with dirt?",
@@ -64,6 +90,12 @@ function quizSyncLocation(active) {
 }
 
 function startQuiz() {
+  quizLoadLevel();
+  const lvlSel = document.getElementById("quizLevel");
+  if (lvlSel) {
+    lvlSel.innerHTML = Object.entries(QUIZ_LEVELS).map(([k, l]) => `<option value="${k}">${l.label}</option>`).join("");
+    lvlSel.value = String(Quiz.level);
+  }
   Quiz.active = true;
   Quiz.count = 0; Quiz.score = 0; Quiz.streak = 0;
   document.body.classList.add("quiz-active");
@@ -100,22 +132,26 @@ function quizSyncSliders() {
 function quizNextScenario() {
   // Only faults this circuit could actually have: a stuck liquid-line solenoid
   // is not a fair answer on a system that was never drawn with one.
-  const faultKeys = Object.keys(RefrigData.FAULTS)
-    .filter(k => k !== "none" && faultAvailable(k));
-  Quiz.fault = Math.random() < 0.14 ? "none" : faultKeys[Math.floor(Math.random() * faultKeys.length)];
+  const lvlSel = document.getElementById("quizLevel");
+  if (lvlSel && QUIZ_LEVELS[parseInt(lvlSel.value, 10)]) quizSetLevel(parseInt(lvlSel.value, 10));
+  const faultKeys = quizPool();
+  Quiz.fault = Math.random() < (Quiz.level === 3 ? 0.1 : 0.14) ? "none" : faultKeys[Math.floor(Math.random() * faultKeys.length)];
   Quiz.answered = false;
   Quiz.count += 1;
 
-  const refKeys = Object.keys(RefrigData.REFRIGERANTS);
+  const refKeys = Quiz.level === 1 ? ["R134a", "R410A"] : Object.keys(RefrigData.REFRIGERANTS);
   state.refrigerant = refKeys[Math.floor(Math.random() * refKeys.length)];
   document.getElementById("refrigerantSelect").value = state.refrigerant;
-  state.speed = 60 + 5 * Math.floor(Math.random() * 17);   // 60..140 %
-  state.load  = 60 + 5 * Math.floor(Math.random() * 17);
+  if (Quiz.level === 1) { state.speed = 100; state.load = 100; }
+  else {
+    state.speed = 60 + 5 * Math.floor(Math.random() * 17);   // 60..140 %
+    state.load  = 60 + 5 * Math.floor(Math.random() * 17);
+  }
   state.fault = Quiz.fault;
   quizSyncSliders();
 
   document.getElementById("quizScenario").textContent =
-    `Scenario ${Quiz.count} — ${RefrigCircuits.CIRCUITS[state.circuit].label}, ` +
+    `Scenario ${Quiz.count} (${QUIZ_LEVELS[Quiz.level].label.split(" — ")[0]}) — ${RefrigCircuits.CIRCUITS[state.circuit].label}, ` +
     `${RefrigData.REFRIGERANTS[state.refrigerant].label} · ` +
     `compressor at ${state.speed}% · load ${state.load}%. ` +
     `Read the gauges, temperatures, superheat/subcool and the P–h cycle, then pick the fault.`;
@@ -165,6 +201,10 @@ function quizAnswer(key) {
   const family = !exact && fActual.family != null && fActual.family === fPicked.family;
   Quiz.score += exact ? 1 : family ? 0.5 : 0;
   Quiz.streak = exact ? Quiz.streak + 1 : 0;
+  if (typeof RefrigEvidence !== "undefined") {
+    RefrigEvidence.record({ tool: "quiz", score: exact ? 1 : family ? 0.5 : 0,
+      detail: { fault: Quiz.fault, answer: key, level: Quiz.level, refrigerant: state.refrigerant } });
+  }
 
   document.querySelectorAll("#quizOptions .quiz-opt").forEach(b => {
     b.disabled = true;
