@@ -118,6 +118,8 @@ function dgNewJob() {
   DG.answer = null;
   DG.result = null;
   DG.detail = null;
+  DG.zoneChecked = false;      // flammable zone assessed (A2L / A3 machines only)
+  DG.gaugesBeforeZone = [];    // gauge points fitted before it was
   DG.coach = DG.practice
     ? "Practice mode: pick a fault and fit instruments to see the signature it leaves on the gauges."
     : "A machine has been reported not holding temperature. Nothing has been measured yet. Where would you start?";
@@ -128,7 +130,17 @@ function dgTogglePoint(id) {
   if (DG.result) return;                      // the job is over; leave the machine alone
   const i = DG.placed.indexOf(id);
   if (i >= 0) DG.placed.splice(i, 1);
-  else DG.placed.push(id);
+  else {
+    DG.placed.push(id);
+    /* On a flammable charge, a gauge on a service port is a potential
+       release. The engine scores the order at the end; the coach says so now. */
+    const req = RefrigDiagnose.siteRequirements(RefrigData.REFRIGERANTS[DG.refrigerant]);
+    if (req.flammableZone && !DG.zoneChecked && RefrigDiagnose.POINTS[id].kind === "gauge"
+        && !DG.gaugesBeforeZone.includes(id)) {
+      DG.gaugesBeforeZone.push(id);
+      DG.coach = `That gauge went onto a class ${req.safety} machine before the area was assessed as a flammable zone. ${req.text}`;
+    }
+  }
   DG.detail = id;
   /* Panels are re-rendered wholesale, which throws away the button the
      keyboard was standing on. Put the caret back where the learner left it. */
@@ -173,10 +185,12 @@ function dgSubmit() {
   let text = (j.text || "").replace(/\s*null\s*$/, "").trim();
   if (!text || DG.fault === "none") text = (text ? text + " " : "") + DG_HEALTHY_NOTE;
 
-  const earned = Math.max(0, j.score - DG_HINT_COST * DG.hints);
+  const zone = RefrigDiagnose.zoneVerdict(RefrigData.REFRIGERANTS[DG.refrigerant], DG.gaugesBeforeZone);
+  const earned = Math.max(0, j.score - DG_HINT_COST * DG.hints - (zone ? zone.penalty : 0));
   DG.result = {
     verdict: j.verdict, score: j.score, earned, text,
     eff: RefrigDiagnose.efficiency(DG.placed),
+    zone,
   };
   DG.total.jobs += 1;
   DG.total.points += earned;
@@ -420,9 +434,10 @@ function dgRenderDiagnosis() {
   el.innerHTML = `
     <div class="dg-verdict ${cls}">
       <p class="dg-verdict-head"><b>${word}</b> · you said ${dgEsc(RefrigData.FAULTS[DG.answer].label)}</p>
-      <p class="dg-verdict-score">${r.score.toFixed(1)} mark${r.score === 1 ? "" : "s"}${DG.hints ? `, less ${(DG_HINT_COST * DG.hints).toFixed(2)} for ${DG.hints} hint${DG.hints === 1 ? "" : "s"}` : ""} → <b>${r.earned.toFixed(2)}</b></p>
+      <p class="dg-verdict-score">${r.score.toFixed(1)} mark${r.score === 1 ? "" : "s"}${DG.hints ? `, less ${(DG_HINT_COST * DG.hints).toFixed(2)} for ${DG.hints} hint${DG.hints === 1 ? "" : "s"}` : ""}${r.zone && r.zone.penalty ? `, less ${r.zone.penalty.toFixed(2)} for the flammable zone` : ""} → <b>${r.earned.toFixed(2)}</b></p>
       <p>${r.text}</p>
     </div>
+    ${r.zone ? `<div class="dg-efficiency ${r.zone.penalty ? "incomplete" : "sharp"}"><p><b>Flammable refrigerant — ${r.zone.penalty ? "zone assessed late" : "zone assessed first"}</b></p><p>${dgEsc(r.zone.text)}</p></div>` : ""}
     ${dgFaultDossier(DG.fault, "The fault was", !r.text.includes(RefrigData.FAULTS[DG.fault].diag || DG_HEALTHY_NOTE))}
     <div class="dg-efficiency ${r.eff.rating}">
       <p><b>How you went about it — ${dgEsc(r.eff.rating)}</b></p>
@@ -466,6 +481,16 @@ function dgRenderJob() {
   document.getElementById("dgHintBtn").disabled = !!DG.result || DG.practice;
   document.getElementById("dgFaultPick").hidden = !DG.practice;
   document.getElementById("dgPractice").checked = DG.practice;
+  /* The flammable-zone control only exists on an A2L / A3 machine. */
+  const req = RefrigDiagnose.siteRequirements(RefrigData.REFRIGERANTS[DG.refrigerant]);
+  const zoneWrap = document.getElementById("dgZoneWrap");
+  zoneWrap.hidden = !req.flammableZone;
+  const zoneBox = document.getElementById("dgZone");
+  zoneBox.checked = DG.zoneChecked;
+  zoneBox.disabled = !!DG.result;
+  document.getElementById("dgZoneText").textContent = req.flammableZone
+    ? `Flammable zone assessed — class ${req.safety}: ventilation, no ignition sources, combustible-gas detector running`
+    : "";
   /* Only mirror the hidden fault into the picker in practice mode — during a
      live job the answer should not be sitting in the DOM waiting to be read. */
   if (DG.practice) document.getElementById("dgFaultSelect").value = DG.fault;
@@ -519,6 +544,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("dgNewJobBtn").addEventListener("click", dgNewJob);
   document.getElementById("dgHintBtn").addEventListener("click", dgHint);
+
+  document.getElementById("dgZone").addEventListener("change", (e) => {
+    DG.zoneChecked = e.target.checked;
+    if (DG.zoneChecked) {
+      const req = RefrigDiagnose.siteRequirements(RefrigData.REFRIGERANTS[DG.refrigerant]);
+      DG.coach = DG.gaugesBeforeZone.length
+        ? `Zone assessed now — but ${DG.gaugesBeforeZone.length === 1 ? "a gauge was" : "the gauges were"} already on. It still counts for everything from here; the order will show on the mark.`
+        : `Zone assessed: class ${req.safety} charge, ventilation confirmed, ignition sources cleared, detector running. The gauges can go on.`;
+    }
+    dgRender();
+  });
 
   document.getElementById("dgPractice").addEventListener("change", (e) => {
     DG.practice = e.target.checked;

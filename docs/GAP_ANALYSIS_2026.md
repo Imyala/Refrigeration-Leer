@@ -22,6 +22,17 @@ simulation pillar is well ahead of the market; the adaptive, evidence-mapping
 and institutional pillars are where the gaps are, and there are a handful of
 currency fixes that should land before anything else.**
 
+**Progress since this was written (same day):** groups 3.1 and 3.2 below
+have landed. The 2007 citations are gone and an **edition register** with a
+CI test now guards against them; module 11 has a lesson on what the **2025
+edition changed**; the `_to_delete` tree is out of the repository; the
+curriculum mapping is rewritten to **UEE32225** (which superseded UEE32220
+in March 2025, a fact the original audit below missed) and every module
+carries `units:` tags checked by tests; **R32, R454B and R290** are in the
+tools with CoolProp-derived tables; and the Service Bay and Diagnosis
+Workshop carry a graded **flammable-zone** step on A2L/A3 charges. The
+scorecard and §2 are left as written, as the record of what was found.
+
 ---
 
 ## 1. Scorecard — the vision against what exists
@@ -44,7 +55,7 @@ host LMS instead.
 
 | Vision item | What exists today | Status | Gap |
 |---|---|---|---|
-| Pre-assessment and gap analysis | None. Every learner starts at lesson 1 of the pathway | **Missing** | The 2,094-question bank makes a placement quiz per stream cheap to build client-side |
+| Pre-assessment and gap analysis | None. Every learner starts at lesson 1 of the pathway | **Missing** | The 2,098-question bank makes a placement quiz per stream cheap to build client-side |
 | Progress tracking and feedback | Per-lesson progress, per-stream and final exams, review list, "next up", export/import; instant explanations on every quiz answer | **Done** | Progress is per-lesson, not per-competency; nothing tells a learner *which unit of competency* they are ready for |
 | Spaced repetition | `js/srs.js`: simplified SM-2, due counts, review-ahead, typed-recall cards | **Done** | — |
 | Differentiated instruction | "In plain words" box on every lesson; Guided Tour; the simulator "starts simple" | **Partial** | No "go deeper" layer, and no way to skip what a placement quiz shows is known |
@@ -53,7 +64,7 @@ host LMS instead.
 
 | Vision item | What exists today | Status | Gap |
 |---|---|---|---|
-| Modular units | 64 modules / 516 lessons across five streams, markdown-authored, validated by tests | **Done** | — |
+| Modular units | 64 modules / 517 lessons across five streams, markdown-authored, validated by tests | **Done** | — |
 | Rich media (diagrams, models) | 30+ original SVG figures (`js/figures.js`), equipment view, animated cycle | **Done** for diagrams | No photographs or video; acceptable for a static site but worth an image library of real plant (own photos, licensed) |
 | Manufacturer data (specs, wiring diagrams, manuals) | Generic wiring-diagram reading in R1.13, R2.13 and C.10; nothing manufacturer-specific | **Partial** | Copyright means manuals cannot be bundled; the fix is a curated **link-out library** plus original "read this diagram" exercises drawn in the house style |
 | Standards and regulations integrated | Reference library (`js/refdocs.js`) indexes the **2025 Code of Practice** clause by clause with `!CITE` links; AS/NZS 3000, 3017, 3760, 4836, 5149 cited at topic level; RHL/RTA licensing taught | **Done**, with currency defects | See §2 — stale 2007 reference, UEE11 unit codes, no A2L refrigerant in the tools |
@@ -119,8 +130,10 @@ clause by clause. **This is in good shape.**
 
 `docs/CURRICULUM_MAPPING.md` maps by skills area against **UEE11 codes**
 (UEENEEJ102A, 103A, 104A, 108A) and defers UEE32220 to "map with your RTO".
-UEE32220 is the current Certificate III; its core includes, per the released
-qualification structure: UEECD0007 (apply WHS regulations, codes and
+*(Correction found while acting on this: UEE32220 is itself superseded —
+**UEE32225** was released on 24 March 2025 and teach-out under UEE32220 ended
+on 23 March 2026. The rewritten mapping targets UEE32225.)* UEE32220's core
+included, per the released qualification structure: UEECD0007 (apply WHS regulations, codes and
 practices), UEECD0016 (document and apply measures to control WHS risks),
 UEECD0019 (fabricate, assemble and dismantle utilities industry components),
 UEECD0020 (fix and secure electrotechnology equipment), UEECD0042 (solve

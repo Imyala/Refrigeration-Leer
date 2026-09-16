@@ -19,6 +19,7 @@
     {
       id: "v1-electric-motors",
       stream: "v1",
+      units: ["UEERA0044", "UEERA0045"],
       title: "R1.14 · Electric motors",
       blurb: "How the motors that drive compressors, fans and pumps work: rotating fields, slip, single- and three-phase types, starting methods, inverters, protection and fault testing.",
       lessons: [

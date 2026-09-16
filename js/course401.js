@@ -37,6 +37,7 @@
   {
     id: "cap-exam-approach",
     stream: "capstone",
+    units: ["UEECO0010"],
     title: "C.1 · How the knowledge assessment works",
     blurb: "What a written knowledge assessment is really testing, how to answer each question shape it uses, how workings are marked, and where in this course every assessed topic is taught.",
     lessons: [

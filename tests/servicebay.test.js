@@ -162,3 +162,84 @@ test("no reading without a hose or with the valve back-seated", () => {
   run(s, [{ type: "portCap", side: "suction" }, { type: "hose", side: "suction" }]);
   assert.strictEqual(S.reading(s, "suction", P), null, "back-seated → port dead");
 });
+
+/* ---- Flammable refrigerants ------------------------------------------------
+   An A2L or A3 charge adds a step to the taught order: assess the area as a
+   flammable zone before anything can release refrigerant. */
+test("an A1 machine has eight steps; a flammable one has nine, with the zone step before any hose", () => {
+  const a1 = S.newState();
+  const a2l = S.newState({ flammable: true, safety: "A2L" });
+  assert.strictEqual(S.sequenceFor(a1).length, 8);
+  assert.strictEqual(S.sequenceFor(a2l).length, 9);
+  const ids = S.sequenceFor(a2l).map(st => st.id);
+  assert.ok(ids.indexOf("zone") < ids.indexOf("highHose"), "zone is assessed before the first hose goes on");
+  assert.ok(!S.sequenceFor(a1).some(st => st.id === "zone"), "no zone step on an A1 charge");
+  assert.strictEqual(S.checklist(a2l).flammable, true);
+});
+
+test("the zone check is graded in order and needs no warning on a clean flammable hook-up", () => {
+  const s = S.newState({ flammable: true, safety: "A2L" });
+  const results = run(s, [
+    { type: "hoseSet", set: "correct" },
+    { type: "zeroCheck" },
+    { type: "zoneCheck" },
+    { type: "portCap", side: "discharge" },
+    { type: "hose", side: "discharge" },
+    { type: "spindleCap", side: "discharge" },
+    { type: "spindle", side: "discharge", pos: "crack" },
+    { type: "portCap", side: "suction" },
+    { type: "hose", side: "suction" },
+    { type: "check" },
+    { type: "purge", side: "suction" },
+    { type: "spindleCap", side: "suction" },
+    { type: "spindle", side: "suction", pos: "crack" },
+  ]);
+  assert.ok(results.every(r => r.kind !== "warn" && r.kind !== "block"), "no warnings or blocks");
+  assert.strictEqual(s.zoneMissed, 0);
+  const seq = S.sequenceReport(s);
+  assert.strictEqual(seq.done, 9);
+  assert.ok(seq.inOrder);
+});
+
+test("a purge on a flammable charge with no zone assessment is called out, and counted", () => {
+  const s = S.newState({ flammable: true, safety: "A2L" });
+  run(s, [
+    { type: "hoseSet", set: "correct" }, { type: "zeroCheck" },
+    { type: "portCap", side: "discharge" }, { type: "hose", side: "discharge" },
+    { type: "spindleCap", side: "discharge" }, { type: "spindle", side: "discharge", pos: "crack" },
+    { type: "portCap", side: "suction" }, { type: "hose", side: "suction" },
+  ]);
+  const r = S.act(s, { type: "purge", side: "suction" });
+  assert.strictEqual(r.kind, "warn");
+  assert.match(r.msg, /A2L/);
+  assert.strictEqual(s.zoneMissed, 1);
+  assert.ok(s.valves.suction.purged && s.valves.discharge.purged, "the purge still happened");
+  /* Assessing the zone afterwards completes the step, but out of order. */
+  S.act(s, { type: "zoneCheck" });
+  const zone = S.sequenceReport(s).steps.find(st => st.id === "zone");
+  assert.ok(zone.complete && zone.outOfOrder);
+});
+
+test("venting a flammable charge without the assessment carries the reminder; an A1 vent does not", () => {
+  const flam = S.newState({ flammable: true, safety: "A3" });
+  run(flam, [{ type: "hoseSet", set: "correct" }, { type: "zeroCheck" }, { type: "spindleCap", side: "suction" }, { type: "portCap", side: "suction" }]);
+  const vent = S.act(flam, { type: "spindle", side: "suction", pos: "crack" });
+  assert.strictEqual(vent.kind, "warn");
+  assert.match(vent.msg, /A3 refrigerant/);
+  assert.strictEqual(flam.zoneMissed, 1);
+
+  const a1 = opened();
+  run(a1, [{ type: "spindleCap", side: "suction" }, { type: "portCap", side: "suction" }]);
+  const vent1 = S.act(a1, { type: "spindle", side: "suction", pos: "crack" });
+  assert.strictEqual(vent1.kind, "warn");
+  assert.doesNotMatch(vent1.msg, /flammable|A2L|A3/);
+  assert.strictEqual(a1.zoneMissed, 0);
+});
+
+test("the zone check on an A1 machine is harmless and says why", () => {
+  const s = opened();
+  const r = S.act(s, { type: "zoneCheck" });
+  assert.strictEqual(r.kind, "info");
+  assert.match(r.msg, /A1/);
+  assert.strictEqual(S.sequenceReport(s).total, 8, "it adds no step to grade");
+});

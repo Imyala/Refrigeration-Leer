@@ -18,6 +18,7 @@
     {
       id: "v2-service-charts",
       stream: "v2",
+      units: ["UEERA0036", "UEERA0038"],
       title: "R2.7 · Service charts, tables and cycle analysis",
       blurb: "Reading pressure–temperature charts, pressure–enthalpy diagrams and psychrometric charts, then using them to plot a real cycle and prove whether a plant is performing.",
       lessons: [

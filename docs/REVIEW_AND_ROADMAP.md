@@ -13,8 +13,8 @@ sold to universities, TAFEs and other higher-education institutions.
   rings, PT chart + target-pressure trainer, kPa/bar/psi + °C/°F units, fault
   library grown to 10, accessibility pass, code modularised with tests + CI.
 - **Phase 2 — done, and since expanded.** Structured course (`learn.html`):
-  **64 modules / 516 lessons / 2,094 quiz questions**, grouped into five
-  streams — Core program (11 modules / 39 lessons), Refrigeration &
+  **64 modules / 517 lessons / 2,098 quiz questions**, grouped into five
+  streams — Core program (11 modules / 40 lessons), Refrigeration &
   air-conditioning 1 (16 / 151), Refrigeration & air-conditioning 2 (13 / 112),
   Electrical principles (14 / 135) and Capstone exam preparation (10 / 79).
   Per-lesson quizzes, explanations, saved progress and simulator deep links
@@ -28,8 +28,8 @@ sold to universities, TAFEs and other higher-education institutions.
     Blackboard/D2L; reports completion + exam score to the gradebook and stores
     progress in the LMS (suspend_data), so it follows the learner's account.
     Progress is encoded compactly (5 characters per lesson), so the largest
-    record a learner can produce — all 516 lessons, all five stream exams and
-    the final exam, 522 entries — occupies 2,691 of SCORM 1.2's
+    record a learner can produce — all 517 lessons, all five stream exams and
+    the final exam, 523 entries — occupies 2,696 of SCORM 1.2's
     4,096-character suspend_data budget, where the old readable format would
     have needed 25,218. The earlier overflow concern is resolved, and the size
     is covered by a test against the whole syllabus.
@@ -189,7 +189,7 @@ architecture.
 ### Phase 2 — Curriculum layer (still deployable as a static site) — **delivered**
 
 Shipped and then expanded well past the original plan: the syllabus is now
-64 modules / 516 lessons / 2,094 questions across five streams, written from
+64 modules / 517 lessons / 2,098 questions across five streams, written from
 the source library (see docs/SOURCE_COVERAGE.md). Every item below is done.
 
 1. **Lesson framework** — *done*: markdown-authored lessons rendered into a
@@ -208,7 +208,7 @@ the source library (see docs/SOURCE_COVERAGE.md). Every item below is done.
    - Repair procedures: recovery, evacuation, charging (weigh-in, superheat, subcool methods), brazing, leak detection
    - Safety: refrigerant handling, pressure hazards, electrical safety, PPE
 3. **Per-module quizzes** with a shared question-bank format (JSON), local
-   scoring — *done*; 2,094 questions, which also feed the stream and final exams.
+   scoring — *done*; 2,098 questions, which also feed the stream and final exams.
 4. **Licence/exam revision** — *done, added after the original plan*: the
    **Capstone exam preparation** stream (10 modules / 79 lessons), aimed at the
    end-of-apprenticeship knowledge assessment — mandatory electrical tests and

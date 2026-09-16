@@ -68,6 +68,7 @@
   {
     id: "elec-circuits",
     stream: "elec",
+    units: ["UEECD0043", "UEECD0044", "UEECD0046"],
     title: "E.3 · Electrical circuits",
     blurb: "How a circuit is built, drawn, calculated and faulted: source, path and load, Ohm's law, power and energy, series, parallel and compound circuits, Kirchhoff's laws and circuit protection.",
     lessons: [

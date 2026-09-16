@@ -38,6 +38,7 @@
   {
     id: "v2-installation",
     stream: "v2",
+    units: ["UEERA0052", "UEERA0053", "UEERA0051", "UEECD0020"],
     title: "R2.9 · Installation and maintenance",
     blurb: "How plant is sited, piped, mounted, fixed and then kept alive: installation practice for coolrooms and air-conditioners, planned maintenance, cooling-water hygiene and compressor drives.",
     lessons: [

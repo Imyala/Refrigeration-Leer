@@ -10,7 +10,7 @@
 
   const REFS = [
     "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — Ch 6, Ancillary equipment",
-    "AS/NZS 1677.2 — refrigerating systems, safety requirements for fixed applications (relief devices, fusible plugs)",
+    "AS/NZS 5149 series (which replaced AS/NZS 1677.2 in 2016) — refrigerating systems and heat pumps: safety and environmental requirements (relief devices, fusible plugs)",
     "AS 1210 — pressure vessels; Australian Refrigerant Handling Code of Practice, Part 1 — relief devices and service practice",
   ];
 
@@ -18,6 +18,7 @@
     {
       id: "v1-ancillary-equipment",
       stream: "v1",
+      units: ["UEERA0050", "UEERA0053"],
       title: "R1.6 · Ancillary equipment",
       blurb: "The valves, vessels, filters and protection devices bolted around the four main components — what each one does, how it is set, and what fails when it is left out.",
       lessons: [
@@ -221,7 +222,7 @@ fails. Pressure relief devices decide *where* and *how* that failure happens —
 in a controlled, aimed discharge rather than a burst vessel.
 
 This work is governed, not optional. In Australia the relevant documents are
-AS/NZS 1677.2 for refrigerating system safety, AS 1210 for pressure vessels,
+AS/NZS 5149 (which replaced AS/NZS 1677.2) for refrigerating system safety, AS 1210 for pressure vessels,
 and the Australian Refrigerant Handling Code of Practice, whose section on
 relief devices sets out what has to be fitted and what must not be tampered
 with. Anyone holding an ARCtick licence is expected to work to them.
@@ -284,7 +285,7 @@ That is the crucial difference:
 
 Fusible plugs were once common and may still be found on older plant and on
 some cylinders. Where they are used at all, they must comply with the design
-standards — the clauses in AS/NZS 1677.2 and AS 1210 that cover them. On
+standards — the clauses in AS/NZS 5149 (which replaced AS/NZS 1677.2) and AS 1210 that cover them. On
 environmental grounds they are not recommended for refrigerating systems: an
 event that would cost a few hundred grams through a relief valve costs the
 whole charge through a fused plug, with the emissions and the recharging cost
@@ -321,7 +322,7 @@ that follow.
                 "It responds to temperature rather than pressure, which is more accurate",
               ],
               answer: 1,
-              explain: "The relief valve closes again once pressure falls, keeping the remaining charge in the system — better environmentally and cheaper to make good. A fusible plug, once melted, cannot close, so the full charge is vented. Relief devices are covered by AS/NZS 1677.2 and AS 1210, so option C is wrong on both counts.",
+              explain: "The relief valve closes again once pressure falls, keeping the remaining charge in the system — better environmentally and cheaper to make good. A fusible plug, once melted, cannot close, so the full charge is vented. Relief devices are covered by AS/NZS 5149 (which replaced AS/NZS 1677.2) and AS 1210, so option C is wrong on both counts.",
             },
             {
               q: "Two service valves are closed on a liquid line full of refrigerant on a 40 °C day, with no relief device between them. What is the hazard?",

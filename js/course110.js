@@ -19,6 +19,7 @@
     {
       id: "v1-brazing-welding",
       stream: "v1",
+      units: ["UEERA0059", "UEECD0019", "UEECD0007"],
       title: "R1.10 · Brazing and welding",
       blurb: "How a refrigeration technician makes permanent, leak-free metal joints — oxyacetylene plant, silver brazing, arc welding — and how to do it without hurting anyone.",
       lessons: [

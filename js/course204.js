@@ -21,6 +21,7 @@
   {
     id: "v2-ac-systems",
     stream: "v2",
+    units: ["UEERA0035", "UEERA0051", "UEERA0049"],
     title: "R2.4 · Air-conditioning systems",
     blurb: "How conditioned air actually reaches people: unitary and split equipment for homes, and the central station all-air, air-water, VAV and VRF systems used in commercial buildings.",
     lessons: [

@@ -144,3 +144,42 @@ test("every symptom names a component some circuit actually has", () => {
     }
   }
 });
+
+/* ---- Refrigerant data ------------------------------------------------------ */
+test("every refrigerant carries a safety class, and the flammable flag follows it", () => {
+  for (const [key, r] of Object.entries(D.REFRIGERANTS)) {
+    assert.match(r.safety, /^(A|B)(1|2L|2|3)$/, `${key}: ISO 817 class`);
+    assert.strictEqual(r.flammable, r.safety !== "A1" && r.safety !== "B1", `${key}: flammable iff class is not 1`);
+    assert.ok(Number.isFinite(r.gwp) && r.gwp >= 0, `${key}: GWP`);
+    assert.ok(r.use && r.use.length > 20, `${key}: says what it is used for`);
+  }
+  assert.ok(D.REFRIGERANTS.R32 && D.REFRIGERANTS.R32.safety === "A2L", "R32 is A2L");
+  assert.ok(D.REFRIGERANTS.R290 && D.REFRIGERANTS.R290.safety === "A3", "R290 is A3");
+  assert.ok(D.REFRIGERANTS.R454B && D.REFRIGERANTS.R454B.glide > 0, "R454B carries its glide");
+});
+
+test("saturation tables are monotonic in pressure and pin the reference state", () => {
+  for (const [key, tbl] of Object.entries(D.TABLES)) {
+    for (let i = 1; i < tbl.length; i++) {
+      assert.ok(tbl[i].T > tbl[i - 1].T && tbl[i].P > tbl[i - 1].P, `${key}: row ${i} rises`);
+      assert.ok(tbl[i].hg > tbl[i].hf, `${key}: hg above hf at ${tbl[i].T} °C`);
+    }
+    const zero = tbl.find(r => r.T === 0);
+    assert.ok(zero, `${key}: has a 0 °C row`);
+    /* IIR reference: h = 200 kJ/kg for saturated liquid at 0 °C. The blends
+       tabulated on the dew line sit a little above it. */
+    assert.ok(Math.abs(zero.hf - 200) < 8, `${key}: 0 °C liquid enthalpy near 200 kJ/kg (got ${zero.hf})`);
+  }
+});
+
+test("the new fluids sit where the trade expects them against R410A and R134a", () => {
+  const p = (k, T) => M.satPress(D.REFRIGERANTS[k], T);
+  // R32 runs a little above R410A pressure; R454B a little below it
+  assert.ok(p("R32", 6) > p("R410A", 6) && p("R32", 6) < p("R410A", 6) * 1.15);
+  assert.ok(p("R454B", 6) < p("R410A", 6) && p("R454B", 6) > p("R410A", 6) * 0.85);
+  // propane sits between R134a and R22
+  assert.ok(p("R290", 0) > p("R134a", 0) && p("R290", 0) < p("R22", 0));
+  // R32 discharges hotter than R410A at the same duty
+  const r32 = M.deriveAt("R32", 100, 100, "none"), r410 = M.deriveAt("R410A", 100, 100, "none");
+  assert.ok(r32.tDischarge > r410.tDischarge + 8, "R32 discharge temperature is the well-known problem");
+});

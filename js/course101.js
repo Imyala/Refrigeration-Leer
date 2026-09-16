@@ -49,6 +49,7 @@
     {
       id: "v1-basic-principles",
       stream: "v1",
+      units: ["UEERA0036", "UEECD0048"],
       title: "R1.1 · Refrigeration: basic principles",
       blurb:
         "The foundation chapter: where refrigeration came from, what it is used for, and the physics of heat, pressure, change of state and the vapour-compression cycle every technician works with.",
@@ -1651,7 +1652,7 @@ Three kinds of RTA are issued:
 2. **RAEMA** — for businesses acquiring refrigerant to manufacture RAC equipment.
 3. **RRTA** (Restricted) — for businesses authorised to recover, store and dispose of refrigerant only: metal recyclers, auto parts recyclers, waste management operators.
 
-Licensed handlers must be qualified and must comply with the industry codes of practice: the **Refrigerant Handling Code of Practice 2007, Parts 1 and 2**, and the **Automotive Code of Practice**.
+Licensed handlers must be qualified and must comply with the industry codes of practice: the **Australia and New Zealand Refrigerant Handling Code of Practice, 2025 edition, Parts 1 and 2** (which replaced the 2007 edition), and the **Automotive Code of Practice**.
 
 >! Acquiring, possessing or storing refrigerant without a current RTA is an offence of **strict liability**, and so is handling refrigerant when you hold no current RHL. Strict liability means the prosecution does not need to prove you intended to break the rule — doing it is enough. Businesses and individuals operating without the authorisation are referred to the relevant federal department. Check the ARC website for current licence requirements; the scheme is periodically revised.
 

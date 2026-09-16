@@ -20,6 +20,7 @@
     {
       id: "v1-electrical-testing",
       stream: "v1",
+      units: ["UEERA0031", "UEERA0044", "UEERA0045"],
       title: "R1.15 · Electrical testing and fault-finding",
       blurb: "How refrigeration circuits fail electrically, how to isolate and prove them dead, and how to use volt, amp, ohm and insulation testers to find the fault and its cause.",
       lessons: [

@@ -79,6 +79,7 @@
     {
       id: "elec-transformers",
       stream: "elec",
+      units: ["UEERA0045"],
       title: "E.11 · Single- and three-phase transformers",
       blurb: "How transformers change voltage and current by mutual induction, how they are built, rated, tested and connected, and the safety rules for autotransformers, isolating transformers, CTs and VTs.",
       lessons: [

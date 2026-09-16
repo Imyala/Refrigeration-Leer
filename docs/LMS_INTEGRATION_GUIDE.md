@@ -16,7 +16,7 @@ or use a pre-built `refrigeration-course-scorm12.zip` if one was provided.
 The package is SCORM **1.2** — the most widely supported version across all
 major LMSes.
 
-The package contains the whole platform: all 64 course modules (516 lessons)
+The package contains the whole platform: all 64 course modules (517 lessons)
 across the five streams, the simulator, the Service Bay and the instructor
 page. It is a single SCO of roughly **2.1 MB zipped** (about 6.5 MB unpacked) —
 comfortably inside the upload limits of Moodle, Canvas, Blackboard and D2L,
@@ -53,8 +53,8 @@ without editing the build script.
 
 | SCORM field | Value |
 |-------------|-------|
-| `cmi.core.lesson_status` | `incomplete` → `completed` (all 516 lessons of the whole program passed) → `passed` (lessons complete **and** the whole-program final exam ≥ 80%) |
-| `cmi.core.score.raw` (0–100) | The **final-exam best score in %** once the whole-program final exam has been attempted; before that, the % of the 516 lessons completed. Stream exams are recorded in the learner's progress but are not what the gradebook score reports |
+| `cmi.core.lesson_status` | `incomplete` → `completed` (all 517 lessons of the whole program passed) → `passed` (lessons complete **and** the whole-program final exam ≥ 80%) |
+| `cmi.core.score.raw` (0–100) | The **final-exam best score in %** once the whole-program final exam has been attempted; before that, the % of the 517 lessons completed. Stream exams are recorded in the learner's progress but are not what the gradebook score reports |
 | `cmi.suspend_data` | The learner's lesson/exam progress as compact text — one short entry per lesson attempted |
 
 Because progress lives in `suspend_data`, a learner can continue on any
@@ -65,7 +65,7 @@ result wins), so nothing is lost switching between machines.
 ### `suspend_data` and the size of the syllabus
 
 SCORM 1.2 caps `cmi.suspend_data` at **4,096 characters**, and the whole
-516-lesson syllabus fits inside it. Progress is stored in a compact encoding
+517-lesson syllabus fits inside it. Progress is stored in a compact encoding
 ("format 2"): each lesson key becomes a 4-character token — a hash of the
 key — and each result a single character holding the done flag and the best
 score, with the number of questions read back from the course itself at decode
@@ -73,13 +73,13 @@ time. That is 5 characters per lesson. Exam entries keep the longer readable
 form, since there are only a handful of them.
 
 Measured against the real course. The largest record a learner can produce is
-**every one of the 516 lessons**, all **five** stream exams and the
-whole-program final exam — **522 progress entries**. In the previous readable
-per-lesson format those 522 entries encoded to **25,218 characters**: more
+**every one of the 517 lessons**, all **five** stream exams and the
+whole-program final exam — **523 progress entries**. In the previous readable
+per-lesson format those 523 entries encoded to **25,218 characters**: more
 than six times the 4,096 the standard allows, so a complete record could not
-be stored at all. In format 2 the same record is **2,691 characters of the
-4,096 budget** — the 516 lessons account for 2,583 of that and the six exam
-entries for the remaining 108 — and it decodes back to all 522 entries
+be stored at all. In format 2 the same record is **2,696 characters of the
+4,096 budget** — the 517 lessons account for 2,588 of that and the six exam
+entries for the remaining 108 — and it decodes back to all 523 entries
 intact.
 
 The headroom is real but it is not unlimited: about **1,400 characters** are
@@ -134,7 +134,7 @@ work around a size limit.
 | Activity completes but no grade | Grading method set to "Learning objects" / not graded — set grading to use the score, method Highest. |
 | Status shows completed, never passed | "Passed" additionally requires the final exam at ≥ 80%. Check the learner's exam entry in the course sidebar. |
 | Progress doesn't follow the student to another machine | They opened the plain web version, not the LMS activity. Progress can be moved manually with Export/Import on the course page. |
-| Worried the record is too big for `suspend_data` | It isn't — progress is stored compactly and there is no per-lesson limit in practice: a fully complete 516-lesson course with every exam sat uses about 2,700 of the 4,096 characters SCORM 1.2 allows. See section 3. |
+| Worried the record is too big for `suspend_data` | It isn't — progress is stored compactly and there is no per-lesson limit in practice: a fully complete 517-lesson course with every exam sat uses about 2,700 of the 4,096 characters SCORM 1.2 allows. See section 3. |
 | Simulator links do nothing | Pop-up blocker — allow pop-ups for the LMS domain. |
 | Import rejected | Ensure the zip is uploaded as-is (don't unzip/re-zip on macOS, which can add `__MACOSX` folders; rebuild with `npm run build:scorm` if needed). |
 

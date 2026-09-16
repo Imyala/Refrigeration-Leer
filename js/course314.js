@@ -78,6 +78,7 @@
     {
       id: "elec-trade-calculations",
       stream: "elec",
+      units: ["UEECD0048"],
       title: "E.14 · Trade calculations",
       blurb: "The maths an electrical or refrigeration tradesperson actually uses: units, notation, transposition, mensuration, Pythagoras, trigonometry, graphs and costed job calculations.",
       lessons: [

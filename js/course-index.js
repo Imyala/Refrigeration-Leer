@@ -10,7 +10,7 @@
   const COURSE_INDEX = {
     "core": {
       "modules": 11,
-      "lessons": 39,
+      "lessons": 40,
       "titles": [
         "1 · Heat, temperature & pressure",
         "2 · The vapour-compression cycle",
@@ -104,8 +104,8 @@
     },
     "total": {
       "modules": 64,
-      "lessons": 516,
-      "questions": 2094
+      "lessons": 517,
+      "questions": 2098
     }
   };
   root.COURSE_INDEX = COURSE_INDEX;

@@ -77,7 +77,13 @@ how the content was produced, and where the supplied scans had gaps.
 |-----------|-----------------|--------------------------|
 | Ozone Protection and Synthetic Greenhouse Gas Management Act 1989 (Cth) + Regulations | Import, use, handling and disposal of fluorocarbon refrigerants; creates the licensing scheme | Core modules 4, 9, 11 |
 | ARC / ARCtick scheme — Refrigerant Handling Licences (full, restricted, trainee) and Refrigerant Trading Authorisations | Who may handle refrigerant; who may acquire/possess/dispose of it | Core modules 4, 9, 10, 11 |
-| Australia & New Zealand Refrigerant Handling Code of Practice — **Part 1** (self-contained low charge systems) and **Part 2** (all other systems). First published 2007; revised edition current — always use the latest. | Recovery, evacuation (deep/triple with OFN, dedicated vacuum gauge), charging, leak testing, brazing practice, record keeping | Core modules 4, 9, 10 and the whole of core module 11 (10 lessons, clause by clause); Refrigeration 2 stream — R2.5, R2.9; Capstone — C.5, C.6, C.9 |
+| Australia and New Zealand Refrigerant Handling Code of Practice, **2025 edition** (AIRAH, with the ARC and DCCEEW) — **Part 1** (self-contained low charge systems) and **Part 2** (all other systems). Replaces the 2007 edition; always work to the current edition. | Recovery, evacuation (deep/triple with OFN, dedicated vacuum gauge), charging, leak testing, brazing practice, record keeping | Core modules 4, 9, 10 and the whole of core module 11 (11 lessons, clause by clause); Refrigeration 2 stream — R2.5, R2.9; Capstone — C.5, C.6, C.9 |
+
+### Training package
+
+| Reference | What it governs | Where the course uses it |
+|-----------|-----------------|--------------------------|
+| **UEE32225** Certificate III in Air Conditioning and Refrigeration (UEE Electrotechnology Training Package), released 24 March 2025; superseded UEE32220, whose teach-out ended 23 March 2026 | The units of competency an Australian apprentice is assessed against | Every module carries `units:` tags (`js/competency.js`); mapping in `docs/CURRICULUM_MAPPING.md` |
 
 ### Standards (cited at topic level; not reproduced)
 
@@ -86,7 +92,7 @@ how the content was produced, and where the supplied scans had gaps.
 | AS/NZS 3000 — Wiring Rules | Electrical installations; the boundary between RAC work and licensed electrical work; isolation, RCDs | Core modules 4, 7, 10; Refrigeration 1 — R1.11, R1.13; Electrical principles — E.1, E.3, E.13; Capstone — C.2, C.3, C.4, C.10 |
 | AS/NZS 3017 — Electrical installations: verification guidelines | Methods for continuity, insulation resistance, polarity, fault-loop impedance and RCD testing | Capstone — C.3 |
 | AS/NZS 3760 — In-service safety inspection and testing of electrical equipment | Test-and-tag of cord-connected appliances | Capstone — C.3 |
-| AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements | Refrigerant safety classes, charge limits, occupancy, machinery rooms | Core modules 4, 10, 11; Refrigeration 1 — R1.7; Refrigeration 2 — R2.1, R2.9; Capstone — C.5, C.7, C.8, C.9 |
+| AS/NZS 5149.1–4:2016 (with amendments 1 and 2, 2018) — Refrigerating systems and heat pumps: safety and environmental requirements; replaced AS/NZS 1677 | Refrigerant safety classes, charge limits, occupancy, machinery rooms, leak inspection frequency | Core modules 4, 10, 11; Refrigeration 1 — R1.7; Refrigeration 2 — R2.1, R2.9; Capstone — C.5, C.7, C.8, C.9 |
 | AS/NZS 4836 — Safe working on or near low-voltage electrical installations | Safe isolation / "test for dead" practice | Core modules 7, 10; Refrigeration 1 — R1.15; Electrical principles — E.1, E.13; Capstone — C.3 |
 
 ### Trade texts
@@ -106,7 +112,12 @@ how the content was produced, and where the supplied scans had gaps.
 
 ## Maintenance
 
+The **edition register** in `js/refdocs.js` names the current edition of
+every document above, and `tests/editions.test.js` fails the build if a
+lesson or a public document cites a superseded one as current.
+
 When a new edition of the Code of Practice or a cited standard is published:
+update the register first, then
 search the course content (`js/course*.js` — `course1–3.js` core,
 `course101–116.js` Refrigeration 1, `course201–213.js` Refrigeration 2,
 `course301–314.js` Electrical, `course401–410.js` Capstone) for the

@@ -22,6 +22,7 @@
   {
     id: "v2-air-conditioning",
     stream: "v2",
+    units: ["UEERA0035", "UEERA0054"],
     title: "R2.3 · Air-conditioning: ventilation, psychrometrics and air treatment",
     blurb: "From opening a window to full climate control: ventilation, the psychrometric properties of moist air, and the seven things a plant does to air — heat, cool, humidify, dehumidify, filter, purify and distribute.",
     lessons: [

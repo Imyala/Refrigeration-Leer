@@ -431,8 +431,88 @@
 
   const DOCS = [COP2025];
 
+  /* ---- Edition register ---------------------------------------------------
+     Every document the course teaches to, with the edition it is written
+     against and the strings that would betray a lesson still citing the one
+     before it. tests/editions.test.js scans the course content and the
+     public documents for `stale` patterns; a match is allowed only where the
+     surrounding text is plainly talking about the superseded edition as
+     superseded (`allow`). Keeping the syllabus current stops being a promise
+     and becomes a check that runs on every push.
+
+     When a new edition is published: update `current` and `reviewed`, move
+     the old edition into `stale`, review the lessons the test then flags,
+     and update docs/REFERENCES.md. */
+  const EDITIONS = [
+    {
+      id: "cop",
+      title: "Australia and New Zealand Refrigerant Handling Code of Practice",
+      current: "2025 edition (AIRAH, with the ARC and DCCEEW)",
+      supersedes: "2007 edition",
+      reviewed: "2026-09",
+      stale: [/Code of Practice[, ]+2007/i, /Code of Practice \([^)]*2007\)/i, /2007 Code of Practice/i, /2007 edition of the Code/i],
+      allow: /replaced|superseded|previous edition|first published|now in its|since 2007|from the 2007|changed from the 2007|the 2007 code|old code|trained (on|under) the 2007/i,
+    },
+    {
+      id: "as3000",
+      title: "AS/NZS 3000 — Electrical installations (Wiring Rules)",
+      current: "AS/NZS 3000:2018, with amendments",
+      supersedes: "AS/NZS 3000:2007",
+      reviewed: "2026-09",
+      stale: [/AS\/NZS 3000:2007/],
+      allow: /current edition|replaced|superseded|written against|2018/i,
+    },
+    {
+      id: "as5149",
+      title: "AS/NZS 5149 — Refrigerating systems and heat pumps: safety and environmental requirements",
+      current: "AS/NZS 5149.1–4:2016, with amendments 1 and 2 (2018)",
+      supersedes: "AS/NZS 1677",
+      reviewed: "2026-09",
+      stale: [/AS\/NZS 1677/, /\bAS 1677\b/],
+      allow: /replaced|superseded|former|old|withdrawn|predecessor/i,
+    },
+    {
+      id: "iso817",
+      title: "AS/NZS ISO 817 — Refrigerants: designation and safety classification",
+      current: "AS/NZS ISO 817:2016",
+      reviewed: "2026-09",
+      stale: [],
+    },
+    {
+      id: "uee",
+      title: "UEE Electrotechnology Training Package — Certificate III in Air Conditioning and Refrigeration",
+      current: "UEE32225 (released 24 March 2025)",
+      supersedes: "UEE32220 (teach-out ended 23 March 2026) and the UEE11 codes before it",
+      reviewed: "2026-09",
+      stale: [/\bUEE32220\b/, /\bUEENEEJ\d{3}A\b/, /\bUEE32211\b/, /\bUEE31311\b/],
+      allow: /supersed|replaced|teach-out|transition|until 23 March 2026|formerly|no longer|superseded release|the old|previous|earlier|UEE32225/i,
+    },
+    {
+      id: "arac1",
+      title: "Australian Refrigeration and Air-conditioning, Volume 1 (Boyle, AIRAH)",
+      current: "5th edition",
+      reviewed: "2026-09",
+      stale: [],
+    },
+    {
+      id: "arac2",
+      title: "Australian Refrigeration and Air-conditioning, Volume 2 (Boyle, AIRAH)",
+      current: "5th edition",
+      reviewed: "2026-09",
+      stale: [],
+    },
+    {
+      id: "ept",
+      title: "Electrical Principles for the Electrical Trades (McGraw-Hill Australia)",
+      current: "8th edition",
+      reviewed: "2026-09",
+      stale: [],
+    },
+  ];
+
   const api = {
     docs: DOCS,
+    editions: EDITIONS,
     byId(id) { return DOCS.find((d) => d.id === id) || null; },
     /* "cop:2:4.9" -> the clause entry, falling back to a "both:" key */
     clause(ref) {

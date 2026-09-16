@@ -21,6 +21,7 @@
   {
     id: "v1-condensers",
     stream: "v1",
+    units: ["UEERA0036", "UEERA0035"],
     title: "R1.3 · Condensers and cooling towers",
     blurb: "How a system throws away the heat it collected: air-cooled, water-cooled and evaporative condensers, cooling towers, water treatment, head-pressure control and heat-rejection sums.",
     lessons: [

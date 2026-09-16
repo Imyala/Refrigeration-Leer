@@ -9,7 +9,7 @@
 > audit with assistive-technology users — and we will fix what it finds.
 
 **Scope note — the syllabus expansion.** This statement was written when the
-course held 11 modules; it now holds **64 modules / 516 lessons** grouped into
+course held 11 modules; it now holds **64 modules / 517 lessons** grouped into
 five streams. The expansion added lesson content through the same lesson
 template, markdown renderer, figure library and quiz components assessed here,
 so the findings below apply to it unchanged. It added two UI patterns that
@@ -125,7 +125,7 @@ does, not a substitute for testing it.
 3. **Formal audit** — no third-party assessment or AT-user testing has been
    performed yet.
 4. **Re-assessment after the expansion** — the self-assessment predates the
-   growth to 64 modules / 516 lessons and the two patterns it introduced: the
+   growth to 64 modules / 517 lessons and the two patterns it introduced: the
    stream-grouped navigation and the `<details>`/`<summary>` model-answer
    blocks in lesson content. All of it should be covered by the next
    assessment (and by any independent audit); no claim of conformance is made

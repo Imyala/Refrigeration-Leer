@@ -53,9 +53,9 @@ Students get too few diagnostic repetitions before they meet a real customer.
   measuring the four readings that decide most faults beats measuring
   everything. Some jobs are healthy machines, and calling one healthy is part
   of the exercise.
-- **Structured course** — **64 modules / 516 lessons / 2,094 quiz questions**
+- **Structured course** — **64 modules / 517 lessons / 2,098 quiz questions**
   (roughly 706,000 words), grouped into five streams:
-  - **Core program** (11 modules, 39 lessons) — the guided pathway:
+  - **Core program** (11 modules, 40 lessons) — the guided pathway:
     fundamentals → cycle → components → refrigerants → superheat/subcooling →
     system types → electrical → diagnosis → repair procedures → safety →
     the Refrigerant Handling Code of Practice taught clause by clause.
@@ -81,7 +81,7 @@ Students get too few diagnostic repetitions before they meet a real customer.
   deep-link the simulator into the scenario being taught.
 - **Assessment** — an exam for each stream (two questions per module: 22, 32,
   26, 28 and 20 questions) plus a whole-program 64-question final exam, all
-  drawn at random from the 2,094-question bank, 80% pass, fresh paper every
+  drawn at random from the 2,098-question bank, 80% pass, fresh paper every
   attempt,
   and a printable certificate of completion with a verifiable ID that names
   the stream when a stream exam is passed.
@@ -95,7 +95,7 @@ Students get too few diagnostic repetitions before they meet a real customer.
 1. **It is a whole syllabus, not a topic.** One platform now carries a full
    **first-year** refrigeration and air-conditioning course, a full
    **second-year** course, and a full **electrical principles** course, on top
-   of the guided core program — 516 lessons written from the standard
+   of the guided core program — 517 lessons written from the standard
    Australian trade texts, chapter by chapter, with the source chapter behind
    every module documented in `docs/SOURCE_COVERAGE.md`. Institutions can put
    one product in front of first-years, second-years and electrical cohorts

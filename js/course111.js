@@ -37,6 +37,7 @@
   {
     id: "v1-electrical-principles",
     stream: "v1",
+    units: ["UEECD0042", "UEECD0046", "UEECD0043"],
     title: "R1.11 · Electrical principles for refrigeration",
     blurb: "Electron flow to three-phase supply: Ohm's law, power and energy, series and parallel circuits, meters, magnetism and induction, AC waveforms, reactance and power factor, and Australian supply practice.",
     lessons: [

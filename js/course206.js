@@ -19,6 +19,7 @@
     {
       id: "v2-load-estimating",
       stream: "v2",
+      units: ["UEERA0034"],
       title: "R2.6 · Load estimating and equipment selection",
       blurb: "How to build a refrigeration heat load from wall, air change, product and miscellaneous components, then use it to select a condensing unit, an evaporator and an air-conditioner.",
       lessons: [

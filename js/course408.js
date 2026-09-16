@@ -23,6 +23,7 @@
     {
       id: "cap-components-schematics",
       stream: "capstone",
+      units: ["UEERA0050", "UEECD0051"],
       title: "C.8 · Components, applications and piping schematics",
       blurb: "Capstone revision on what every ancillary component does, where it sits and why, and a repeatable method for drawing a labelled piping schematic from a written brief.",
       lessons: [

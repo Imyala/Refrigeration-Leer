@@ -26,6 +26,7 @@
      ====================================================================== */
   {
     id: "code-of-practice",
+    units: ["UEECO0010", "UEERA0064", "UEERA0062", "UEERA0048"],
     title: "11 · The Refrigerant Handling Code of Practice",
     blurb: "The rulebook your licence is measured against: what the Code covers, the rules that never bend, and the clause-level procedure for testing, evacuating, charging, recovering and storing refrigerant.",
     lessons: [
@@ -1399,6 +1400,202 @@ those are required reading beyond this course.
             ],
             answer: 1,
             explain: "Dual classifications give the 'as formulated' composition first and the 'worst case fractionation' composition second — what the blend can become as it leaks and separates.",
+          },
+        ],
+      },
+
+      {
+        id: "cop-2025-what-changed",
+        title: "The 2025 edition: what changed, and what to re-read",
+        minutes: 8,
+        simple: "The rulebook was rewritten in 2025 after eighteen years on the 2007 version. If you learned the trade on the old code — or from someone who did — this lesson is the list of things to re-read: leak inspection and testing, the flammable refrigerants (R32, R290) that barely existed in 2007, evacuation with real numbers, charging by weight, and the standards the new edition points to. The rules are the same kind of rules; the detail is tighter, and it is now the version your licence is measured against.",
+        refs: COP_REFS.concat([
+          "AS/NZS 5149 series — Refrigerating systems and heat pumps: safety and environmental requirements",
+          "AS/NZS ISO 817 — Refrigerants: designation and safety classification",
+          "Australian Dangerous Goods (ADG) Code; AS/NZS 4332 — storage and handling of gases in cylinders",
+        ]),
+        content: `
+!CITE[cop:1:1.1.3]
+
+The Code of Practice you work to today is the **2025 edition**. The edition
+before it was published in **2007**, and it stood for eighteen years — long
+enough for a whole generation of technicians to have learned the trade on it,
+and long enough for the refrigerants, the standards and the law to have moved
+a long way underneath it. The 2025 edition was facilitated by **AIRAH, the
+Australian Refrigeration Council and the Commonwealth Department of Climate
+Change, Energy, the Environment and Water**, drafted with an industry review
+committee, and put out for public review before publication. It is published
+digitally, in a searchable form, so there is no excuse for working from a
+photocopy of the old one.
+
+This lesson is not a clause-by-clause comparison — the rest of this module
+does the clauses. It is the short list of **where a technician trained on the
+2007 code needs to re-read**, because the requirement they remember is either
+tighter now, or was never spelled out before.
+
+## Why it was revised
+
+The 2007 code was written for a fleet of A1 refrigerants — R22, R134a, R404A,
+R410A — and for standards that have since been replaced. Between the two
+editions:
+
+- **AS 1677** gave way to the **AS/NZS 5149** series, which brought in the
+  ISO 817 safety classes, charge limits by occupancy, and machinery-room and
+  ventilation rules that the Code now points to rather than restating.
+- **Flammable refrigerants became ordinary.** R32 (A2L) is the standard
+  split-system refrigerant; R290 (A3) is in cabinets, heat pumps and some
+  splits; R454B (A2L) is replacing R410A in ducted plant. In 2007 these were
+  curiosities.
+- The **HFC phase-down** under the Kigali Amendment began in 2018, so the
+  refrigerant a machine was designed for, and what it may be charged with,
+  became a regulatory question and not just an engineering one.
+- **Leak management** moved from good practice to the centre of the Code:
+  the 2025 edition puts more focus, and more clarity, on leak inspection,
+  leak detection and leak testing than the 2007 code did.
+
+> The regulatory teeth did not change: the Code is still called up by a
+> Determination under the *Ozone Protection and Synthetic Greenhouse Gas
+> Management Regulations 1995*, and its mandatory requirements still bind
+> every licence holder. What changed is what those requirements say.
+
+## Six things to re-read
+
+### 1. Leak tightness testing has numbers
+
+!CITE[cop:2:4.9]
+
+The 2025 edition sets out **when** to test, **what with**, **at what
+pressure**, **for how long**, and **what passes**. A commissioning test holds
+for **24 hours** at maximum operating pressure; a repair test holds for
+**1 hour** at between **25% and 90% of PS**. Oxygen-free nitrogen only —
+never refrigerant as the pressure medium, and never standard-grade nitrogen,
+which can carry enough oxygen to be dangerous at test pressure. Site-assembled
+joints are checked with a detector capable of **5 g/year**. If you learned
+"pump it up with OFN and leave it overnight", the intent is the same; the
+detail is now written down, and it is what an auditor will ask for.
+
+### 2. In-service leak inspection is a procedure, with a frequency
+
+!CITE[cop:2:9.5]
+!CITE[cop:2:9.6.2]
+
+Every service visit now carries a **three-part inspection**: look (oil
+stains, dust, vibration, corrosion), **analyse** (compare running pressures
+and temperatures with the manufacturer's data — a low charge on the gauges
+is evidence of a leak, not a reason to top up), then **sweep** the common
+leakage points with a detector matched to the refrigerant. Where the
+manufacturer is silent, the inspection frequency follows AS/NZS 5149.4 by
+charge size — yearly for most systems, six-monthly over 30 kg, quarterly over
+300 kg. The 2007 habit of "gas and go" is exactly what this section exists
+to end.
+
+### 3. Evacuation is two named methods, with a dedicated vacuum gauge
+
+!CITE[cop:2:5.4]
+
+Evacuate by the **deep evacuation method** (to 500 microns, isolate, hold
+below 600 microns for an hour) or the **triple evacuation method** (two
+pulls to 4,500 microns each broken with OFN, then the deep pull). Read the
+vacuum on a **dedicated vacuum gauge** — a manifold gauge cannot see the
+difference between 500 microns and 5,000. Use proper evacuation hoses, not
+the service hoses. If you were taught "pull a good vacuum", you were taught
+the old code.
+
+### 4. Charging is by mass, and blends go in as liquid
+
+!CITE[cop:2:6.4]
+!CITE[cop:2:6.2]
+
+Refrigerant is **weighed in and weighed out**, and the mass is recorded in
+the logbook. Blends — and nearly every modern refrigerant is a blend — are
+charged **as liquid** so the composition stays right. A system may not be
+charged with a **higher-GWP** refrigerant than it was designed for, unless
+the design refrigerant was an ozone-depleting HCFC: the phase-down reaches
+into the charging cylinder.
+
+### 5. Flammable refrigerants have their own rules throughout
+
+!CITE[cop:2:6.6]
+!CITE[cop:2:12.2.2]
+!CITE[cop:2:12.2.3]
+!CITE[cop:2:13.7.3]
+
+This is the largest difference between the editions, because the 2007 code
+barely needed it. In the 2025 edition a flammable charge changes the job at
+every stage: the area becomes a **temporary flammable zone** when charging
+(ventilation, ignition sources, detection, earthing, PPE, fire equipment);
+**A1 tools are generally not compatible** with A2L or A2 work — vacuum pumps,
+recovery units and cylinders are assessed individually; recovery goes into
+**A2L/A2-specific cylinders**; and flammable refrigerant travels as
+**Dangerous Goods Division 2.1**. Halide torches are out; a detector rated
+for combustible gas is in. The Service Bay and the Diagnosis Workshop both
+model this: put an A2L or A3 refrigerant in the machine and the order of work
+gains a step.
+
+### 6. The standards it points to are the current ones
+
+!CITE[cop:1:1.2.3]
+
+Classification is to **AS/NZS ISO 817**; system safety to **AS/NZS 5149**;
+cylinder storage to **AS/NZS 4332**; transport to the **ADG Code**. Where
+the 2007 code cited a standard, check what the 2025 edition cites now, and
+read that edition. Clause numbers changed between the two codes, so a clause
+reference you carry in your head from 2007 is almost certainly wrong today.
+
+## What to do with this
+
+- **Work from the current edition.** Employers must give every handler a
+  copy; the digital edition is on the ARC website and is searchable.
+- If a procedure you were taught **has no number attached** — how long to
+  hold a test, how deep a vacuum, how much may go in a cylinder — look it up.
+  The 2025 edition almost certainly gives one.
+- Treat an **unknown refrigerant as flammable and toxic** until it is
+  identified. That rule alone would have been unusual in 2007.
+`,
+        quiz: [
+          {
+            q: "A technician says a pressure test is 'OFN overnight, same as always'. Under the 2025 edition, what is the commissioning test actually?",
+            options: [
+              "Any duration, provided the gauge does not move",
+              "24 hours at maximum operating pressure, with the pressure corrected for temperature change and every joint checked with a 5 g/year detector",
+              "1 hour at 25% of PS",
+              "A refrigerant charge held for 24 hours and swept with a halide torch",
+            ],
+            answer: 1,
+            explain: "The 2025 edition gives the commissioning test a duration (24 hours), a pressure (maximum operating, below any relief setting and never above PS), an acceptance rule (no temperature-adjusted drop) and a detector sensitivity (5 g/year). A repair test is the 1-hour case, at 25–90% of PS. Refrigerant is never the test medium.",
+          },
+          {
+            q: "Which single change between the 2007 and 2025 editions affects the most stages of a job?",
+            options: [
+              "The change from bar to kilopascals",
+              "The rules for flammable (A2L, A2, A3) refrigerants, which now touch charging, tools, recovery cylinders, detection and transport",
+              "The removal of the triple evacuation method",
+              "The requirement to keep a paper logbook",
+            ],
+            answer: 1,
+            explain: "The 2007 code was written for an A1 fleet. The 2025 edition carries flammable-refrigerant requirements through charging (temporary flammable zone), tool compatibility, A2L/A2-specific recovery cylinders, detector type and Dangerous Goods transport — so a flammable charge changes the job at every stage.",
+          },
+          {
+            q: "A running system reads low on the gauges at a service visit. What does the 2025 in-service inspection require before any refrigerant is added?",
+            options: [
+              "Nothing — top it up and note the quantity",
+              "Diagnostic analysis against manufacturer data, and where that indicates a low charge, a leak tightness test",
+              "A halide torch sweep only",
+              "Replacement of the filter-drier",
+            ],
+            answer: 1,
+            explain: "The in-service inspection is visual, then diagnostic (running conditions compared with the manufacturer's data), then a detector sweep. Where the analysis indicates the charge is low, a leak tightness test must follow. Charging a system with a known or suspected leak is prohibited conduct under the Act.",
+          },
+          {
+            q: "Why should a clause number remembered from the 2007 code not be quoted on a job sheet today?",
+            options: [
+              "Clause numbers are confidential",
+              "The numbering changed in the 2025 edition, so the old reference points at the wrong text or at nothing",
+              "Job sheets may not cite the Code",
+              "Only Part 1 clauses may be cited",
+            ],
+            answer: 1,
+            explain: "The 2025 edition was restructured as well as updated. A reference carried over from 2007 is likely to be wrong, and a job record should cite the edition and clause actually worked to — which is why this course cites the 2025 clauses directly.",
           },
         ],
       },

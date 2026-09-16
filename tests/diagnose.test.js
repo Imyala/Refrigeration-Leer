@@ -151,3 +151,26 @@ test("efficiency rewards measuring what decides the fault, not everything", () =
     assert.ok(Dg.efficiency(p).text.length > 40, "the rating is explained");
   }
 });
+
+/* ---- Flammable refrigerants ---------------------------------------------- */
+test("only A2L and A3 machines need a flammable-zone assessment", () => {
+  for (const [key, base] of Object.entries(D.REFRIGERANTS)) {
+    const req = Dg.siteRequirements(base);
+    assert.strictEqual(req.flammableZone, !!base.flammable, `${key}: zone required iff flammable`);
+    if (base.flammable) {
+      assert.match(req.text, /detector/, `${key}: names the detector`);
+      assert.ok(req.text.includes(base.safety), `${key}: names the class`);
+    } else {
+      assert.strictEqual(req.text, null);
+    }
+  }
+});
+
+test("gauges fitted before the zone was assessed cost a quarter mark; temperature probes do not", () => {
+  const r32 = D.REFRIGERANTS.R32;
+  assert.strictEqual(Dg.zoneVerdict(r32, ["lowGauge"]).penalty, Dg.ZONE_PENALTY);
+  assert.strictEqual(Dg.zoneVerdict(r32, ["lowGauge", "highGauge"]).penalty, Dg.ZONE_PENALTY, "one penalty, not one per gauge");
+  assert.strictEqual(Dg.zoneVerdict(r32, ["evapOutlet", "liquidLine"]).penalty, 0, "clamp-on probes release nothing");
+  assert.strictEqual(Dg.zoneVerdict(r32, []).penalty, 0);
+  assert.strictEqual(Dg.zoneVerdict(D.REFRIGERANTS.R134a, ["lowGauge"]), null, "no verdict at all on an A1 machine");
+});

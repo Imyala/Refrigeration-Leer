@@ -34,6 +34,7 @@
   {
     id: "elec-energy-sector",
     stream: "elec",
+    units: ["UEECD0007", "UEECD0016"],
     title: "E.1 · Working safely in the energy sector",
     blurb: "How the Australian electrotechnology industry is put together, how supply reaches a load, and the electrical, mechanical and documentation practices that keep energy-sector work safe.",
     lessons: [

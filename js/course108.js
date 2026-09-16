@@ -19,6 +19,7 @@
     {
       id: "v1-hand-power-tools",
       stream: "v1",
+      units: ["UEECD0019", "UEECD0020", "UEERA0059", "UEECD0007"],
       title: "R1.8 · Hand and power tools",
       blurb: "The everyday metalworking kit of a refrigeration technician — striking, cutting, marking, threading, drilling, grinding and measuring — how to select each tool, hold it correctly and keep it safe.",
       lessons: [

@@ -23,6 +23,7 @@
     {
       id: "cap-txv-and-conditions",
       stream: "capstone",
+      units: ["UEERA0036", "UEERA0050"],
       title: "C.7 · TX valves, superheat and operating conditions",
       blurb: "Capstone revision on the three pressures that balance a TX valve, measuring superheat correctly, the faults that shift it, adjusting and de-hunting a valve, and judging a system from field data.",
       lessons: [

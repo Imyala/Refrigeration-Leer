@@ -22,6 +22,7 @@
     {
       id: "v1-compressors",
       stream: "v1",
+      units: ["UEERA0036", "UEERA0053"],
       title: "R1.2 · Compressors",
       blurb: "The pump at the heart of every system: what a compressor must achieve, how the five types do it, and how reciprocating machines are built, controlled and assessed.",
       lessons: [

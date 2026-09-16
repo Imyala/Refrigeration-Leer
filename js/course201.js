@@ -37,6 +37,7 @@
     {
       id: "v2-alternative-systems",
       stream: "v2",
+      units: ["UEERA0046", "UEERA0047", "UEERA0048"],
       title: "R2.1 · Alternative refrigeration systems",
       blurb:
         "Every way of making cold that is not a plain vapour-compression circuit: chilled water and brine, ice storage, cryogenic expendables, absorption, steam-jet, air-cycle, vortex tubes and Peltier modules.",
@@ -168,9 +169,10 @@ before each start, or manually.
 > that recovers refrigerant, and older plant has to be retro-fitted with one.
 > Purge losses are capped at **0.5 kg of refrigerant per 1 kg of air** removed,
 > and a monitor that displays the actual purging time is required as well. The
-> rule sits in the Refrigerant Handling Code of Practice (Australia and New
-> Zealand, 2007) at Part 2, Section 2.8. A purge unit that can operate
-> independently of the chiller is also recommended.
+> rule sits in the design provisions of Part 2 of the Australia and New Zealand
+> Refrigerant Handling Code of Practice (2025 edition — read the clause in the
+> current edition, as the numbering changed from the 2007 code). A purge unit
+> that can operate independently of the chiller is also recommended.
 
 A rising purge run-time trend is one of the most useful diagnostics you have on
 a low-pressure machine: it means the leak is getting worse, and every kilogram

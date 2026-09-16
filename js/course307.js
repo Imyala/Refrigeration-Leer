@@ -66,6 +66,7 @@
     {
       id: "elec-dc-machines",
       stream: "elec",
+      units: ["UEECD0043"],
       title: "E.7 · Direct current machines",
       blurb: "How d.c. generators and motors are built and behave: construction, generated EMF, commutation, machine types, starting, speed control, efficiency and maintenance.",
       lessons: [

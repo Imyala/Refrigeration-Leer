@@ -6,7 +6,7 @@
 "use strict";
 
 const SB = {
-  state: RefrigService.newState(),
+  state: null,              // set by sbReset() once the refrigerant is known
   refrigerant: "R134a",
   pressures: null,
   phase: "hookup",          // hookup → read → packup → done
@@ -62,8 +62,15 @@ function sbDo(action) {
   sbRender();
 }
 
+/* The machine's refrigerant decides whether the job carries a flammable-zone
+   step, so the engine is told at the start of every job. */
+function sbNewState() {
+  const base = RefrigData.REFRIGERANTS[SB.refrigerant] || {};
+  return RefrigService.newState({ flammable: !!base.flammable, safety: base.safety || null });
+}
+
 function sbReset() {
-  SB.state = RefrigService.newState();
+  SB.state = sbNewState();
   SB.phase = "hookup";
   SB.log = [];
   SB.readingsSeen = false;
@@ -397,12 +404,12 @@ function sbRenderSequence() {
 
   const verdict = rep.done === rep.total && rep.inOrder
     ? `<div class="quiz-feedback good sb-seq-verdict"><b>✓ Textbook order.</b>
-         <p>Right hoses, gauges proved, high side on and cracked first so there was pressure to purge
+         <p>Right hoses, gauges proved,${SB.state.flammable ? " the zone assessed before a gram could escape," : ""} high side on and cracked first so there was pressure to purge
          <i>with</i>, low side purged before its port was opened. Nothing went into the machine that
          should not be in it, and nothing came out that should have stayed. That order is the skill —
          the readings are just what falls out of it.</p></div>`
     : rep.done === rep.total
-      ? `<div class="quiz-feedback partial sb-seq-verdict"><b>All eight done — but not in this order.</b>
+      ? `<div class="quiz-feedback partial sb-seq-verdict"><b>All ${rep.total} done — but not in this order.</b>
            <p>You have readings, and you would have had them on site too. Read the flagged steps below:
            each one names what that shortcut actually costs, in air, in refrigerant, or in a number you
            cannot trust. Reset and run it clean.</p></div>`
@@ -427,13 +434,22 @@ function sbRenderSequence() {
    prove it reads zero, and once both hoses are on, actually look at it. */
 function sbManifoldControls() {
   const s = SB.state;
+  const zone = s.flammable ? `
+      <p class="sb-manifold-state">Flammable zone assessed:
+        <b class="${s.zoneChecked ? "yes" : "no"}">${s.zoneChecked ? "yes" : "not yet"}</b>
+        <span class="sb-flam-badge">${s.safety || "flammable"} refrigerant</span></p>` : "";
+  const zoneBtn = s.flammable
+    ? `<button type="button" class="btn btn-ghost sb-act" data-type="zoneCheck" ${s.zoneChecked ? "disabled" : ""}>Assess the flammable zone</button>`
+    : "";
   return `
     <div class="sb-valve-panel">
       <h3>Gauge manifold</h3>
       <p class="sb-manifold-state">Gauges proved at zero:
         <b class="${s.zeroChecked ? "yes" : "no"}">${s.zeroChecked ? "yes" : "not yet"}</b></p>
+      ${zone}
       <div class="quiz-controls">
         <button type="button" class="btn btn-ghost sb-act" data-type="zeroCheck">${s.zeroChecked ? "Re-check the zero" : "Prove the gauges read zero"}</button>
+        ${zoneBtn}
         <button type="button" class="btn btn-ghost sb-act" data-type="check">Check the gauges</button>
       </div>
     </div>`;
@@ -471,6 +487,7 @@ function sbRenderPanels() {
     <ul class="sb-list">
       ${tick(c.hoseSet, "Hoses chosen off the van")}
       ${tick(c.zeroChecked, "Gauges proved to read zero")}
+      ${c.flammable ? tick(c.zoneChecked, `Area assessed as a flammable zone (${s.safety || "flammable"} charge)`) : ""}
       ${tick(c.capsOff, "Gauge-port caps off (valves back-seated)")}
       ${tick(c.hoses, "Hoses connected hand-tight")}
       ${tick(c.cracked, "Both valves cracked off the back seat")}
@@ -487,6 +504,7 @@ function sbRenderPanels() {
         <b>✓ Job done, machine left as found.</b>
         <p>You fitted gauges, purged, took readings and packed up. Refrigerant lost:
         <b>${s.emissionG} g</b>${s.warns ? ` · things that hissed along the way: <b>${s.warns}</b> — every one of them is a lesson banked, not a mark against you` : " — textbook-clean, no venting at all"}.</p>
+        ${s.zoneMissed ? `<p><b>${s.zoneMissed} release${s.zoneMissed === 1 ? "" : "s"} of ${s.safety || "flammable"} refrigerant before the zone was assessed.</b> On a flammable charge the walk-round — ventilation, ignition sources, detector — comes before the manifold goes on. Next time, do it first.</p>` : ""}
         <div class="quiz-controls"><button id="bayAgainBtn" class="btn btn-tour" type="button">Run it again</button></div>
       </div>`;
     const again = document.getElementById("bayAgainBtn");
@@ -495,7 +513,7 @@ function sbRenderPanels() {
     const last = SB.log[0];
     coach.innerHTML = `
       ${last ? `<div class="quiz-feedback ${last.kind === "warn" ? "partial" : last.kind === "block" ? "bad" : "good"}" aria-live="polite"><p>${last.msg}</p></div>`
-             : `<div class="quiz-feedback good"><p>The machine is running, both service valves are <b>back-seated</b> (gauge ports isolated). Start where the job starts: <b>choose your hoses</b> and <b>prove the gauges read zero</b>, then high side on and cracked → low side on → check → purge → crack the low port. Click parts on the rig or use the buttons — the order panel grades what you actually did.</p></div>`}
+             : `<div class="quiz-feedback good"><p>The machine is running, both service valves are <b>back-seated</b> (gauge ports isolated). Start where the job starts: <b>choose your hoses</b> and <b>prove the gauges read zero</b>${s.flammable ? `, and because this machine holds <b>${s.safety || "a flammable"} refrigerant</b>, <b>assess the area as a flammable zone</b> before anything can release refrigerant` : ""}, then high side on and cracked → low side on → check → purge → crack the low port. Click parts on the rig or use the buttons — the order panel grades what you actually did.</p></div>`}
       ${SB.log.length > 1 ? `<ul class="sb-log">${SB.log.slice(1, 6).map(l => `<li class="${l.kind}">${l.msg}</li>`).join("")}</ul>` : ""}`;
   }
 
@@ -518,8 +536,9 @@ document.addEventListener("DOMContentLoaded", () => {
   sel.innerHTML = Object.keys(RefrigData.REFRIGERANTS)
     .map(k => `<option value="${k}">${RefrigData.REFRIGERANTS[k].label}</option>`).join("");
   sel.value = SB.refrigerant;
-  sel.addEventListener("change", () => { SB.refrigerant = sel.value; sbComputePressures(); sbRender(); });
+  /* A different refrigerant is a different machine — and may carry a
+     flammable-zone step — so it starts a fresh job. */
+  sel.addEventListener("change", () => { SB.refrigerant = sel.value; sbReset(); });
   document.getElementById("bayResetBtn").addEventListener("click", sbReset);
-  sbComputePressures();
-  sbRender();
+  sbReset();
 });

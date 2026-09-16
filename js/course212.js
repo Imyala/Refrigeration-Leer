@@ -34,6 +34,7 @@
   {
     id: "v2-drawing-interpretation",
     stream: "v2",
+    units: ["UEECD0051"],
     title: "R2.12 · Drawing interpretation",
     blurb: "Reading the drawings a refrigeration technician is handed: standards and title blocks, line types and dimensioning, scales and scale calculations, drawing types, architectural symbols, plant setout and BIM.",
     lessons: [
@@ -100,7 +101,7 @@ Standards are cited by a code, and the pieces of the code carry information.
 | Example | What it tells you |
 |---|---|
 | AS 1668.3:2001 | An Australian Standard, number 1668, Part 3, published in 2001 |
-| AS/NZS 1677.1:1998 | A joint Australian and New Zealand Standard, number 1677, Part 1, 1998 |
+| AS/NZS 5149.1:2016 | A joint Australian and New Zealand Standard, number 5149, Part 1, 2016 (it replaced AS/NZS 1677 — a good example of why the year matters) |
 | AS 1100.301 | Australian Standard 1100, Part 301 — the architectural drawing part |
 
 The year matters. Standards are reviewed and reissued as needed: in fast-moving
@@ -158,12 +159,12 @@ wrong at your company's expense.
 `,
         quiz: [
           {
-            q: "What does the notation AS/NZS 1677.1:1998 tell you?",
+            q: "What does the notation AS/NZS 5149.1:2016 tell you?",
             options: [
-              "An international ISO standard adopted in 1998",
-              "A joint Australian and New Zealand Standard, number 1677, Part 1, published in 1998",
-              "Australian Standard 1677 with 1 amendment issued in 1998",
-              "A New Zealand standard recognised in Australia since 1998",
+              "An international ISO standard adopted in 2016",
+              "A joint Australian and New Zealand Standard, number 5149, Part 1, published in 2016",
+              "Australian Standard 5149 with 1 amendment issued in 2016",
+              "A New Zealand standard recognised in Australia since 2016",
             ],
             answer: 1,
             explain: "The AS/NZS prefix marks a joint Australian and New Zealand document, the digits after the point identify the part, and the year is the publication date — which is how you check whether the edition you are holding is still current.",

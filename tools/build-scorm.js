@@ -52,6 +52,7 @@ const FILES = [
   "js/scorm.js",
   "js/exam.js",
   "js/streams.js",
+  "js/competency.js",
   "js/course-index.js",
   // Course content files are discovered, not listed: a new module file is
   // packaged the day it lands. Order matches the <script> order in learn.html.

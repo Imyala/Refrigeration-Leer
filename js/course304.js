@@ -68,6 +68,7 @@
     {
       id: "elec-resistors",
       stream: "elec",
+      units: ["UEECD0043", "UEECD0046"],
       title: "E.4 · Resistors and resistance measurement",
       blurb: "Resistor types and special-purpose transducers, colour codes and preferred values, power ratings, what sets a conductor's resistance, and how resistance is measured and tested on site.",
       lessons: [

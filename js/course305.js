@@ -63,6 +63,7 @@
     {
       id: "elec-capacitors",
       stream: "elec",
+      units: ["UEERA0044", "UEECD0043"],
       title: "E.5 · Capacitors",
       blurb: "How capacitors store charge, what sets their capacitance, RC time constants, series and parallel banks, faults, testing, and the stored charge that can kill you.",
       lessons: [

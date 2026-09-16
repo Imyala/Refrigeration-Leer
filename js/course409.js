@@ -51,6 +51,7 @@
     {
       id: "cap-refrigerants-and-site",
       stream: "capstone",
+      units: ["UEECD0007", "UEERA0048", "UEERA0054"],
       title: "C.9 · Refrigerant classification and site safety",
       blurb: "Revision of refrigerant safety classification, ozone and greenhouse status, refrigerant-specific handling precautions, cylinder rules, asphyxiation hazards and AS/NZS 3666 cooling-tower safety.",
       lessons: [

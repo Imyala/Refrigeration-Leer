@@ -40,6 +40,31 @@
       [20,11.1,229.0,379.0],[30,14.4,245.0,379.0],[40,18.5,262.0,377.0],
       [50,23.2,281.0,372.0],[60,28.8,302.0,362.0],
     ]),
+    /* The three below are generated from CoolProp 8 (IIR reference state:
+       h = 200 kJ/kg for saturated liquid at 0 °C), so they are reference-grade
+       rather than representative. R454B is a zeotropic blend with about 1.5 K
+       of glide; its table is the DEW-point line, which is the one a technician
+       uses for suction pressure and superheat. Bubble-point pressures run
+       roughly 3–6 % higher, which matters for subcooling on the liquid side. */
+    R32: toRows([
+      [-40,1.774,133.2,502.0],[-30,2.734,149.4,506.3],[-20,4.058,165.9,510.0],
+      [-10,5.826,182.8,513.0],[0,8.131,200.0,515.3],[10,11.069,217.7,516.7],
+      [20,14.746,236.1,516.9],[30,19.275,255.3,515.7],[40,24.783,275.6,512.7],
+      [50,31.412,297.5,507.1],[60,39.332,321.9,497.4],[70,48.768,351.7,479.5],
+    ]),
+    R454B: toRows([
+      [-40,1.596,144.6,450.4],[-30,2.462,159.6,455.4],[-20,3.655,174.9,460.0],
+      [-10,5.249,190.5,464.2],[0,7.324,206.5,467.8],[10,9.970,223.0,470.7],
+      [20,13.280,240.1,472.8],[30,17.360,257.9,473.8],[40,22.326,276.6,473.3],
+      [50,28.316,296.8,470.8],[60,35.498,319.3,465.0],[70,44.125,346.4,452.4],
+    ]),
+    R290: toRows([
+      [-40,1.111,105.1,528.5],[-30,1.678,128.0,540.4],[-20,2.445,151.4,552.1],
+      [-10,3.453,175.3,563.7],[0,4.745,200.0,574.9],[10,6.366,225.4,585.7],
+      [20,8.365,251.6,595.9],[30,10.790,278.8,605.5],[40,13.694,307.1,614.2],
+      [50,17.133,336.8,621.7],[60,21.168,368.1,627.4],[70,25.868,401.8,630.4],
+      [80,31.319,438.9,628.7],[90,37.641,483.7,616.5],
+    ]),
   };
 
   const CP_VAP = 0.90;     // approx vapour specific heat (kJ/kg·K) for superheat
@@ -47,12 +72,35 @@
   const ATM_BAR = 1.01325; // standard atmosphere — gauges read pressure above this
   const BASE_FLOW = 20;    // L/min at 100% compressor speed
 
-  /* ---- Refrigerant base operating points --------------------------------- */
+  /* ---- Refrigerant base operating points ---------------------------------
+     `safety` is the AS/NZS ISO 817 class the Code of Practice classifies
+     the fluid by; `flammable` is what the Service Bay and the Diagnosis
+     Workshop key their flammable-zone steps on (classes 2L, 2 and 3).
+     `cpVap` overrides the generic vapour specific heat where the fluid is a
+     long way from it — R32 and propane carry far more heat per kilogram of
+     vapour than an HFC, and the compressor work has to reflect that.       */
   const REFRIGERANTS = {
-    R134a: { label: "R134a", pLow: 3.5,  pHigh: 16.0, tEvap: 6,  tCond: 58, tSuction: 12, tDischarge: 75, tLiquid: 52 },
-    R410A: { label: "R410A", pLow: 9.0,  pHigh: 30.0, tEvap: 6,  tCond: 50, tSuction: 12, tDischarge: 80, tLiquid: 45 },
-    R22:   { label: "R22",   pLow: 5.0,  pHigh: 19.5, tEvap: 5,  tCond: 50, tSuction: 11, tDischarge: 78, tLiquid: 44 },
-    R404A: { label: "R404A", pLow: 4.2,  pHigh: 20.0, tEvap: -10,tCond: 43, tSuction: -4, tDischarge: 78, tLiquid: 38 },
+    R134a: { label: "R134a", safety: "A1", flammable: false, gwp: 1430,
+      pLow: 3.5,  pHigh: 16.0, tEvap: 6,  tCond: 58, tSuction: 12, tDischarge: 75, tLiquid: 52,
+      use: "Medium-temperature commercial, chillers, automotive; the textbook reference fluid" },
+    R410A: { label: "R410A", safety: "A1", flammable: false, gwp: 2088,
+      pLow: 9.0,  pHigh: 30.0, tEvap: 6,  tCond: 50, tSuction: 12, tDischarge: 80, tLiquid: 45,
+      use: "The installed base of split and ducted air conditioning; being replaced by R32 and R454B" },
+    R22:   { label: "R22", safety: "A1", flammable: false, gwp: 1810,
+      pLow: 5.0,  pHigh: 19.5, tEvap: 5,  tCond: 50, tSuction: 11, tDischarge: 78, tLiquid: 44,
+      use: "Legacy HCFC, phased out — service only, no new equipment" },
+    R404A: { label: "R404A", safety: "A1", flammable: false, gwp: 3922,
+      pLow: 4.2,  pHigh: 20.0, tEvap: -10,tCond: 43, tSuction: -4, tDischarge: 78, tLiquid: 38,
+      use: "Low-temperature commercial refrigeration; very high GWP, under phase-down pressure" },
+    R32:   { label: "R32 (A2L)", safety: "A2L", flammable: true, gwp: 675, cpVap: 1.4,
+      pLow: 9.81, pHigh: 31.41, tEvap: 6, tCond: 50, tSuction: 12, tDischarge: 95, tLiquid: 44,
+      use: "The current split-system refrigerant: R410A pressures, higher discharge temperature, mildly flammable" },
+    R454B: { label: "R454B (A2L)", safety: "A2L", flammable: true, gwp: 466, glide: 1.5, cpVap: 1.1,
+      pLow: 8.84, pHigh: 28.32, tEvap: 6, tCond: 50, tSuction: 12, tDischarge: 90, tLiquid: 44,
+      use: "R410A successor for ducted and packaged plant; a zeotropic blend (about 1.5 K glide), so charge as liquid" },
+    R290:  { label: "R290 propane (A3)", safety: "A3", flammable: true, gwp: 3, cpVap: 1.9,
+      pLow: 4.74, pHigh: 15.34, tEvap: 0, tCond: 45, tSuction: 6, tDischarge: 65, tLiquid: 40,
+      use: "Self-contained commercial cabinets, heat pumps and some splits; a hydrocarbon, highly flammable, small charges" },
   };
   Object.keys(REFRIGERANTS).forEach(k => { REFRIGERANTS[k].satTable = TABLES[k]; });
 

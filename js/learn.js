@@ -479,12 +479,32 @@ function renderHome() {
   document.getElementById("importFile").addEventListener("change", importProgress);
 }
 
+/* The units of competency a module supports, when the competency data is
+   loaded. Knowledge evidence only — the practical side is the RTO's. */
+function moduleUnitsHtml(mod) {
+  const C = (typeof RefrigCompetency !== "undefined") ? RefrigCompetency : null;
+  if (!C || !Array.isArray(mod.units) || !mod.units.length) return "";
+  const items = mod.units.map(code => {
+    const u = C.UNITS[code];
+    if (!u) return "";
+    const tag = u.status === "core" ? "core" : u.status === "elective" ? "elective" : "confirm";
+    return `<li><b>${code}</b> ${RefrigMd.esc(u.title)} <span class="unit-status unit-${tag}">${tag}</span></li>`;
+  }).join("");
+  return `
+    <details class="reveal module-units">
+      <summary>Supports ${mod.units.length} unit${mod.units.length === 1 ? "" : "s"} of ${C.QUALIFICATION.code}</summary>
+      <p class="module-blurb">Knowledge evidence for these units of the ${RefrigMd.esc(C.QUALIFICATION.title)}. Indicative: the practical evidence is assessed by your RTO, which should confirm the mapping against the current release.</p>
+      <ul class="module-unit-list">${items}</ul>
+    </details>`;
+}
+
 function renderModule(mod) {
   const main = document.getElementById("learnMain");
   main.innerHTML = `
     <div class="crumbs"><a href="#">Course</a> › <span>${mod.title}</span></div>
     <h2>${mod.title}</h2>
     <p class="module-blurb">${mod.blurb}</p>
+    ${moduleUnitsHtml(mod)}
     <div class="lesson-list">
       ${mod.lessons.map((les, i) => {
         const done = lessonDone(mod, les);

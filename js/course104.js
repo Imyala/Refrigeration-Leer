@@ -21,6 +21,7 @@
   {
     id: "v1-evaporators",
     stream: "v1",
+    units: ["UEERA0036", "UEERA0052", "UEERA0053"],
     title: "R1.4 · Evaporators",
     blurb: "The component that actually does the cooling: how evaporators are classified and built, how air and liquid coolers differ, and how to size one with Qh = A x U x TD.",
     lessons: [

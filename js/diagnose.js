@@ -281,7 +281,38 @@
     return { rating: "scattergun", text: `${n} readings. Every probe you fit takes time and disturbs the machine. Superheat, subcooling and condenser TD would have got you there.` };
   }
 
-  const api = { POINTS, DERIVED, readingAt, derive, interpret, judge, efficiency, FAMILY_TIP };
+  /* ---- Flammable refrigerants ---------------------------------------------
+     Fitting gauges to an A2L or A3 machine is a potential release, and the
+     Code of Practice has the technician assess the area as a temporary
+     flammable zone before that can happen. The workshop treats it as part
+     of the method: the diagnosis can still be right, but a gauge fitted
+     before the zone was assessed is a mark against how the job was done. */
+  const ZONE_PENALTY = 0.25;
+
+  function siteRequirements(base) {
+    if (!base || !base.flammable) return { flammableZone: false, safety: (base && base.safety) || "A1", text: null };
+    const cls = base.safety || "flammable";
+    return {
+      flammableZone: true, safety: cls,
+      text: `${base.label} is class ${cls}. Before a gauge goes near a service port, assess the area as a temporary flammable zone: ventilation, no naked flames or spark sources, a combustible-gas detector (not a halide torch) running and reading zero, an extinguisher within reach.`,
+    };
+  }
+
+  /* `placedBeforeZone` is the list of gauge points fitted before the learner
+     recorded the zone assessment; on an A1 machine it is always empty. */
+  function zoneVerdict(base, placedBeforeZone) {
+    const req = siteRequirements(base);
+    if (!req.flammableZone) return null;
+    const gauges = (placedBeforeZone || []).filter(id => POINTS[id] && POINTS[id].kind === "gauge");
+    if (!gauges.length) return { penalty: 0, text: `Zone assessed before the gauges went on — the right order on a class ${req.safety} machine.` };
+    return {
+      penalty: ZONE_PENALTY,
+      text: `${gauges.length === 1 ? "A gauge was" : "Both gauges were"} fitted to a class ${req.safety} machine before the area was assessed as a flammable zone. Connecting to a service port is a potential release; on a flammable charge the walk-round — ventilation, ignition sources, detector — comes before it, every time.`,
+    };
+  }
+
+  const api = { POINTS, DERIVED, readingAt, derive, interpret, judge, efficiency, FAMILY_TIP,
+    siteRequirements, zoneVerdict, ZONE_PENALTY };
   root.RefrigDiagnose = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

@@ -3083,3 +3083,15 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-seq details.reveal > summary { padding: 6px 10px; font-size: 12px; }
 .sb-seq details.reveal > *:not(summary) { padding: 0 10px; }
 .sb-seq details.reveal p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 0 0 8px; }
+
+/* ---- Units of competency on a module page ------------------------------- */
+.module-units { margin: 0 0 1rem; }
+.module-unit-list { list-style: none; padding: 0; margin: .5rem 0 0; display: grid; gap: .35rem; }
+.module-unit-list li { font-size: .92rem; }
+.unit-status { display: inline-block; margin-left: .35rem; padding: 0 .45em; border-radius: 999px; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; vertical-align: middle; border: 1px solid currentColor; opacity: .85; }
+.unit-core { color: var(--good-text); }
+.unit-elective { color: var(--accent); }
+.unit-confirm { color: var(--muted); }
+
+/* ---- Service Bay: flammable charge badge ------------------------------- */
+.sb-flam-badge { display: inline-block; margin-left: .5rem; padding: .05em .5em; border-radius: 999px; font-size: .75rem; font-weight: 700; letter-spacing: .03em; color: var(--warn-text); background: var(--warn-soft); border: 1px solid var(--warn-line); }

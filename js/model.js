@@ -42,11 +42,12 @@
      Shared by the single-stage cycle and by each half of a cascade.          */
   function stageWork(base, tEvapS, tCondS, superheatS, subcoolS, dischargeBoost) {
     const tbl = base.satTable;
+    const cpv = base.cpVap || D.CP_VAP;
     const pE = satPress(base, tEvapS), pC = satPress(base, tCondS);
     const ratioS = pC / pE, baseRatio = base.pHigh / base.pLow;
     const tDisch = tCondS + (base.tDischarge - base.tCond) * (ratioS / baseRatio) * (dischargeBoost || 1);
-    const hSuc = interpTable(tbl, "T", tEvapS, "hg") + D.CP_VAP * superheatS;
-    const hDis = interpTable(tbl, "T", tCondS, "hg") + D.CP_VAP * Math.max(tDisch - tCondS, 0);
+    const hSuc = interpTable(tbl, "T", tEvapS, "hg") + cpv * superheatS;
+    const hDis = interpTable(tbl, "T", tCondS, "hg") + cpv * Math.max(tDisch - tCondS, 0);
     const hLiq = interpTable(tbl, "T", tCondS - subcoolS, "hf");
     return {
       pE, pC, ratio: ratioS, tDisch,
@@ -78,6 +79,7 @@
     const s = speed / 100, L = load / 100;
     const f = D.FAULTS[faultKey] || D.FAULTS.none;
     const tbl = base.satTable;
+    const cpv = base.cpVap || D.CP_VAP;
     const circuit = (C && C.CIRCUITS[circuitKey]) || null;
     const fx = (circuit && circuit.effects) || {};
 
@@ -115,9 +117,9 @@
     const hg1 = interpTable(tbl, "T", tEvap, "hg");           // saturated vapour at coil pressure
     const h3  = interpTable(tbl, "T", tLiquid, "hf");         // subcooled liquid ≈ hf(T)
     const h4  = h3;                                           // throttling is isenthalpic
-    const hCoilOut = hg1 + D.CP_VAP * superheatCoil;          // what leaves the evaporator
-    const h1  = hg1 + D.CP_VAP * superheat;                   // what reaches the compressor
-    const h2  = interpTable(tbl, "T", tCond, "hg") + D.CP_VAP * Math.max(tDischarge - tCond, 0);
+    const hCoilOut = hg1 + cpv * superheatCoil;               // what leaves the evaporator
+    const h1  = hg1 + cpv * superheat;                        // what reaches the compressor
+    const h2  = interpTable(tbl, "T", tCond, "hg") + cpv * Math.max(tDischarge - tCond, 0);
 
     // How much of the liquid flashes to vapour crossing the metering device.
     // This is worth showing on every circuit — it is why subcooling matters.

@@ -112,6 +112,7 @@
     {
       id: "elec-ac-machines",
       stream: "elec",
+      units: ["UEERA0044", "UEERA0045"],
       title: "E.12 · AC machines and motor protection",
       blurb: "How three-phase and single-phase a.c. motors, alternators and synchronous machines work, how they are started, controlled, rated, protected and tested in the field.",
       lessons: [

@@ -17,6 +17,7 @@
      ====================================================================== */
   {
     id: "fundamentals",
+    units: ["UEERA0036", "UEECD0048"],
     title: "1 · Heat, temperature & pressure",
     blurb: "The physics every refrigeration mechanic uses daily: what heat actually is, why change of state moves so much of it, and how pressure controls boiling point.",
     lessons: [
@@ -283,6 +284,7 @@ what do I actually see?"*
      ====================================================================== */
   {
     id: "cycle",
+    units: ["UEERA0036", "UEERA0035"],
     title: "2 · The vapour-compression cycle",
     blurb: "The four processes that move heat uphill, how to read the P–h diagram, and a full lap around the loop with the simulator.",
     lessons: [
@@ -537,6 +539,7 @@ to the condenser on the next lap.
      ====================================================================== */
   {
     id: "components",
+    units: ["UEERA0036", "UEERA0050", "UEECD0051"],
     title: "3 · Components deep-dive",
     blurb: "Compressors, metering devices, heat exchangers and the supporting cast — what each one does, the main types, and how they fail.",
     lessons: [
@@ -879,6 +882,7 @@ long or safely without them.
      ====================================================================== */
   {
     id: "refrigerants",
+    units: ["UEECO0010", "UEERA0048", "UEECD0007"],
     title: "4 · Refrigerants & the environment",
     blurb: "The refrigerant families and numbering, the environmental rules that reshaped the industry, and the safety classes that decide how each fluid must be handled.",
     lessons: [
@@ -1281,6 +1285,7 @@ go deeper in the authoritative source.
      ====================================================================== */
   {
     id: "superheat-subcooling",
+    units: ["UEERA0036", "UEERA0031"],
     title: "5 · Superheat & subcooling",
     blurb: "The two numbers that turn gauge readings into diagnosis: how to measure them properly, and what every combination is telling you.",
     lessons: [

@@ -4,7 +4,7 @@ Which source document each course module was written from, and how much
 teaching material came out of it. This is the audit trail behind the claim
 that the syllabus covers the source library completely.
 
-**Totals: 64 modules, 516 lessons, 2094 quiz questions, roughly 706,000 words of
+**Totals: 64 modules, 517 lessons, 2098 quiz questions, roughly 706,000 words of
 teaching content.**
 
 ## How the content was produced
@@ -55,7 +55,7 @@ See `docs/REFERENCES.md` for the copyright position and the alignment policy.
 
 ### The guided core program
 
-*Built on the AIRAH volumes and the Refrigerant Handling Code of Practice* — 11 modules, 39 lessons, 123 questions.
+*Built on the AIRAH volumes and the Refrigerant Handling Code of Practice* — 11 modules, 40 lessons, 127 questions.
 
 | Module | Source chapter | Lessons | Questions |
 |---|---|---|---|
@@ -69,7 +69,7 @@ See `docs/REFERENCES.md` for the copyright position and the alignment policy.
 | 8 · Fault diagnosis | Core program — synthesised from the sources below | 3 | 9 |
 | 9 · Repair procedures | Core program — synthesised from the sources below | 4 | 12 |
 | 10 · Safety | Core program — synthesised from the sources below | 2 | 6 |
-| 11 · The Refrigerant Handling Code of Practice | Core program — synthesised from the sources below | 10 | 36 |
+| 11 · The Refrigerant Handling Code of Practice | Core program — synthesised from the sources below | 11 | 40 |
 
 ### Australian Refrigeration and Air-conditioning, Volume 1
 

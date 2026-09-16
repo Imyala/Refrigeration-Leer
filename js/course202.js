@@ -21,6 +21,7 @@
     {
       id: "v2-piping",
       stream: "v2",
+      units: ["UEERA0050", "UEERA0059"],
       title: "R2.2 · Refrigeration piping and line sizing",
       blurb: "Choosing, routing, supporting and sizing refrigerant lines so that oil always returns to the compressor, pressure drop stays small and liquid never slugs back.",
       lessons: [

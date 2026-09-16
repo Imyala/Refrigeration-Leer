@@ -75,6 +75,7 @@
   {
     id: "elec-electromagnetism",
     stream: "elec",
+    units: ["UEERA0044", "UEERA0045"],
     title: "E.6 · Magnetism and electromagnetism",
     blurb: "How magnetism and electricity produce each other: fields, flux, magnetic circuits, B/H curves, induction, inductance, and the relays, solenoids, motors and meters that depend on them.",
     lessons: [

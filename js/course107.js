@@ -11,7 +11,7 @@
 
   const REFS = [
     "Australian Refrigeration and Air-conditioning (ARAC) Vol 1, Boyle — pub. AIRAH — Ch 7, Domestic, commercial and industrial systems",
-    "AS/NZS 1677.2 — refrigerating systems: safety requirements for fixed applications (charge limits, relief, machinery rooms)",
+    "AS/NZS 5149 series (which replaced AS/NZS 1677.2 in 2016) — refrigerating systems and heat pumps: safety and environmental requirements (charge limits, relief, machinery rooms)",
     "Australian Refrigerant Handling Code of Practice Part 1 — ARCtick licensed work on sealed and field-piped systems",
   ];
 
@@ -19,6 +19,7 @@
     {
       id: "v1-system-types",
       stream: "v1",
+      units: ["UEERA0052", "UEERA0053", "UEERA0035"],
       title: "R1.7 · Domestic, commercial and industrial systems",
       blurb: "How the same vapour-compression cycle is packaged three different ways — the household fridge, the supermarket rack, and the industrial booster plant — and what a technician does with each.",
       lessons: [

@@ -30,7 +30,12 @@
   function newValve() {
     return { spindleCap: true, portCap: true, spindle: "back", hose: false, purged: false };
   }
-  function newState() {
+  /* `opts.flammable` says the machine holds an A2L, A2 or A3 refrigerant.
+     The Code of Practice treats the area round such a machine as a temporary
+     flammable zone the moment refrigerant can be released, so a hook-up on
+     one has an extra step — assess the zone — before any port is opened. */
+  function newState(opts) {
+    const o = opts || {};
     return {
       valves: { suction: newValve(), discharge: newValve() },
       leaks: { suction: false, discharge: false },
@@ -40,6 +45,10 @@
       hoseSet: null,      // which set of hoses was selected off the van
       zeroChecked: false, // gauges proved to read zero before fitting
       checked: false,     // gauges looked at once both hoses were connected
+      flammable: !!o.flammable,   // A2L / A2 / A3 charge in the machine
+      safety: o.safety || null,   // its ISO 817 class, for the messages
+      zoneChecked: false, // flammable zone assessed before refrigerant could be released
+      zoneMissed: 0,      // releases (vents, purges) made on a flammable charge with no assessment
       trail: [],          // ordered record of what was done, for grading
     };
   }
@@ -82,6 +91,16 @@
   function warn(s, msg) { s.warns += 1; return { kind: "warn", msg }; }
   function startLeak(s, side) { s.leaks[side] = true; s.emissionG += VENT_G; }
 
+  /* Releasing refrigerant from a flammable charge in a space nobody has
+     assessed is the thing the zone step exists to prevent. Every message
+     about a release on such a machine carries the reminder. */
+  function unassessed(s) { return s.flammable && !s.zoneChecked; }
+  function flammableTail(s) {
+    if (!unassessed(s)) return "";
+    s.zoneMissed += 1;
+    return ` And this is ${s.safety ? "an " + s.safety : "a flammable"} refrigerant, released into a space you have not assessed: no detector running, no check for ignition sources, nothing to say the vapour is not pooling at floor level next to something that can light it.`;
+  }
+
   const SIDE_NAME = { suction: "suction", discharge: "discharge" };
 
   /* Apply one action; mutates `s`, returns {kind, msg}.
@@ -121,6 +140,15 @@
         return ok("Both needles sit on zero with the hoses open to atmosphere. A gauge that reads two bar before you start will have you chasing a fault that is not there — and one that reads low will have you overcharging. Prove them every time.");
       }
 
+      case "zoneCheck": {
+        if (s.zoneChecked) return info("The zone has already been assessed.");
+        s.zoneChecked = true;
+        if (!s.flammable) {
+          return info("This machine holds an A1 refrigerant, so there is no flammable zone to declare — but the walk-round costs nothing, and on a machine whose refrigerant you cannot positively identify, the Code says treat it as flammable and toxic until you can.");
+        }
+        return ok(`Zone assessed for ${s.safety || "a flammable"} refrigerant: ventilation confirmed, no naked flames or spark sources within the working area, the combustible-gas detector on and reading zero at floor level, an extinguisher to hand, and the area kept clear. Now the manifold can go on — nothing that can release refrigerant happens before this.`);
+      }
+
       case "spindleCap":
         if (v.spindleCap) { v.spindleCap = false; return ok(`Spindle cap off the ${name} valve — the stem is accessible.`); }
         v.spindleCap = true;
@@ -138,7 +166,7 @@
         v.portCap = false;
         if (v.spindle !== "back") {
           startLeak(s, a.side);
-          return warn(s, `Refrigerant hisses from the open ${name} port — the valve is off its back seat! Back-seat it or get a hose on, fast.`);
+          return warn(s, `Refrigerant hisses from the open ${name} port — the valve is off its back seat! Back-seat it or get a hose on, fast.` + flammableTail(s));
         }
         return ok(`Gauge-port cap off the ${name} valve. The port is dead while the valve stays back-seated.`);
 
@@ -149,7 +177,7 @@
           v.purged = false;
           if (v.spindle !== "back") {
             startLeak(s, a.side);
-            return warn(s, `You broke the hose off a live ${name} port — it's hissing. Back-seat the valve BEFORE removing hoses.`);
+            return warn(s, `You broke the hose off a live ${name} port — it's hissing. Back-seat the valve BEFORE removing hoses.` + flammableTail(s));
           }
           return ok(`Hose off the ${name} port.`);
         }
@@ -181,7 +209,7 @@
         // leaving the back seat with an open, bare port = venting
         if (!v.hose && !v.portCap) {
           startLeak(s, a.side);
-          return warn(s, `The ${name} port is open to atmosphere and you just opened the valve to it — refrigerant is venting! Back-seat it.`);
+          return warn(s, `The ${name} port is open to atmosphere and you just opened the valve to it — refrigerant is venting! Back-seat it.` + flammableTail(s));
         }
 
         if (a.pos === "front") {
@@ -209,6 +237,13 @@
         }
         v.purged = true;
         s.emissionG += PURGE_G;
+        if (unassessed(s)) {
+          /* A purge is a deliberate release. On a flammable charge that is
+             exactly the moment the zone assessment is for. */
+          const tail = flammableTail(s);
+          if (!own && viaManifold) other.purged = true;
+          return warn(s, `Short puff at the ${name} connection — the air is out of the hose.${tail} Assess the zone before you release anything else.`);
+        }
         if (!own && viaManifold) {
           /* The refrigerant sweeps out of the live side, through the manifold
              body and along this hose, so it clears both on the way. */
@@ -237,6 +272,12 @@
       matches: (e) => e === "zeroCheck",
       early: "You fitted the gauges before you proved them.",
       why: "A gauge that is out reads wrong all day, and every number you take from it is wrong with it. Check it open to atmosphere, before it goes anywhere near the system." },
+    { id: "zone",      label: "Assess the area as a flammable zone",
+      applies: (s) => s.flammable,
+      test: (s) => s.zoneChecked,
+      matches: (e) => e === "zoneCheck",
+      early: "Refrigerant could already have been released before the zone was assessed.",
+      why: "An A2L or A3 charge makes the area round the machine a temporary flammable zone from the first moment refrigerant can escape — a purge, a cracked port, a hose broken off. So before the manifold goes on: ventilation, no ignition sources, a combustible-gas detector (never a halide torch) running, and an extinguisher to hand. The Code puts this ahead of any release, and so does the order of work." },
     { id: "highHose",  label: "Fit the high-side hose to the discharge port",
       test: (s) => s.valves.discharge.hose,
       matches: (e) => e === "hose:discharge",
@@ -272,21 +313,25 @@
   /* Compare the order things actually happened in against the taught order.
      Only the FIRST occurrence of each step counts — repeating an action later
      is not what we are grading. */
+  /* The steps that apply to this machine: a flammable charge adds one. */
+  function sequenceFor(s) { return SEQUENCE.filter(st => !st.applies || st.applies(s)); }
+
   function sequenceReport(s) {
+    const seq = sequenceFor(s);
     const firstAt = {};
-    SEQUENCE.forEach(step => {
+    seq.forEach(step => {
       const i = s.trail.findIndex(step.matches);
       firstAt[step.id] = i;
     });
-    const done = SEQUENCE.filter(st => st.test(s));
-    const steps = SEQUENCE.map((step, n) => {
+    const done = seq.filter(st => st.test(s));
+    const steps = seq.map((step, n) => {
       const at = firstAt[step.id];
       const complete = step.test(s);
       /* out of order = some later step in the taught list happened first */
       let outOfOrder = false;
       if (complete && at >= 0) {
-        for (let k = n + 1; k < SEQUENCE.length; k++) {
-          const other = firstAt[SEQUENCE[k].id];
+        for (let k = n + 1; k < seq.length; k++) {
+          const other = firstAt[seq[k].id];
           if (other >= 0 && other < at) { outOfOrder = true; break; }
         }
       }
@@ -294,7 +339,7 @@
         complete, at, outOfOrder };
     });
     const inOrder = steps.filter(st => st.complete && st.outOfOrder).length === 0;
-    return { steps, done: done.length, total: SEQUENCE.length, inOrder };
+    return { steps, done: done.length, total: seq.length, inOrder };
   }
 
   /* Progress through the hookup procedure. */
@@ -307,6 +352,7 @@
     return {
       capsOff, hoses, cracked, purged,
       hoseSet: !!s.hoseSet, zeroChecked: s.zeroChecked,
+      flammable: s.flammable, zoneChecked: s.zoneChecked,
       readings: hoses && cracked && purged && !s.tripped,
     };
   }
@@ -327,7 +373,7 @@
     return side === "suction" ? pressures.pLow : pressures.pHigh;
   }
 
-  const api = { newState, act, checklist, packedUp, reading, sequenceReport,
+  const api = { newState, act, checklist, packedUp, reading, sequenceReport, sequenceFor,
     SEQUENCE, HOSE_SETS, VENT_G, PURGE_G };
   root.RefrigService = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

@@ -3,7 +3,7 @@
 An interactive **refrigeration training platform**: an animated
 vapour-compression simulator with fault diagnosis, a service-procedure
 trainer, a circuit builder and a diagnostic workshop, plus a structured
-**64-module course** (516 lessons and 2,094 quiz questions with saved
+**64-module course** (517 lessons and 2,098 quiz questions with saved
 progress) that runs from first principles through to full trade-course depth
 in refrigeration, air conditioning and electrical principles — all in a plain
 static site with no build step.
@@ -165,6 +165,12 @@ where the job really starts, at the van:
 - **Take readings** — the gauges only read once hoses are on and valves
   cracked; values come from the thermodynamic model with live PT saturation
   temperatures.
+- **Flammable charges** — put R32, R454B or R290 in the machine and the job
+  gains a step: **assess the area as a flammable zone** (ventilation,
+  ignition sources, a combustible-gas detector, an extinguisher) before
+  anything can release refrigerant. A purge or a vent on an unassessed A2L/A3
+  charge is called out and counted, and the step is graded in order like the
+  rest.
 - **Realistic consequences** — cracking a bare open port vents refrigerant
   (hissing, and a gram counter the Code of Practice would care about);
   breaking a hose off a live port hisses; **front-seating the discharge on a
@@ -262,6 +268,10 @@ instrument, and work out what the reading means.
   fan read the same — you have to look at the machine, and the feedback says
   how you would tell them apart), nothing for a miss. **Sometimes the system
   is healthy**, and being willing to say so is part of the exercise.
+- **Flammable refrigerants change the method** — on an A2L or A3 machine the
+  job carries a "flammable zone assessed" check; a gauge fitted to a service
+  port before it costs a quarter mark, because connecting to a port is a
+  potential release and the walk-round comes first.
 - **How you went about it is rated too** — measuring the four readings that
   decide most faults (both gauges, the evaporator outlet, the liquid line)
   beats measuring everything the kit can measure: field time is real, and so
@@ -273,13 +283,13 @@ same refrigerant tables and cycle model as the simulator; the UI lives in
 
 ## The course (learn.html)
 
-A structured curriculum of **64 modules / 516 lessons / 2,094 quiz
+A structured curriculum of **64 modules / 517 lessons / 2,098 quiz
 questions**, written for learners working toward field competence. Modules
 are grouped into five **streams**, declared in `js/streams.js`:
 
 | Stream | Id | Modules | Lessons | What it is |
 |--------|----|--------:|--------:|------------|
-| **Core program** | `core` | 11 | 39 | The guided pathway — start here |
+| **Core program** | `core` | 11 | 40 | The guided pathway — start here |
 | **Refrigeration & air-conditioning 1** | `v1` | 16 | 151 | The first-year technical stream, from *Australian Refrigeration and Air-conditioning*, Vol 1 (Boyle, AIRAH), chapters 1–16 |
 | **Refrigeration & air-conditioning 2** | `v2` | 13 | 112 | The second-year / post-trade stream, from Vol 2 (Boyle, 5th ed., AIRAH), chapters 1–13 |
 | **Electrical principles** | `elec` | 14 | 135 | The electrical trade stream, from *Electrical Principles for the Electrical Trades*, 8th ed. (McGraw-Hill Australia), chapters 1–14 |
@@ -388,7 +398,8 @@ capstone stream uses it 237 times.
    references and a quiz.
 
 **References & alignment:** the course is aligned to Australian practice —
-the ARCtick **Refrigerant Handling Code of Practice** (Parts 1 & 2), the
+the ARCtick **Refrigerant Handling Code of Practice, 2025 edition** (Parts 1 & 2,
+including a lesson on what changed from the 2007 code), the
 **Ozone Protection and SGG Management Act** licensing scheme (RHL/RTA),
 **AS/NZS 3000 / 5149 / 4836** (topic-level citations; standards text is not
 reproduced), the **ARAC manuals** (Boyle, Vols 1 & 2, published by AIRAH) and
@@ -430,8 +441,10 @@ licence.
   table: per-module completion, exam results, overall %, CSV download.
   Entirely client-side; no student data leaves the browser.
 - **Curriculum mapping** — see `docs/CURRICULUM_MAPPING.md` for indicative
-  mapping of all five streams to the UEE training package (Cert III RAC),
-  EPA 608 and typical university learning outcomes, and
+  mapping of all five streams to **UEE32225** Certificate III in Air
+  Conditioning and Refrigeration (the release that superseded UEE32220 in
+  March 2025), EPA 608 and typical university learning outcomes. Every module
+  carries `units:` tags (`js/competency.js`), shown on its course page, and
   `docs/SOURCE_COVERAGE.md` for the source chapter behind every module.
 - **Procurement pack** — `docs/` also contains the sales & pricing overview
   with a one-term pilot playbook (`SALES_OVERVIEW.md`), a WCAG 2.1 AA
@@ -458,18 +471,29 @@ licence.
 The numbers are driven by a swappable refrigerant table, so the simulator is
 **interchangeable between fluids**. Included presets:
 
-| Fluid | Notes |
-|-------|-------|
-| **R134a** | Reference fluid — matches the teaching textbook |
-| R410A | Modern high-pressure AC blend |
-| R22 | Legacy HCFC (phased out) |
-| R404A | Low-temperature commercial refrigeration |
+| Fluid | Class | Notes |
+|-------|-------|-------|
+| **R134a** | A1 | Reference fluid — matches the teaching textbook |
+| R410A | A1 | The installed base of split and ducted AC; being replaced by R32 and R454B |
+| R22 | A1 | Legacy HCFC (phased out) — service only |
+| R404A | A1 | Low-temperature commercial refrigeration; very high GWP |
+| **R32** | **A2L** | The current split-system refrigerant: R410A pressures, hotter discharge, mildly flammable |
+| **R454B** | **A2L** | R410A successor for ducted and packaged plant; zeotropic blend (about 1.5 K glide, tabulated on the dew line) |
+| **R290** (propane) | **A3** | Self-contained cabinets, heat pumps, some splits; highly flammable, small charges |
+
+The four A1 tables are representative; **R32, R454B and R290 are generated
+from CoolProp 8** (IIR reference state) and are reference-grade. Every
+refrigerant carries its ISO 817 safety class, GWP and a `flammable` flag:
+put an A2L or A3 fluid in the Service Bay or the Diagnosis Workshop and the
+order of work gains a **flammable-zone assessment** step, graded like every
+other step, as the 2025 Code of Practice requires.
 
 > Values are approximate, representative operating points for learning the
 > *shape* of the cycle — not for engineering design.
 
 To add another refrigerant, add a saturation table to `TABLES` and an entry to
-`REFRIGERANTS` in `js/data.js`. To add a fault, add an entry to `FAULTS`
+`REFRIGERANTS` in `js/data.js` (with its `safety` class, `gwp` and `flammable`
+flag; `cpVap` where the fluid's vapour heat capacity is far from an HFC's). To add a fault, add an entry to `FAULTS`
 (gauge signature, diagnosis, field clues) and `VIZ` (how it looks on the
 schematic) — the fault selector, quiz and visualisation pick it up
 automatically.
@@ -528,7 +552,7 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/theme.js` | Stamps the theme on `<html>` before first paint and wires the switch in the nav |
 | `styles-build.css` | System Builder layout: palette, the circuit drawing, drag states, findings |
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |
-| `js/data.js` | Refrigerant tables, base operating points, fault library, schematic viz params |
+| `js/data.js` | Refrigerant tables (seven fluids, incl. R32/R454B/R290 from CoolProp), safety classes, base operating points, fault library, schematic viz params |
 | `js/circuits.js` | The seven system variations: pipe runs, components, captions, and what each adds to the cycle |
 | `js/schematic.js` | Draws a circuit definition into the SVG (pipes, components, hit areas, captions) in either view |
 | `js/equipment.js` | Equipment artwork: the same circuit drawn as the plant it represents |
@@ -541,12 +565,13 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `js/md.js` | Markdown-subset renderer for lesson content (incl. !SIM and !FIG directives, and the `>` / `>!` / `>?` block prefixes) |
 | `js/figures.js` | Inline SVG figure library used by `!FIG[id]` |
 | `js/streams.js` | The five stream definitions; a module with no `stream` is `core` |
-| `js/course1.js` … `js/course410.js` | Course content: 64 modules, 516 lessons, 2,094 questions (`course1–3` core, `course101–116` Refrigeration 1, `course201–213` Refrigeration 2, `course301–314` Electrical, `course401–410` Capstone) |
+| `js/course1.js` … `js/course410.js` | Course content: 64 modules, 517 lessons, 2,098 questions (`course1–3` core, `course101–116` Refrigeration 1, `course201–213` Refrigeration 2, `course301–314` Electrical, `course401–410` Capstone) |
 | `js/course-index.js` | **Generated** syllabus manifest (per-stream counts and titles) — `npm run build:index` |
 | `js/home.js` | Front-door pathway, stream chips and progress |
 | `js/nav.js` | Site-nav menu toggle, and the quiz/simulator state of the practice switcher |
 | `js/howto.js` | The "How this works" disclosure each workshop opens with, remembered per tool |
-| `js/refdocs.js` | Reference-document library behind `!CITE[…]` and the `#reference` view |
+| `js/refdocs.js` | Reference-document library behind `!CITE[…]` and the `#reference` view, and the **edition register** (`tests/editions.test.js` fails the build if a lesson or public document cites a superseded edition of the Code, a standard or the training package) |
+| `js/competency.js` | The UEE32225 units of competency the modules are tagged with (`units:` on each module), and what each tool contributes; `tests/competency.test.js` checks the tags |
 | `js/srs.js`, `js/cards.js` | Spaced-repetition scheduler and the extra card banks |
 | `js/servicebay.js`, `js/service-ui.js` | Service Bay state machine (pure, tested), including hose selection, the gauge zero check and order-of-work grading — and its UI |
 | `js/circuit.js`, `js/build-ui.js` | System Builder rules engine (component library, pipe runs, placement findings, scenarios — pure, tested) and the drawn circuit it is edited on |
