@@ -84,6 +84,14 @@
 .palette-item.is-flash { animation: buildFlash 1.1s ease-out 2; }
 .palette-note { font-size: 11.5px; color: var(--muted); margin: 0 0 6px; line-height: 1.5; }
 
+/* Stacked (below 1180px) the palette sits above the loop: as one long column
+   of twenty parts it pushed the circuit two screens down. Tiled, it is a
+   glance. */
+@media (max-width: 1180px) {
+  .palette-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+  .palette-group { margin-top: 10px; }
+}
+
 /* While a placed component is being dragged, the palette becomes the bin. */
 .palette-panel.is-bin { border-color: var(--bad-line); }
 .palette-panel.is-bin .palette-bin { display: block; }

@@ -283,6 +283,12 @@
    link must stop below it rather than under it. */
 html { scroll-padding-top: 76px; }
 
+/* `hidden` means hidden. Without this, any class that sets `display` (a
+   .btn, a .dg-check row) quietly overrides the attribute, and controls the
+   scripts have put away — "Fault to study" outside practice mode, "Fresh
+   try" before a quiz is checked — stay on screen as clutter. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
@@ -551,6 +557,36 @@ body {
   .toolstrip-links::-webkit-scrollbar { display: none; }
   .toolstrip-links li { flex: none; }
   .toolstrip-links a { padding: 9px 12px; }
+  /* One row, not two: the way back to the hub shrinks to its arrow (the
+     words stay for screen readers) and sits beside the strip. */
+  .toolstrip { flex-wrap: nowrap; }
+  /* The strip's edges fade, so a tool cut off at either end reads as
+     "there is more this way" rather than as a clipped label. A mask reads
+     only alpha, so "black" here is opacity, not a colour on the page. */
+  .toolstrip-links {
+    width: auto; flex: 1; min-width: 0;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 14px, black calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to right, transparent, black 14px, black calc(100% - 14px), transparent);
+  }
+  .toolstrip-back {
+    flex: none;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    background: var(--sunken);
+    font-size: 16px;
+  }
+  .toolstrip-back-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* ---------- Practice hub ----------
@@ -1630,6 +1666,12 @@ select.field { max-width: 100%; }
   margin-bottom: var(--s3);
 }
 .panel-head h2 { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+/* On a phone the caption goes under the title rather than beside it:
+   beside, it broke "The machine" and "Ladder diagram" over two lines. */
+@media (max-width: 600px) {
+  .panel-head { flex-wrap: wrap; gap: 2px var(--s3); }
+  .panel-head h2 { flex: 1 0 100%; }
+}
 
 /* Instrument panels are a grid below the workbench, not a sidebar */
 .instruments {
@@ -2116,6 +2158,33 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   overflow: hidden;
 }
 .stream-section .module-card .progress-bar.small { margin-top: 8px; }
+/* On a phone the overview is a list to find your place in, not a set of
+   cards to read: each module is one row — title, size, progress — and its
+   blurb waits on the module page. */
+@media (max-width: 600px) {
+  .stream-section .module-grid { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 0 10px 12px; }
+  .stream-section .module-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0 10px;
+    padding: 10px 12px;
+  }
+  .stream-section .module-card h4 { margin: 0; font-size: 13.5px; line-height: 1.35; }
+  .stream-section .module-card p { display: none; }
+  .stream-section .module-card h4 { grid-column: 1 / -1; }
+  .stream-section .module-card .progress-bar.small { grid-column: 1; grid-row: 2; align-self: center; margin-top: 4px; }
+  .stream-section .module-card .module-meta { grid-column: 2; grid-row: 2; margin: 4px 0 0; white-space: nowrap; }
+  .stream-section .module-card.exam-card .module-meta { grid-column: 1 / -1; }
+  .stream-blurb { margin: 2px 16px 10px; }
+  /* The stream's size goes under its name, not beside it: beside, it
+     squeezed "Refrigeration & air-conditioning 1" into a four-line stack. */
+  .stream-head { grid-template-columns: 14px minmax(0, 1fr); padding: 12px 14px; }
+  .stream-meta { grid-column: 2; white-space: normal; }
+  /* The course tagline is for the first visit; on a phone every view
+     under it is better served by the room. */
+  .course-page .topbar .subtitle { display: none; }
+}
 .module-meta { display: block; margin-top: 8px; font-size: 11px; color: var(--muted); }
 
 /* ---------- Learn: streams ----------
@@ -2157,6 +2226,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .stream-bar { grid-column: 2 / -1; display: block; margin: 0; background: var(--line); }
 .stream-section:not([open]) .stream-head { padding-bottom: 10px; }
 #aboutMain .module-grid { align-items: start; }
+@media (max-width: 600px) {
+  .learn-hero { padding: 18px 16px; border-radius: 16px; }
+  #aboutMain .module-grid { gap: 8px; }
+  #aboutMain .module-card { padding: 12px 14px; border-radius: 14px; box-shadow: none; }
+  #aboutMain .module-card details.fold { margin-top: 6px; padding-top: 4px; }
+}
 .stream-blurb { margin: 4px 16px 10px 42px; font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 78ch; }
 .stream-audience { color: var(--accent-2); opacity: .85; }
 .stream-section .module-grid { padding: 0 16px 16px; }
@@ -2246,6 +2321,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   white-space: nowrap;
 }
 .lesson-pos-bar { display: flex; gap: 3px; flex: 1; max-width: 260px; }
+.lesson-pos .lesson-mins { margin-left: auto; }
 .lesson-pos-bar > span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
 .lesson-pos-bar > span.done { background: var(--good); }
 .lesson-pos-bar > span.here { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-line); }
@@ -2514,6 +2590,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 .quiz-choice:hover { background: var(--panel-2); }
 .quiz-choice:has(input:checked) { background: var(--accent-soft); border-color: var(--accent-line); }
+
+/* A phone's width goes to the words: card padding sized for a laptop cost
+   a line in every paragraph and a screen over a whole lesson. */
+@media (max-width: 600px) {
+  .lesson-content { padding: 16px 16px; border-radius: 16px; font-size: 15px; line-height: 1.65; }
+  .lesson-quiz { padding: 16px 14px; border-radius: 16px; }
+  .quiz-q { padding: 8px 10px; margin: 10px 0; }
+  .quiz-choice { padding: 7px 8px; }
+  .lesson-refs { padding: 12px 14px; }
+}
 .quiz-choice input { margin-top: 3px; accent-color: var(--accent); cursor: pointer; }
 .quiz-explain {
   margin-top: 8px;
@@ -3149,17 +3235,18 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-seq-status { font-size: 13px; color: var(--text); margin: 0 0 10px; font-weight: 600; }
 .sb-seq-verdict { margin-bottom: 12px; }
 .sb-seq-verdict p { margin: 6px 0 0; }
-.sb-seq { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 8px; }
+/* A checklist, not a wall of cards: one row per step, a divider between
+   rows and the state in the bar down the left. */
+.sb-seq { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 20px; }
 @media (min-width: 941px) { .sb-seq { grid-template-columns: 1fr 1fr; } }
 .sb-step {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  padding: 9px 11px;
-  border: 1px solid var(--line);
-  border-left-width: 3px;
-  border-radius: 10px;
-  background: var(--sunken);
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-left: 3px solid var(--line);
 }
 .sb-step.todo { border-left-color: var(--line); }
 .sb-step.done { border-left-color: var(--good); }
@@ -3169,7 +3256,7 @@ details.reveal p:first-of-type { margin-top: 0; }
   width: 22px; height: 22px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--panel-2);
+  background: var(--sunken);
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
@@ -3177,7 +3264,7 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-step.done .sb-step-n { background: var(--good-soft); color: var(--good); }
 .sb-step.out  .sb-step-n { background: var(--bad-soft); color: var(--bad-text); }
 .sb-step-body { min-width: 0; flex: 1 1 auto; }
-.sb-step-head { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text); }
+.sb-step-head { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text); }
 .sb-step.todo .sb-step-head b { color: var(--muted); font-weight: 600; }
 .sb-step-mark { font-weight: 700; }
 .sb-step.done .sb-step-mark { color: var(--good); }
@@ -3205,11 +3292,15 @@ details.reveal p:first-of-type { margin-top: 0; }
 }
 .sb-step-early b { color: var(--bad-text); }
 
-/* Reuse the lesson reveal, tightened for a list of eight of them. */
-.sb-seq details.reveal { margin: 6px 0 0; border-radius: 8px; background: none; border-color: var(--card-line); }
-.sb-seq details.reveal > summary { padding: 6px 10px; font-size: 12px; }
-.sb-seq details.reveal > *:not(summary) { padding: 0 10px; }
-.sb-seq details.reveal p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 0 0 8px; }
+/* Reuse the lesson reveal, stripped to a quiet link for a list of eight of
+   them: the reason is there for the asking, not boxed on every row. */
+.sb-seq details.reveal { margin: 1px 0 0; border: 0; border-radius: 0; background: none; overflow: visible; }
+.sb-seq details.reveal > summary { display: inline-block; padding: 1px 0; font-size: 11.5px; font-weight: 600; color: var(--accent); }
+.sb-seq details.reveal > summary:focus-visible { outline-offset: 2px; border-radius: 4px; }
+.sb-seq details.reveal > summary::before { margin-right: 4px; }
+.sb-seq details.reveal > *:not(summary) { padding: 0; }
+.sb-seq details.reveal > *:not(summary):last-child { padding-bottom: 4px; }
+.sb-seq details.reveal p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 2px 0 0; }
 
 /* ---- Units of competency on a module page ------------------------------- */
 .module-units { margin: 0 0 1rem; }
@@ -3224,19 +3315,9 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-flam-badge { display: inline-block; margin-left: .5rem; padding: .05em .5em; border-radius: 999px; font-size: .75rem; font-weight: 700; letter-spacing: .03em; color: var(--warn-text); background: var(--warn-soft); border: 1px solid var(--warn-line); }
 
 /* ---- Capstone job -------------------------------------------------------- */
-.cp-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
-.cp-stage { display: flex; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 14px; background: var(--panel); }
-.cp-stage.done { border-left-color: var(--good); }
-.cp-stage.next { border-left-color: var(--accent); background: var(--accent-soft); }
-.cp-n { flex: 0 0 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; background: var(--sunken); color: var(--text-2); }
-.cp-stage.done .cp-n { background: var(--good-soft); color: var(--good-text); }
-.cp-body { min-width: 0; flex: 1; }
-.cp-head { margin: 0 0 4px; font-size: var(--fs-md); }
-.cp-state { font-size: var(--fs-xs); color: var(--muted); margin-left: 8px; text-transform: uppercase; letter-spacing: .05em; }
-.cp-brief { margin: 0 0 8px; font-size: var(--fs-sm); color: var(--text-2); line-height: 1.5; }
-.cp-units { margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cp-list { margin-top: 16px; }
+.cp-units { margin: 10px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .unit-chip { font-size: var(--fs-micro); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--sunken); }
-.cp-actions { margin: 0; }
 .capstone-intro, .capstone-done { margin-bottom: 12px; }
 .capstone-done .btn { margin-right: 6px; }
 

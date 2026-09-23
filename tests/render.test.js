@@ -139,7 +139,7 @@ test("a lesson says where it sits in its module, on the page and on the folded m
   const [mod, les, n] = app.eval("[COURSE[0].id, COURSE[0].lessons[1].id, COURSE[0].lessons.length]");
   const html = app.hash(`#${mod}/${les}`);
   assert.match(html, new RegExp(`Lesson 2 of ${n}<`), "position line in the lesson");
-  const bar = html.slice(html.indexOf('class="lesson-pos-bar"'), html.indexOf('class="lesson-head"'));
+  const bar = html.slice(html.indexOf('class="lesson-pos-bar"'), html.indexOf('class="lesson-mins"'));
   assert.strictEqual((bar.match(/<span class=/g) || []).length, n, "one segment per lesson in the module");
   assert.match(app.els.courseNavWhere.textContent, new RegExp(`lesson 2 of ${n}$`), "folded menu names the lesson");
   app.hash("");

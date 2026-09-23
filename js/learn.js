@@ -633,10 +633,10 @@ function renderLesson(mod, les) {
       <span class="lesson-pos-text">Lesson ${pos + 1} of ${mod.lessons.length}</span>
       <span class="lesson-pos-bar" aria-hidden="true">${mod.lessons.map(x =>
         `<span class="${lessonDone(mod, x) ? "done" : ""} ${x === les ? "here" : ""}"></span>`).join("")}</span>
+      <span class="lesson-mins">~${les.minutes} min${lessonDone(mod, les) ? " · <b class=\"done-tag\">completed ✓</b>" : ""}</span>
     </div>
     <div class="lesson-head">
       <h2>${les.title}</h2>
-      <span class="lesson-mins">~${les.minutes} min ${lessonDone(mod, les) ? " · <b class=\"done-tag\">completed ✓</b>" : ""}</span>
     </div>
     <div class="lesson-tools">
       <button id="flagBtn" class="flag-btn ${flagged ? "on" : ""}" type="button" aria-pressed="${flagged}">

@@ -365,12 +365,15 @@ function dgRenderDerived() {
     }
     const have = d.needs.filter(n => DG.placed.includes(n));
     const gap = d.needs.filter(n => !DG.placed.includes(n));
+    /* The chip names the instrument position; where on the pipework it
+       goes is on the machine itself, so the bracketed detail stays there. */
     const chips = d.needs.map(n => {
       const got = DG.placed.includes(n);
-      return `<li class="dg-need ${got ? "got" : "gap"}">
+      const label = RefrigDiagnose.POINTS[n].label;
+      return `<li class="dg-need ${got ? "got" : "gap"}" title="${dgEsc(label)}">
           <span aria-hidden="true">${got ? "✓" : "✗"}</span>
           <span class="dg-sr">${got ? "you have" : "still missing"}:</span>
-          ${dgEsc(RefrigDiagnose.POINTS[n].label)}</li>`;
+          ${dgEsc(label.replace(/\s*\(.*\)$/, ""))}</li>`;
     }).join("");
     /* One-of-two is the teachable moment — say it out loud rather than
        leaving the learner to notice a tick and a cross. */
@@ -380,11 +383,10 @@ function dgRenderDerived() {
          it cannot be estimated, guessed or read off anything else.</p>`
       : "";
     missing.push(`<li class="dg-derived locked">
-        <span class="dg-derived-label">${dgEsc(d.def.label)}</span>
+        <details class="fold dg-needwhy"><summary title="What it tells you">${dgEsc(d.def.label)}</summary><p>${dgEsc(d.def.needsWhy)}</p></details>
         <span class="dg-derived-value none">not yet</span>
         <ul class="dg-needs">${chips}</ul>
         ${oneAway}
-        <details class="fold dg-needwhy"><summary>What it tells you</summary><p>${dgEsc(d.def.needsWhy)}</p></details>
       </li>`);
   }
 
