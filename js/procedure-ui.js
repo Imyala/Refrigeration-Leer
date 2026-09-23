@@ -205,7 +205,8 @@ function prRenderBrief() {
 function prRenderRig() {
   const P = prP();
   const rows = PR_SPEC[PR.proc].readouts(PR.state, P);
-  document.getElementById("prRig").innerHTML = `<dl class="pr-readouts">${rows.map(([k, v]) => `<div><dt>${prEsc(k)}</dt><dd>${prEsc(v)}</dd></div>`).join("")}</dl>`;
+  // Two even rows on a wide screen, whatever the procedure's count.
+  document.getElementById("prRig").innerHTML = `<dl class="pr-readouts" style="--cols:${Math.ceil(rows.length / 2)}">${rows.map(([k, v]) => `<div><dt>${prEsc(k)}</dt><dd>${prEsc(v)}</dd></div>`).join("")}</dl>`;
 }
 
 function prRenderActions() {
@@ -230,7 +231,25 @@ function prRenderActions() {
     }
     return "";
   };
-  el.innerHTML = spec.groups.map(g => `<section class="pr-group"><h3>${prEsc(g.title)}</h3>${g.items.map(item).join("")}</section>`).join("");
+  /* Unlabelled one-button actions that follow each other ("Find it with
+     the detector", "Depressurise", "Repair the joint"...) share one row of
+     buttons rather than taking a line each. */
+  const groupHtml = (items) => {
+    const out = [];
+    let run = [];
+    const flush = () => {
+      if (run.length) out.push(`<div class="pr-item"><div class="pr-opts">${run.map(it => btn(it.action, null, it.label)).join("")}</div></div>`);
+      run = [];
+    };
+    for (const it of items) {
+      if (it.kind === "button") { run.push(it); continue; }
+      flush();
+      out.push(item(it));
+    }
+    flush();
+    return out.join("");
+  };
+  el.innerHTML = spec.groups.map(g => `<section class="pr-group"><h3>${prEsc(g.title)}</h3>${groupHtml(g.items)}</section>`).join("");
 
   el.querySelectorAll(".pr-act").forEach(b => b.addEventListener("click", () => {
     const action = b.dataset.action;

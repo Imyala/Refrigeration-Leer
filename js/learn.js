@@ -549,6 +549,8 @@ function renderHome() {
               <span class="module-meta">${mod.lessons.length} lessons · ${mdone} complete</span>
             </a>`;
           }).join("")}
+        </div>
+        <div class="module-grid stream-tests">
           <a class="module-card exam-card" href="#placement/${st.id}">
             <h4>Placement quiz</h4>
             <p>${Placement.get(st.id) ? "Sit it again to update your starting point." : `Twenty-odd questions across the stream, read module by module: what you already know, what to revise, where to start.`}</p>
@@ -562,7 +564,7 @@ function renderHome() {
         </div>
       </details>`;
     }).join("")}
-    <div class="module-grid">
+    <div class="module-grid final-grid">
       <a class="module-card exam-card final-card" href="#exam">
         <h4>Final exam &amp; certificate</h4>
         <p>${COURSE.length * EXAM.perProgramModule} questions from the whole program, ${EXAM.perProgramModule} per module. ${Math.round(EXAM.passPct * 100)}% to pass, then a printable certificate.</p>
