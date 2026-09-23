@@ -24,7 +24,7 @@ function boot() {
   function mkEl(id) {
     return els[id] = els[id] || {
       id, innerHTML: "", value: "", hidden: false, className: "", textContent: "",
-      dataset: {}, style: {},
+      dataset: {}, style: {}, classList: { add(){}, remove(){}, toggle(){}, contains(){return false;} },
       setAttribute(){}, getAttribute(){return null;}, focus(){}, insertAdjacentHTML(_,h){this.innerHTML+=h;},
       addEventListener(){}, querySelector(sel){return mkEl("q:"+sel);}, querySelectorAll(){return [];},
       appendChild(){}, remove(){},
@@ -133,4 +133,24 @@ test("the review, practice and reference views render", () => {
     assert.ok(!html.includes("undefined"), `${h}: undefined in output`);
     assert.ok(html.length > 100, `${h}: page is empty`);
   }
+});
+
+test("a lesson says where it sits in its module, on the page and on the folded menu", () => {
+  const [mod, les, n] = app.eval("[COURSE[0].id, COURSE[0].lessons[1].id, COURSE[0].lessons.length]");
+  const html = app.hash(`#${mod}/${les}`);
+  assert.match(html, new RegExp(`Lesson 2 of ${n}<`), "position line in the lesson");
+  const bar = html.slice(html.indexOf('class="lesson-pos-bar"'), html.indexOf('class="lesson-head"'));
+  assert.strictEqual((bar.match(/<span class=/g) || []).length, n, "one segment per lesson in the module");
+  assert.match(app.els.courseNavWhere.textContent, new RegExp(`lesson 2 of ${n}$`), "folded menu names the lesson");
+  app.hash("");
+  assert.match(app.els.courseNavWhere.textContent, /^Overview · \d+ of \d+ lessons done$/, "folded menu on the overview");
+});
+
+test("the quiz follows the reading, with the references after the way on", () => {
+  const withRefs = app.eval("(() => { const m = COURSE.find(m => m.lessons.some(l => l.refs && l.refs.length)); return m.id + '/' + m.lessons.find(l => l.refs && l.refs.length).id; })()");
+  const html = app.hash("#" + withRefs);
+  const at = (cls) => html.indexOf(`class="${cls}`);
+  assert.ok(at("lesson-content") < at("lesson-quiz"), "reading, then the quiz");
+  assert.ok(at("lesson-quiz") < at("lesson-nav"), "quiz, then the next lesson");
+  assert.ok(at("lesson-nav") < at("lesson-refs"), "references after the next-lesson link");
 });

@@ -294,6 +294,12 @@ body {
   padding: 18px var(--gutter) 64px;
   -webkit-font-smoothing: antialiased;
 }
+/* A phone has no width to spare for margins: 16px is enough to keep text off
+   the bezel, and the 16px it hands back goes to the lesson and the machine. */
+@media (max-width: 560px) {
+  :root { --gutter: 16px; }
+  body { padding-top: 10px; }
+}
 
 /* One micro-label style, used by every instrument, panel hint and field
    caption in the app — so small uppercase text always means the same thing. */
@@ -467,9 +473,12 @@ body {
 }
 @media (max-width: 430px) {
   /* Brand and Menu share the top line rather than stacking into a two-storey
-     bar that eats the first screenful. */
+     bar that eats the first screenful. The brand gives way (a zero basis, so
+     the line fits before anything wraps, then it takes what is left) and
+     truncates, rather than pushing Menu onto a second row. */
   .sitenav { padding: 6px 10px; }
-  .sitenav-brand { font-size: 13px; gap: 7px; min-width: 0; }
+  .sitenav-brand { font-size: 13px; gap: 7px; min-width: 0; flex: 1 1 0; letter-spacing: .02em; }
+  .theme-toggle { margin-left: 0; }
   .sitenav-brand > span:not(.brand-mark) { overflow: hidden; text-overflow: ellipsis; }
   .sitenav-brand .brand-mark { width: 24px; height: 24px; font-size: 13px; }
   .sitenav-toggle { padding: 8px 10px; font-size: 12.5px; min-height: 36px; }
@@ -553,23 +562,44 @@ body {
   margin: 0 auto;
   padding-top: var(--s2);
 }
+/* Two columns, with the first workshop across both: it is where a newcomer
+   starts, and seven cards in a three-column grid left a ragged hole on the
+   last row. One-then-pairs lands every card in a full row. */
 .practice-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s3);
   counter-reset: none;
 }
-.practice-card {
+@media (max-width: 720px) {
+  .practice-list { grid-template-columns: minmax(0, 1fr); }
+}
+.practice-main .practice-card {
   border: 1px solid var(--line-soft);
   border-radius: var(--r-lg);
   background: var(--panel);
   overflow: hidden;
   transition: border-color .15s ease, background .15s ease;
 }
-.practice-card:hover { border-color: var(--accent-line); background: var(--panel-2); }
+.practice-main .practice-card:hover { border-color: var(--accent-line); background: var(--panel-2); }
+.practice-list > .practice-card:first-child {
+  grid-column: 1 / -1;
+  border-color: var(--accent-line);
+  background: var(--hero-bg);
+}
+.practice-list > .practice-card:first-child:hover { border-color: var(--accent); }
+.practice-list > .practice-card:first-child .practice-time { color: var(--accent-2); }
+.practice-list > .practice-card:first-child .practice-num { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* The capstone uses every tool above, so it sits apart from them as the
+   thing they add up to, marked in the same violet as the final exam. */
+.practice-group-title { margin: var(--s6) 0 var(--s2); }
+.practice-main .practice-capstone { border-color: var(--violet-line); }
+.practice-main .practice-capstone:hover { border-color: var(--violet); }
+.practice-capstone .practice-num { background: var(--violet-soft); border-color: var(--violet-line); color: var(--violet-text); }
 .practice-card-link {
   display: flex;
   align-items: flex-start;
@@ -604,7 +634,8 @@ body {
   letter-spacing: -.01em;
   color: var(--text);
 }
-.practice-card:hover .practice-title { color: var(--accent-2); }
+.practice-main .practice-card:hover .practice-title { color: var(--accent-2); }
+.practice-main .practice-capstone:hover .practice-title { color: var(--violet-text); }
 .practice-goal {
   display: block;
   margin-top: 2px;
@@ -625,6 +656,8 @@ body {
 }
 .practice-title { font-size: var(--fs-md); }
 .practice-goal { font-size: var(--fs-sm); }
+.practice-list > .practice-card:first-child .practice-what,
+.practice-capstone .practice-what { -webkit-line-clamp: unset; }
 .practice-meta {
   margin: 0;
   padding: 0 var(--s5) var(--s4) calc(var(--s5) + 34px + var(--s4));
@@ -676,9 +709,9 @@ body {
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 10px var(--s4);
+  padding: 12px var(--s4);
   border: 1px solid var(--line-soft);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-lg);
   background: var(--panel);
   text-decoration: none;
   transition: border-color .15s ease, background .15s ease;
@@ -1849,22 +1882,84 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   max-width: var(--maxw);
   margin: 0 auto;
 }
-@media (max-width: 900px) {
-  .learn-layout { grid-template-columns: 1fr; }
-  .course-nav { position: static; }
-}
-
 .course-nav {
   position: sticky;
   top: 76px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  /* Taller than the window once a stream is open: scroll inside, or the
+     exam, review and reference entries at the foot are out of reach until
+     the lesson beside them has been scrolled to its end. */
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   background: var(--card-bg);
   border: 1px solid var(--card-line);
   border-radius: 18px;
   padding: 10px;
   box-shadow: var(--shadow-md);
+}
+.course-nav-panel { display: flex; flex-direction: column; gap: 4px; }
+
+/* The fold-away button. Only a narrow screen needs it. */
+.course-nav-toggle { display: none; }
+
+@media (max-width: 900px) {
+  .learn-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 8px; }
+  .course-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 4px;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .course-nav-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 52px;
+    padding: 8px 12px;
+    background: none;
+    border: 0;
+    border-radius: var(--r-md);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .course-nav-toggle:hover { background: var(--hover); }
+  .course-nav-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .course-nav-toggle-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .course-nav-toggle-label {
+    font-size: var(--fs-micro);
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+  .course-nav-where {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: var(--lh-tight);
+  }
+  .course-nav-caret {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 4px 0;
+    border-right: 2px solid var(--muted);
+    border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg);
+    transition: transform .15s ease;
+  }
+  .course-nav.open .course-nav-caret { transform: rotate(-135deg); margin: 4px 4px 0 0; }
+  .course-nav-panel { display: none; padding: 8px 6px 6px; border-top: 1px solid var(--line-soft); }
+  .course-nav.open .course-nav-panel { display: flex; }
 }
 .course-nav a {
   display: flex;
@@ -2138,6 +2233,23 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .lesson-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .lesson-head h2 { margin: 0; font-size: 20px; }
 
+/* Where this lesson sits in its module: one segment per lesson, filled when
+   done, the one you are reading marked. "How much is left?" answered without
+   opening the menu. */
+.lesson-pos { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; max-width: 860px; }
+.lesson-pos-text {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  white-space: nowrap;
+}
+.lesson-pos-bar { display: flex; gap: 3px; flex: 1; max-width: 260px; }
+.lesson-pos-bar > span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.lesson-pos-bar > span.done { background: var(--good); }
+.lesson-pos-bar > span.here { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-line); }
+
 .lesson-content {
   background: var(--card-bg);
   border: 1px solid var(--card-line);
@@ -2271,7 +2383,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .p-stat b { display: block; font-size: 20px; }
 .p-stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .practice-progress { font-size: 12px; color: var(--muted); margin: 4px 0 10px; }
-.practice-card { max-width: 720px; }
+.lesson-quiz.practice-card { max-width: 720px; }
 .practice-src { font-size: 11px; color: var(--muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .5px; }
 .practice-q { font-size: 17px; margin: 0 0 14px; line-height: 1.5; }
 .practice-options { grid-template-columns: 1fr; }
@@ -2343,19 +2455,25 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .quiz-q.learn { border-color: var(--warn); }
 .quiz-result.keep-going { color: var(--warn); }
 
-/* ---------- Learn: lesson references ---------- */
+/* ---------- Learn: lesson references ----------
+   Below the lesson's next step, not between the reading and its quiz: they are
+   where to go from here, so they read as quiet follow-on material. */
 .lesson-refs {
-  background: var(--card-bg);
-  border: 1px solid var(--card-line);
-  border-left: 3px solid var(--warn);
-  border-radius: 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--line);
+  border-radius: 14px;
   padding: 14px 20px;
-  margin-top: 14px;
+  margin-top: 12px;
   max-width: 860px;
   font-size: 13px;
-  box-shadow: var(--shadow-md);
+  color: var(--text-2);
 }
-.lesson-refs h3 { margin: 0 0 6px; font-size: 13px; color: var(--warn); letter-spacing: .5px; }
+.lesson-nav + .lesson-refs { margin-top: 28px; }
+.lesson-refs h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); letter-spacing: .5px; }
+.lesson-deeper { border-left-color: var(--accent-line); }
+.lesson-deeper h3 { color: var(--accent-2); }
+.deeper-links a { color: var(--accent); font-weight: 600; text-underline-offset: 2px; }
 .lesson-refs ul { margin: 0; padding-left: 18px; line-height: 1.7; }
 .lesson-refs p { margin: 8px 0 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
 
@@ -2380,17 +2498,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .quiz-q legend { font-size: 14px; font-weight: 600; padding: 0 6px; }
 .quiz-q.correct { border-color: var(--good); }
 .quiz-q.wrong { border-color: var(--bad); }
+/* Each answer is a whole-row target, big enough for a thumb, and the one you
+   picked stays marked so a set of answers can be checked before submitting. */
 .quiz-choice {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  padding: 6px 4px;
+  padding: 9px 10px;
+  margin: 2px 0;
   font-size: 14px;
   line-height: 1.5;
   cursor: pointer;
+  border: 1px solid transparent;
   border-radius: 8px;
 }
 .quiz-choice:hover { background: var(--panel-2); }
+.quiz-choice:has(input:checked) { background: var(--accent-soft); border-color: var(--accent-line); }
 .quiz-choice input { margin-top: 3px; accent-color: var(--accent); cursor: pointer; }
 .quiz-explain {
   margin-top: 8px;
@@ -2849,11 +2972,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
 /* ---------- Home: specialist streams ---------- */
 .home-streams { margin-top: 34px; }
+/* Four streams: two by two, never three and an orphan. */
 .stream-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 14px;
+}
+@media (max-width: 640px) {
+  .stream-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 .stream-card h3 { display: flex; align-items: center; gap: 8px; }
 .stream-card-meta {

@@ -252,6 +252,7 @@ function route() {
       else renderModule(mod);
     }
   }
+  setCourseNavOpen(false);
   renderSidebar();
   window.scrollTo(0, 0);
   // Move focus to the freshly rendered view for keyboard/screen-reader users
@@ -370,20 +371,84 @@ function renderNavList() {
   });
 }
 
+/* On a phone the module list would sit above every lesson, twenty rows to
+   scroll past before the reading starts. There it folds behind one button that
+   says where you are; the CSS shows the button only on narrow screens, so on a
+   wide one the list is simply always there. */
+function setCourseNavOpen(open) {
+  const nav = document.getElementById("courseNav");
+  const btn = document.getElementById("courseNavToggle");
+  if (!nav || !btn) return;
+  nav.classList.toggle("open", open);
+  btn.setAttribute("aria-expanded", String(open));
+}
+
+function navWhereText() {
+  const { m, l } = parseHash();
+  const mod = COURSE.find(x => x.id === m);
+  if (mod) {
+    const i = l ? mod.lessons.findIndex(x => x.id === l) : -1;
+    return i >= 0 ? `${mod.title} · lesson ${i + 1} of ${mod.lessons.length}` : mod.title;
+  }
+  const named = {
+    exam: l ? "Stream exam" : "Final exam & certificate",
+    review: "My review list",
+    practice: "Practice",
+    reference: "Reference library",
+    placement: "Placement quiz",
+  };
+  return named[m] || `Overview · ${totalDone()} of ${totalLessons()} lessons done`;
+}
+
+/* The sidebar scrolls on its own when it is taller than the window, so bring
+   the entry you are on into its view rather than leaving it below the fold. */
+function revealCurrentNavEntry(nav) {
+  if (!(nav.scrollHeight > nav.clientHeight)) return;
+  const cur = nav.querySelector(".nav-les.active") || nav.querySelector('[aria-current="page"]');
+  if (!cur || !cur.getBoundingClientRect) return;
+  const r = cur.getBoundingClientRect(), box = nav.getBoundingClientRect();
+  if (r.top < box.top || r.bottom > box.bottom) nav.scrollTop += r.top - box.top - box.height / 3;
+}
+
 function renderSidebar() {
   const nav = document.getElementById("courseNav");
-  // Build the filter box once; re-rendering it would drop what is being typed.
+  // Build the frame once; re-rendering it would drop what is being typed.
   if (!nav.querySelector(".nav-filter")) {
     nav.innerHTML = `
-      <input class="nav-filter" id="navFilter" type="search" autocomplete="off"
-             placeholder="Filter modules &amp; lessons…" aria-label="Filter modules and lessons" />
-      <div id="navList" class="nav-list"></div>`;
+      <button class="course-nav-toggle" id="courseNavToggle" type="button"
+              aria-expanded="false" aria-controls="courseNavPanel">
+        <span class="course-nav-toggle-text">
+          <span class="course-nav-toggle-label">Course contents</span>
+          <span class="course-nav-where" id="courseNavWhere"></span>
+        </span>
+        <span class="course-nav-caret" aria-hidden="true"></span>
+      </button>
+      <div class="course-nav-panel" id="courseNavPanel">
+        <input class="nav-filter" id="navFilter" type="search" autocomplete="off"
+               placeholder="Filter modules &amp; lessons…" aria-label="Filter modules and lessons" />
+        <div id="navList" class="nav-list"></div>
+      </div>`;
     nav.querySelector("#navFilter").addEventListener("input", (e) => {
       navFilter = e.target.value.trim();
       renderNavList();
     });
+    const btn = nav.querySelector("#courseNavToggle");
+    btn.addEventListener("click", () => setCourseNavOpen(btn.getAttribute("aria-expanded") !== "true"));
+    // Choosing an entry closes the list, even the one you are already on
+    // (which changes no hash, so the router never hears about it).
+    nav.querySelector("#courseNavPanel").addEventListener("click", (e) => {
+      if (e.target.closest("a")) setCourseNavOpen(false);
+    });
+    nav.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
+        setCourseNavOpen(false);
+        btn.focus();
+      }
+    });
   }
   renderNavList();
+  document.getElementById("courseNavWhere").textContent = navWhereText();
+  revealCurrentNavEntry(nav);
 }
 
 /* The lesson to pick up next: the first one not yet completed. */
@@ -558,9 +623,16 @@ function renderLesson(mod, les) {
   const p = Progress.get(mod.id, les.id);
   const flagged = Flags.has(mod.id, les.id);
 
+  const pos = mod.lessons.indexOf(les);
+
   main.innerHTML = `
     <div class="crumbs">
       <a href="#">Course</a> › <a href="#${mod.id}">${mod.title}</a> › <span>${les.title}</span>
+    </div>
+    <div class="lesson-pos">
+      <span class="lesson-pos-text">Lesson ${pos + 1} of ${mod.lessons.length}</span>
+      <span class="lesson-pos-bar" aria-hidden="true">${mod.lessons.map(x =>
+        `<span class="${lessonDone(mod, x) ? "done" : ""} ${x === les ? "here" : ""}"></span>`).join("")}</span>
     </div>
     <div class="lesson-head">
       <h2>${les.title}</h2>
@@ -579,23 +651,6 @@ function renderLesson(mod, les) {
       demonstrations — seeing it move often does what words can't.</p>
     </details>` : ""}
     <article class="lesson-content">${RefrigMd.render(les.content)}</article>
-    ${les.refs && les.refs.length ? `
-    <aside class="lesson-refs" aria-label="References">
-      <h3>References &amp; alignment</h3>
-      <ul>${les.refs.map(r => `<li>${RefrigMd.inline(r)}</li>`).join("")}</ul>
-      <p>Topic-level alignment: this lesson paraphrases publicly available requirements and
-      general trade knowledge — it does not reproduce standards text. Always work to the
-      current editions.</p>
-    </aside>` : ""}
-    ${mod.deeper && mod.deeper.length ? `
-    <aside class="lesson-refs lesson-deeper" aria-label="Go deeper">
-      <h3>Go deeper</h3>
-      <p>The trade-depth modules on this topic, in the technical streams:</p>
-      <ul class="deeper-links">${mod.deeper.map(id => {
-        const t = COURSE.find(x => x.id === id);
-        return t ? `<li><a href="#${t.id}">${t.title}</a> — ${t.lessons.length} lessons, ${moduleDoneCount(t)} done</li>` : "";
-      }).join("")}</ul>
-    </aside>` : ""}
     <section class="lesson-quiz" aria-label="Lesson quiz">
       <h3>Check your understanding</h3>
       <p class="quiz-note">This is practice, not a test — a wrong pick here costs nothing and
@@ -611,11 +666,28 @@ function renderLesson(mod, les) {
       come back at growing intervals — a few minutes a day beats cramming, and it's how this
       really sticks.</p>
     </section>
-    <nav class="lesson-nav">
+    <nav class="lesson-nav" aria-label="Previous and next lesson">
       ${prev ? `<a class="btn btn-ghost" href="#${prev.mod.id}/${prev.les.id}">← ${prev.les.title}</a>` : "<span></span>"}
       ${next ? `<a class="btn btn-tour" href="#${next.mod.id}/${next.les.id}">${next.les.title} →</a>`
              : `<a class="btn btn-tour" href="#exam">Sit the final exam →</a>`}
-    </nav>`;
+    </nav>
+    ${mod.deeper && mod.deeper.length ? `
+    <aside class="lesson-refs lesson-deeper" aria-label="Go deeper">
+      <h3>Go deeper</h3>
+      <p>The trade-depth modules on this topic, in the technical streams:</p>
+      <ul class="deeper-links">${mod.deeper.map(id => {
+        const t = COURSE.find(x => x.id === id);
+        return t ? `<li><a href="#${t.id}">${t.title}</a> — ${t.lessons.length} lessons, ${moduleDoneCount(t)} done</li>` : "";
+      }).join("")}</ul>
+    </aside>` : ""}
+    ${les.refs && les.refs.length ? `
+    <aside class="lesson-refs" aria-label="References">
+      <h3>References &amp; alignment</h3>
+      <ul>${les.refs.map(r => `<li>${RefrigMd.inline(r)}</li>`).join("")}</ul>
+      <p>Topic-level alignment: this lesson paraphrases publicly available requirements and
+      general trade knowledge — it does not reproduce standards text. Always work to the
+      current editions.</p>
+    </aside>` : ""}`;
 
   document.getElementById("quizCheckBtn").addEventListener("click", () => checkQuiz(mod, les));
   document.getElementById("quizRetryBtn").addEventListener("click", () => {

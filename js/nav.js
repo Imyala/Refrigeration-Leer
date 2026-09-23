@@ -46,9 +46,26 @@
     });
   }
 
+  /* On a phone the tool switcher is one row that scrolls sideways, so the
+     current tool can open off the right-hand edge. Bring it into view —
+     scrolling only the strip, never the page. */
+  function revealCurrentTool() {
+    const strip = document.querySelector(".toolstrip-links");
+    if (!strip || !(strip.scrollWidth > strip.clientWidth)) return;
+    const cur = strip.querySelector("a[aria-current]");
+    if (!cur) return;
+    const li = cur.parentElement;
+    const left = li.offsetLeft - strip.offsetLeft;
+    const right = left + li.offsetWidth;
+    if (left < strip.scrollLeft || right > strip.scrollLeft + strip.clientWidth) {
+      strip.scrollLeft = Math.max(0, left - (strip.clientWidth - li.offsetWidth) / 2);
+    }
+  }
+
   function init() {
     markCurrent();
     wireToggle();
+    revealCurrentTool();
   }
 
   if (document.readyState === "loading") {
