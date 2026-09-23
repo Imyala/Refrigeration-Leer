@@ -694,6 +694,10 @@ body {
 .practice-goal { font-size: var(--fs-sm); }
 .practice-list > .practice-card:first-child .practice-what,
 .practice-capstone .practice-what { -webkit-line-clamp: unset; }
+/* At a glance a workshop is its name, what it is for and how long it takes;
+   the longer description stays on the two wide cards. */
+.practice-list > .practice-card:not(:first-child) .practice-what { display: none; }
+.practice-goal { font-weight: 500; }
 .practice-meta {
   margin: 0;
   padding: 0 var(--s5) var(--s4) calc(var(--s5) + 34px + var(--s4));
@@ -1010,6 +1014,12 @@ select.field { max-width: 100%; }
   border-radius: var(--r-md);
 }
 .howto[open] > summary { padding-bottom: 2px; }
+/* Folded on a phone it is one line: the label alone, the summary truncated
+   beside it rather than wrapping into a second. */
+@media (max-width: 600px) {
+  .howto:not([open]) > summary { flex-wrap: nowrap; min-width: 0; }
+  .howto:not([open]) .howto-gist { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
 .howto > summary::-webkit-details-marker { display: none; }
 .howto > summary::before {
   content: "\25B8";
@@ -1674,6 +1684,16 @@ select.field { max-width: 100%; }
    on its line, to the left), rather than both squeezing into two-line
    stacks side by side. */
 .panel-head h2 { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+/* A panel's caption is an aside in sentence case, not a second heading in
+   spaced capitals: a page of those read as a page of shouting. */
+.panel-head .hint {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+.panel-head .hint::first-letter { text-transform: uppercase; }
 /* On a phone the caption goes under the title rather than beside it:
    beside, it broke "The machine" and "Ladder diagram" over two lines. */
 @media (max-width: 600px) {
@@ -2107,6 +2127,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .learn-hero-compact > p:first-of-type { margin-bottom: 12px; }
 .learn-hero-compact details.fold > p { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 70ch; }
 .learn-hero-compact .hero-actions { margin-top: 8px; }
+/* The overview's three asides — units, how it works, your progress file —
+   are one row of links rather than three ruled-off lines; the one opened
+   drops below the row at full width. */
+.hero-folds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line-soft);
+}
+.hero-folds > details.fold { margin: 0; padding: 0; border: 0; }
+.hero-folds > details.fold[open] { flex-basis: 100%; order: 1; margin-top: var(--s2); }
+.hero-folds .fold-hint { display: none; }
+@media (max-width: 600px) { .hero-folds { gap: 6px 18px; } }
 .learn-hero a:not(.btn), .module-blurb a, .howto a {
   color: var(--accent);
   text-decoration-color: var(--accent-line);
@@ -2165,6 +2201,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   overflow: hidden;
 }
 .stream-section .module-card .progress-bar.small { margin-top: 8px; }
+.stream-section .module-card:not(.exam-card) h4 { margin-bottom: 4px; }
+.stream-section .module-card:not(.exam-card) .module-meta { margin-top: 0; }
+.stream-section .module-card .progress-bar.small + .module-meta { margin-top: 6px; }
 /* On a phone the overview is a list to find your place in, not a set of
    cards to read: each module is one row — title, size, progress — and its
    blurb waits on the module page. */
@@ -2179,18 +2218,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   }
   .stream-section .module-card h4 { margin: 0; font-size: 13.5px; line-height: 1.35; }
   .stream-section .module-card p { display: none; }
-  .stream-section .module-card h4 { grid-column: 1 / -1; }
-  .stream-section .module-card .progress-bar.small { grid-column: 1; grid-row: 2; align-self: center; margin-top: 4px; }
-  .stream-section .module-card .module-meta { grid-column: 2; grid-row: 2; margin: 4px 0 0; white-space: nowrap; }
-  .stream-section .module-card.exam-card .module-meta { grid-column: 1 / -1; }
+  .stream-section .module-card .module-meta { grid-column: 2; grid-row: 1; margin: 0; white-space: nowrap; }
+  .stream-section .module-card .progress-bar.small { grid-column: 1 / -1; grid-row: 2; margin-top: 6px; }
   .stream-blurb { margin: 2px 16px 10px; }
   /* The stream's size goes under its name, not beside it: beside, it
      squeezed "Refrigeration & air-conditioning 1" into a four-line stack. */
   .stream-head { grid-template-columns: 14px minmax(0, 1fr); padding: 12px 14px; }
   .stream-meta { grid-column: 2; white-space: normal; }
-  /* The course tagline is for the first visit; on a phone every view
-     under it is better served by the room. */
-  .course-page .topbar .subtitle { display: none; }
 }
 .module-meta { display: block; margin-top: 8px; font-size: 11px; color: var(--muted); }
 
@@ -2333,7 +2367,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .lesson-mins { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .done-tag { color: var(--good); }
 
-.lesson-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.lesson-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; max-width: 860px; }
 .lesson-head h2 { margin: 0; font-size: 20px; }
 
 /* Where this lesson sits in its module: one segment per lesson, filled when
@@ -2404,17 +2438,18 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .sim-link:hover { background: var(--sim-link-bg-hover); }
 
 /* ---------- Learn: lesson tools (flag) + plain words + figures ---------- */
-.lesson-tools { margin: 10px 0 0; }
 .flag-btn {
   background: transparent;
-  border: 1px dashed var(--line);
+  border: 1px solid transparent;
   color: var(--muted);
   border-radius: 20px;
-  padding: 8px 14px;
+  padding: 5px 10px;
   font-size: 12px;
   cursor: pointer;
+  white-space: nowrap;
 }
 .flag-btn:hover { border-color: var(--warn); color: var(--text); }
+@media (max-width: 600px) { .lesson-head .flag-btn { margin-left: -10px; } }
 .flag-btn.on { border: 1px solid var(--warn); color: var(--warn); background: var(--warn-soft); }
 
 .plain-words {
@@ -3335,15 +3370,36 @@ details.reveal p:first-of-type { margin-top: 0; }
 }
 .sb-step-early b { color: var(--bad-text); }
 
-/* Reuse the lesson reveal, stripped to a quiet link for a list of eight of
-   them: the reason is there for the asking, not boxed on every row. */
-.sb-seq details.reveal { margin: 1px 0 0; border: 0; border-radius: 0; background: none; overflow: visible; }
-.sb-seq details.reveal > summary { display: inline-block; padding: 1px 0; font-size: 11.5px; font-weight: 600; color: var(--accent); }
-.sb-seq details.reveal > summary:focus-visible { outline-offset: 2px; border-radius: 4px; }
-.sb-seq details.reveal > summary::before { margin-right: 4px; }
-.sb-seq details.reveal > *:not(summary) { padding: 0; }
-.sb-seq details.reveal > *:not(summary):last-child { padding-bottom: 4px; }
-.sb-seq details.reveal p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 2px 0 0; }
+/* The step's own name opens why it goes where it does: the reason is there
+   for the asking, not a "why it goes here" link repeated down every row. */
+.sb-why > summary { position: relative; list-style: none; cursor: pointer; border-radius: 4px; padding-right: 18px; }
+.sb-why > summary::-webkit-details-marker { display: none; }
+/* The opener sits at the row's right edge, where it can never wrap onto a
+   line of its own under a long step name. */
+.sb-why > summary::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: .45em;
+  width: 5px; height: 5px;
+  border-right: 1.5px solid var(--faint);
+  border-bottom: 1.5px solid var(--faint);
+  transform: rotate(-45deg);
+  transition: transform .15s ease;
+}
+.sb-why[open] > summary::after { transform: rotate(45deg); }
+.sb-why > summary:hover b { color: var(--accent-2); }
+.sb-why > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sb-why > p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 4px 0 2px; }
+/* A step still to do says so with its hollow mark and grey bar; the words
+   stay for screen readers. Done and out-of-order keep their label. */
+.sb-step.todo .sb-step-state {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* ---- Units of competency on a module page ------------------------------- */
 .module-units { margin: 0 0 1rem; }

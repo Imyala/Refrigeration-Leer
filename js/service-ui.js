@@ -396,17 +396,16 @@ function sbRenderSequence() {
       <li class="sb-step ${cls}">
         <span class="sb-step-n" aria-hidden="true">${i + 1}</span>
         <div class="sb-step-body">
-          <p class="sb-step-head">
-            <span class="sb-step-mark" aria-hidden="true">${mark}</span>
-            <b>${st.label}</b>
-            <span class="sb-step-state">${stateTxt}</span>
-          </p>
-          ${st.complete && st.outOfOrder && st.early
-            ? `<p class="sb-step-early"><b>What that cost:</b> ${st.early}</p>` : ""}
-          <details class="reveal sb-why" data-step="${st.id}"${SB.openWhy[st.id] ? " open" : ""}>
-            <summary>Why it goes here</summary>
+          <details class="sb-why" data-step="${st.id}"${SB.openWhy[st.id] ? " open" : ""}>
+            <summary class="sb-step-head">
+              <span class="sb-step-mark" aria-hidden="true">${mark}</span>
+              <b>${st.label}</b>
+              <span class="sb-step-state">${stateTxt}</span>
+            </summary>
             <p>${st.why}</p>
           </details>
+          ${st.complete && st.outOfOrder && st.early
+            ? `<p class="sb-step-early"><b>What that cost:</b> ${st.early}</p>` : ""}
         </div>
       </li>`;
   };

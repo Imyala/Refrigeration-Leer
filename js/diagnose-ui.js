@@ -347,8 +347,10 @@ function dgRenderReadings() {
 
 /* ---- Derived values -----------------------------------------------------
    The locked half of this panel is the most valuable thing on the page: a
-   number you cannot have yet, and the exact reason you cannot have it. It is
-   rendered first, and at full strength, not as a greyed-out footnote. */
+   number you cannot have yet, and the exact reason you cannot have it. At a
+   glance each one is a row — its name and how many of its readings you have;
+   the name opens which readings those are and what the number would tell
+   you. One reading away, the nudge is said out loud under the row. */
 function dgRenderDerived() {
   const el = document.getElementById("dgDerived");
   const cyc = dgCycle();
@@ -383,16 +385,19 @@ function dgRenderDerived() {
          it cannot be estimated, guessed or read off anything else.</p>`
       : "";
     missing.push(`<li class="dg-derived locked">
-        <details class="fold dg-needwhy"><summary title="What it tells you">${dgEsc(d.def.label)}</summary><p>${dgEsc(d.def.needsWhy)}</p></details>
-        <span class="dg-derived-value none">not yet</span>
-        <ul class="dg-needs">${chips}</ul>
+        <details class="fold dg-needwhy">
+          <summary>${dgEsc(d.def.label)}</summary>
+          <ul class="dg-needs">${chips}</ul>
+          <p>${dgEsc(d.def.needsWhy)}</p>
+        </details>
+        <span class="dg-derived-value none">${have.length} of ${d.needs.length} readings</span>
         ${oneAway}
       </li>`);
   }
 
   el.innerHTML =
     (ready.length ? `<h3 class="dg-sub-head">Worked out</h3><ul class="dg-derived-list">${ready.join("")}</ul>` : "") +
-    (missing.length ? `<h3 class="dg-sub-head warn">Out of reach — and exactly why</h3>
+    (missing.length ? `<h3 class="dg-sub-head warn">Not measurable yet</h3>
         <ul class="dg-derived-list">${missing.join("")}</ul>` : "") +
     (missing.length ? "" : `<p class="dg-empty">Every derived value on this machine is now available.
         Whether they were all worth taking is another question.</p>`);

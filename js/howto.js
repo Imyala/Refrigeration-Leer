@@ -1,11 +1,11 @@
 /* =========================================================================
    "How this works" panels.
 
-   Every workshop opens with a short block of instructions. A learner needs it
-   the first time and resents it every time after, so the block is a disclosure:
-   open on a first visit, and once someone closes it, it stays closed for that
-   tool. One behaviour, shared by all four workshops, keyed by the tool's own
-   data-howto name so closing one does not close the others.
+   Every workshop carries a short block of instructions. It starts folded
+   to its one-line gist, so the machine is the first thing on the page and
+   the steps are one tap away; once someone opens it, it stays open for that
+   tool until they close it. One behaviour, shared by every workshop, keyed
+   by the tool's own data-howto name so opening one does not open the others.
    ========================================================================= */
 (function () {
   "use strict";
@@ -22,21 +22,12 @@
     catch (e) { /* nothing to do — the panel still works for this visit */ }
   }
 
-  /* On a phone the open steps are a full screen of text between the learner
-     and the machine, so there the panel starts as its one-line gist and the
-     steps are a tap away. */
-  function narrow() {
-    return !!(window.matchMedia && window.matchMedia("(max-width: 700px)").matches);
-  }
-
   function init() {
     document.querySelectorAll("details.howto[data-howto]").forEach((panel) => {
       const name = panel.dataset.howto;
       const saved = remembered(name);
-      // No memory yet means this is a first visit: leave the markup's own
-      // `open` in place so the instructions are there when they are needed —
-      // unless the screen is too small to spare the room.
-      const want = saved !== null ? saved === "1" : narrow() ? false : panel.open;
+      // No memory yet: leave the markup's own state (folded) in place.
+      const want = saved !== null ? saved === "1" : panel.open;
       // Setting `open` fires a (queued) toggle event of its own; that one is
       // not the learner's choice, so it must not be remembered as theirs.
       if (want !== panel.open) {

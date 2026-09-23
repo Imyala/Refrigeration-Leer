@@ -472,10 +472,10 @@ function renderHome() {
       <p>Five streams, ${COURSE.length} modules, ${total} short lessons. Each lesson ends in a
       quiz; pass it and the lesson is done. Work in order, or jump to what you need.</p>
       ${due ? `<p class="practice-due-note">🔁 <b>${due}</b> practice question${due === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
-      <div class="progress-line">
+      ${done ? `<div class="progress-line">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
-      </div>
+      </div>` : ""}
       ${(() => {
         const up = nextUpLesson();
         if (!up) {
@@ -490,6 +490,7 @@ function renderHome() {
           <span class="continue-meta">${up.mod.title} · ~${up.les.minutes} min</span>
         </div>`;
       })()}
+      <div class="hero-folds">
       ${unitMasteryFoldHtml()}
       <details class="fold">
         <summary>How the course works <span class="fold-hint">plain words, diagrams, the simulator, references</span></summary>
@@ -521,6 +522,7 @@ function renderHome() {
           <span id="ioStatus" class="io-status" aria-live="polite"></span>
         </div>
       </details>
+      </div>
     </div>
     ${activeStreams().map(st => {
       const mods = streamModules(st.id);
@@ -533,7 +535,7 @@ function renderHome() {
           <span class="stream-caret" aria-hidden="true"></span>
           <h3><span class="stream-icon" aria-hidden="true">${st.icon}</span> ${st.title}</h3>
           <span class="stream-meta">${mods.length} modules · ${stotal} lessons · ${spct}%</span>
-          <span class="progress-bar small stream-bar"><span class="progress-fill" style="width:${spct}%"></span></span>
+          ${sdone ? `<span class="progress-bar small stream-bar"><span class="progress-fill" style="width:${spct}%"></span></span>` : ""}
         </summary>
         <p class="stream-blurb">${st.blurb} <span class="stream-audience">${st.audience}</span></p>
         ${placementSummaryHtml(st.id)}
@@ -542,11 +544,10 @@ function renderHome() {
             const mdone = moduleDoneCount(mod);
             const mpct = Math.round(mdone / mod.lessons.length * 100);
             const pv = Placement.verdictFor(st.id, mod.id);
-            return `<a class="module-card" href="#${mod.id}">
+            return `<a class="module-card" href="#${mod.id}" title="${mod.blurb.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;")}">
               <h4>${mod.title}${pv ? ` <span class="placement-badge placement-${pv}">${PLACEMENT_WORDS[pv]}</span>` : ""}</h4>
-              <p>${mod.blurb}</p>
-              <div class="progress-bar small"><div class="progress-fill" style="width:${mpct}%"></div></div>
-              <span class="module-meta">${mod.lessons.length} lessons · ${mdone} complete</span>
+              ${mdone ? `<div class="progress-bar small"><div class="progress-fill" style="width:${mpct}%"></div></div>` : ""}
+              <span class="module-meta">${mod.lessons.length} lessons${mdone ? ` · ${mdone} complete` : ""}</span>
             </a>`;
           }).join("")}
         </div>
@@ -639,10 +640,8 @@ function renderLesson(mod, les) {
     </div>
     <div class="lesson-head">
       <h2>${les.title}</h2>
-    </div>
-    <div class="lesson-tools">
       <button id="flagBtn" class="flag-btn ${flagged ? "on" : ""}" type="button" aria-pressed="${flagged}">
-        ${flagged ? "🚩 On your review list — tap again when it clicks" : "🚩 Confusing? Mark it for review"}
+        ${flagged ? "🚩 On your review list" : "🚩 Mark for review"}
       </button>
     </div>
     ${les.simple ? `
