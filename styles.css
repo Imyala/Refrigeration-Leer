@@ -388,7 +388,6 @@ body {
 .sitenav-links a:hover { background: var(--hover); color: var(--text); }
 .sitenav-links a[aria-current] {
   background: var(--accent-soft);
-  border-color: var(--accent-line);
   color: var(--accent-2);
   font-weight: 650;
 }
@@ -542,7 +541,13 @@ body {
   transition: background .15s ease, color .15s ease;
 }
 .toolstrip-links a:hover { color: var(--text); background: var(--hover); }
-.toolstrip-links a[aria-current] { background: var(--accent); color: var(--accent-ink); }
+/* Where you are is marked, not shouted: a raised pill on the track, so the
+   first solid colour on the page is the page's own main action. */
+.toolstrip-links a[aria-current] {
+  background: var(--panel);
+  color: var(--accent-2);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--line-soft);
+}
 @media (max-width: 700px) {
   /* Wrapping left a ragged three-then-two block. One row that scrolls keeps the
      five workshops reading as one set, and keeps the current one findable. */
@@ -978,8 +983,9 @@ select.field { max-width: 100%; }
 }
 .level-btn:hover { color: var(--text); background: var(--hover); }
 .level-btn[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--panel);
+  color: var(--accent-2);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--line-soft);
 }
 
 @media (max-width: 560px) {
@@ -997,12 +1003,14 @@ select.field { max-width: 100%; }
   max-width: var(--maxw);
   /* The same 20px that separates the panels below it. */
   margin: 0 auto 20px;
+  /* An outline, not a tinted banner: help that is there when wanted, not a
+     band of colour between the title and the machine. */
   border: 1px solid var(--line-soft);
-  border-left: 2px solid var(--accent-line);
   border-radius: var(--r-md);
-  background: var(--accent-soft);
+  background: transparent;
   color: var(--text-2);
 }
+.howto[open] { background: var(--panel); }
 .howto > summary {
   display: flex;
   align-items: baseline;
@@ -1672,6 +1680,7 @@ select.field { max-width: 100%; }
   padding: var(--s4);
   box-shadow: none;
 }
+@media (min-width: 901px) { .panel { padding: 20px; } }
 .panel-head {
   display: flex;
   align-items: baseline;
@@ -1965,7 +1974,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   border: 1px solid var(--card-line);
   border-radius: 18px;
   padding: 10px;
-  box-shadow: var(--shadow-md);
 }
 .course-nav-panel { display: flex; flex-direction: column; gap: 4px; }
 
@@ -2120,7 +2128,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   border-radius: 22px;
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow-md);
 }
 .learn-hero h2 { margin: 0 0 8px; font-size: 20px; }
 .learn-hero-compact { padding: 20px 24px; margin-bottom: 16px; }
@@ -2186,7 +2193,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   color: var(--text);
   text-decoration: none;
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-  box-shadow: var(--shadow-md);
 }
 .module-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .module-card h3, .module-card h4 { margin: 0 0 6px; font-size: 14px; }
@@ -2349,7 +2355,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   color: var(--text);
   text-decoration: none;
   font-size: 14px;
-  box-shadow: var(--shadow-md);
 }
 .lesson-row:hover { border-color: var(--accent); transform: translateY(-1px); }
 .lesson-row.done { border-color: var(--good); }
@@ -2368,7 +2373,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .done-tag { color: var(--good); }
 
 .lesson-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; max-width: 860px; }
-.lesson-head h2 { margin: 0; font-size: 20px; }
+/* The lesson's own title is the largest thing in the view, larger than the
+   course name above it: that is what is being read. */
+.lesson-head h2 { margin: 0; font-size: clamp(22px, 2.1vw, 27px); font-weight: 650; letter-spacing: -.01em; line-height: 1.25; text-wrap: balance; }
+/* On the course page the course name is where you are, not what you read. */
+.course-page .topbar { padding-bottom: var(--s2); }
+.course-page .title-block h1 { font-size: 18px; color: var(--text-2); }
 
 /* Where this lesson sits in its module: one segment per lesson, filled when
    done, the one you are reading marked. "How much is left?" answered without
@@ -2397,9 +2407,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   font-size: 15px;
   line-height: 1.7;
   max-width: 860px;
-  box-shadow: var(--shadow-md);
 }
-.lesson-content h3 { font-size: 16px; margin: 22px 0 8px; color: var(--accent); }
+/* Headings in the ink colour, so within a lesson blue means a link and
+   nothing else; size and weight carry the structure. */
+.lesson-content h3 { font-size: 17px; font-weight: 650; margin: 26px 0 8px; color: var(--text); }
 .lesson-content h4 { font-size: 14px; margin: 18px 0 6px; }
 .lesson-content p { margin: 10px 0; }
 .lesson-content ul, .lesson-content ol { margin: 10px 0; padding-left: 22px; }
@@ -2459,7 +2470,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   border-radius: 16px;
   margin-top: 12px;
   max-width: 860px;
-  box-shadow: var(--shadow-md);
 }
 .plain-words summary {
   cursor: pointer;
@@ -2628,7 +2638,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   padding: 20px 24px;
   margin-top: 18px;
   max-width: 860px;
-  box-shadow: var(--shadow-md);
 }
 .lesson-quiz > h3 { margin: 0 0 6px; font-size: 16px; }
 .quiz-status { font-size: 13px; color: var(--good); margin: 0 0 8px; }

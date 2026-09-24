@@ -23,6 +23,9 @@
 .build-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 @media (max-width: 1180px) {
   .build-layout { grid-template-columns: 1fr; }
+  /* Stacked, the circuit comes first — the start note and the loop you are
+     building — then the parts to add, then the analysis. */
+  .build-layout > .build-col:not(.build-col-side) { order: -1; }
 }
 
 /* The palette and analysis are tall; on a wide screen they stay in view while
@@ -323,6 +326,12 @@
   color: var(--text);
   line-height: 1.55;
 }
+.loop-note.is-start {
+  border-color: var(--accent-line);
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  font-size: var(--fs-sm);
+}
 
 /* ---------- Analysis ---------- */
 .verdict {
@@ -347,6 +356,7 @@
 .verdict.is-warn .verdict-tag { color: var(--warn); }
 .verdict.is-bad { border-color: var(--bad); background: var(--bad-soft); }
 .verdict.is-bad .verdict-tag { color: var(--bad-text); }
+.verdict-empty { margin: 0; font-size: 13px; line-height: 1.55; color: var(--muted); }
 .verdict p { margin: 0; }
 .verdict-note { margin-top: 9px !important; color: var(--muted); font-size: 12.5px; }
 

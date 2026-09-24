@@ -166,7 +166,7 @@
             <p class="stage-blurb">${esc(stage.blurb)}</p>
             <p class="stage-modules"><span>Covers</span> ${moduleNames.map(esc).join(" · ")}</p>
             <div class="stage-actions">
-              <a class="btn ${isNext ? "btn-tour" : "btn-ghost"} stage-go" href="${firstUnfinished(stage, course, progress)}">
+              <a class="btn btn-ghost stage-go" href="${firstUnfinished(stage, course, progress)}">
                 ${complete ? "Revisit the theory" : started ? "Continue this stage" : "Start this stage"}
               </a>
               <a class="stage-tool" href="${stage.tool.href}">

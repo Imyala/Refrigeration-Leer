@@ -55,7 +55,7 @@
       <p class="subtitle">A packaged unit that has stopped. A ladder diagram, a meter, and a fault you have to find — safely.</p>
     </div>
     <div class="controls">
-      <button id="ctNewJobBtn" class="btn btn-tour" type="button">New job</button>
+      <button id="ctNewJobBtn" class="btn btn-ghost" type="button">New job</button>
     </div>
   </header>
 
@@ -87,19 +87,26 @@
           <h2>The job</h2>
           <span class="hint" id="ctJobMode">Live job · fault hidden</span>
         </div>
+        <!-- Read first: the call-out and where to start. Then the one action
+             that helps, and the settings behind a fold. -->
+        <div id="ctCoach" class="dg-coach" aria-live="polite"></div>
         <p class="dg-job-line" id="ctJobLine"></p>
         <div class="dg-job-actions">
           <button id="ctHintBtn" class="btn btn-ghost" type="button">Hint — where should I look next? <span class="dg-cost">costs ¼ mark</span></button>
-          <label class="dg-check">
-            <input id="ctPractice" type="checkbox" />
-            <span>Practice mode — I choose the fault and study its signature</span>
-          </label>
-          <label class="dg-check dg-practice-only" id="ctFaultPick" hidden>
-            <span>Fault to study</span>
-            <select id="ctFaultSelect"></select>
-          </label>
         </div>
-        <div id="ctCoach" class="dg-coach" aria-live="polite"></div>
+        <details class="fold dg-settings">
+          <summary>Job settings <span class="fold-hint">practice mode</span></summary>
+          <div class="dg-job-actions">
+            <label class="dg-check">
+              <input id="ctPractice" type="checkbox" />
+              <span>Practice mode — I choose the fault and study its signature</span>
+            </label>
+            <label class="dg-check dg-practice-only" id="ctFaultPick" hidden>
+              <span>Fault to study</span>
+              <select id="ctFaultSelect"></select>
+            </label>
+          </div>
+        </details>
       </div>
 
       <div class="panel">

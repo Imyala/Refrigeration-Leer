@@ -28,7 +28,7 @@
 /* ---------- The job panel ---------- */
 .dg-job-line {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--muted);
   line-height: 1.5;
 }
@@ -66,7 +66,14 @@
   cursor: pointer;
 }
 .dg-coach:empty { display: none; }
-.dg-coach .quiz-feedback { margin-top: 14px; }
+/* The coach is the page's voice — the call-out, then where to go next — so
+   it leads the job card at reading size, above the job's small print. */
+.dg-coach .quiz-feedback { margin: 0 0 10px; }
+.dg-coach .quiz-feedback p { font-size: var(--fs-base); line-height: 1.55; color: var(--text); }
+/* The settings a learner rarely touches, folded under the job's actions. */
+.dg-settings { margin-top: 14px; }
+.dg-settings[open] > .dg-conditions { margin-top: 12px; }
+.dg-settings > .dg-job-actions { margin-top: 4px; }
 .dg-coach b { color: var(--accent-2); }
 
 /* ---------- The machine: schematic ---------- */
@@ -246,7 +253,7 @@
 }
 .dg-sub-head:first-child { margin-top: 0; }
 /* Text, so it takes the text-strength warning colour, not the pipe paint. */
-.dg-sub-head.warn { color: var(--warn-text); }
+.dg-sub-head.warn { color: var(--muted); }
 
 .dg-derived {
   display: grid;
@@ -260,7 +267,9 @@
 /* The same row-and-bar form as the readings above it, so the panel reads
    as one list rather than a stack of tinted boxes; the bar carries the state. */
 .dg-derived.ok { border-left: 3px solid var(--good); }
-.dg-derived.locked { border-left: 3px solid var(--state-liquid); }
+/* Locked is the starting state of every value, so it is quiet: a grey bar.
+   Colour is kept for what changes — a value worked out, in green. */
+.dg-derived.locked { border-left: 3px solid var(--line); }
 .dg-derived-label { font-size: 13px; color: var(--text); font-weight: 600; }
 .dg-derived-value { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--good); }
 .dg-derived-value.none {

@@ -474,7 +474,12 @@ function renderLoop(res) {
 
   /* The runs only mean something once the engine can tell them apart, so an
      out-of-order circuit is drawn plain rather than coloured with a guess. */
-  const note = geo.zoned ? "" : `<p class="loop-note"><b>The runs are not coloured yet.</b>
+  /* Before the first part the note is where to start, read above the loop
+     the way the call-out leads the other workshops. */
+  const note = BUILD.seq.length <= 1
+    ? `<p class="loop-note is-start"><b>Start here.</b> Follow the refrigerant out of the
+      compressor: the <b>condenser</b> comes next. Drag it onto the loop, or click it in the list.</p>`
+    : geo.zoned ? "" : `<p class="loop-note"><b>The runs are not coloured yet.</b>
     The four main components — compressor, condenser, metering device, evaporator — have to be
     in flow order before there is a discharge line, a liquid line and a suction line to colour.
     Put them in that order and the pipework will come to life.</p>`;
@@ -516,6 +521,16 @@ function renderAnalysis(res) {
   briefHost.innerHTML = sc
     ? `<div class="brief"><h3>${esc(sc.title)}</h3><p>${esc(sc.brief)}</p></div>`
     : "";
+
+  /* Before the first part is placed there is nothing to judge: say where to
+     start rather than opening on a wall of red about what is not there yet. */
+  if (BUILD.seq.length <= 1) {
+    document.getElementById("buildVerdict").innerHTML = `
+      <p class="verdict-empty">Nothing to check yet. As you build, this says whether the
+      system would run, and why not.</p>`;
+    document.getElementById("buildIssues").innerHTML = "";
+    return;
+  }
 
   const warns = res.issues.filter((i) => i.severity === RC.SEVERITY.WARN).length;
   const clean = res.ok && warns === 0;
@@ -682,6 +697,16 @@ function recordBuild(res) {
   const key = sc.id;
   if (BUILD_RECORDED.has(key)) return;
   BUILD_RECORDED.add(key);
+  /* Before the first part is placed there is nothing to judge: say where to
+     start rather than opening on a wall of red about what is not there yet. */
+  if (BUILD.seq.length <= 1) {
+    document.getElementById("buildVerdict").innerHTML = `
+      <p class="verdict-empty">Nothing to check yet. As you build, this says whether the
+      system would run, and why not.</p>`;
+    document.getElementById("buildIssues").innerHTML = "";
+    return;
+  }
+
   const warns = res.issues.filter((i) => i.severity === RC.SEVERITY.WARN).length;
   const score = Math.max(0, 1 - 0.1 * warns);
   if (typeof RefrigEvidence !== "undefined") {

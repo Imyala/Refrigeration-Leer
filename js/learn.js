@@ -213,8 +213,10 @@ const NavOpen = {
   load() {
     try {
       const raw = localStorage.getItem(this.KEY);
-      this.set = new Set(raw ? JSON.parse(raw) : ["core"]);
-    } catch (e) { this.set = new Set(["core"]); }
+      /* Nothing open by default: the overview already lays the streams out,
+         and a lesson opens its own stream (see renderNavList). */
+      this.set = new Set(raw ? JSON.parse(raw) : []);
+    } catch (e) { this.set = new Set(); }
   },
   save() {
     try { localStorage.setItem(this.KEY, JSON.stringify([...this.set])); }
