@@ -30,6 +30,7 @@ const FILES = [
   "diagnose.html",
   "electrical.html",
   "procedures.html",
+  "plant.html",
   "capstone.html",
   "about.html",
   "styles.css",
@@ -37,6 +38,7 @@ const FILES = [
   "styles-diagnose.css",
   "styles-control.css",
   "styles-procedure.css",
+  "styles-plant.css",
   // The typefaces ship with the course (no font CDN): styles.css asks for
   // these by relative URL, so the LMS copy must carry them too.
   "fonts/bricolage-grotesque.woff2",
@@ -60,6 +62,9 @@ const FILES = [
   "js/control.js",
   "js/control-ui.js",
   "js/procedures.js",
+  "js/plant.js",
+  "js/plant-art.js",
+  "js/plant-ui.js",
   "js/procedure-ui.js",
   "js/evidence.js",
   "js/capstone.js",

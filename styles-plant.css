@@ -1,0 +1,272 @@
+/* =========================================================================
+   Plant Simulator — page-scoped styles. Structure (nav, topbar, workbench,
+   rail, panels, controls) comes from styles.css; this file draws the plant.
+
+   The drawing sits on the page's own paper rather than on a dark instrument
+   face: it is a drawing of equipment, like the ones in a manufacturer's
+   manual, and copper, brass and paint read as themselves on it. Material
+   colours are tokens in styles.css; nothing here names a colour of its own.
+   ========================================================================= */
+
+/* ---- The drawing board ---- */
+.plant-wrap {
+  background: var(--panel);
+  padding: var(--s3);
+  min-width: 0;
+}
+#plantSvg { display: block; width: 100%; height: auto; }
+@media (max-width: 760px) {
+  /* Below this the parts shrink past reading: let the plant scroll sideways
+     at a size where the labels and numbers can still be read. */
+  .plant-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: var(--s2); }
+  #plantSvg { min-width: 820px; }
+  .plant-wrap::after {
+    content: "Scroll sideways to walk round the whole plant";
+    display: block;
+    padding-top: var(--s2);
+    font-size: var(--fs-xs);
+    color: var(--faint);
+  }
+}
+
+.pl-zone-room { fill: var(--lo-soft); stroke: var(--lo); stroke-width: 1.2; stroke-dasharray: 6 5; }
+.pl-zone-out { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.2; }
+.pl-zone-label { font: 700 12px var(--font-mono); letter-spacing: .08em; fill: var(--text-2); }
+.pl-zone-temp { font: 500 12px var(--font-body); fill: var(--lo); }
+.pl-zone-temp-out { fill: var(--hi); }
+
+/* ---- Pipework ----
+   Four strokes per tube: edge, body, highlight (offset up-left, so the light
+   always falls from the top left), and the refrigerant moving inside. */
+.pl-tube path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pl-t-edge { stroke: var(--pl-edge); stroke-width: 12; }
+.pl-t-body { stroke-width: 8.5; }
+.pl-t-hi { stroke: var(--pl-hi); stroke-width: 2.4; transform: translate(-1.6px, -1.6px); }
+.pl-t-flow {
+  stroke: var(--pl-bead);
+  stroke-width: 3.2;
+  stroke-dasharray: 0.5 15;
+  animation: pl-flow var(--pl-dur, 1.1s) linear infinite;
+}
+.pl-coil .pl-t-edge { stroke-width: 8.5; }
+.pl-coil .pl-t-body { stroke-width: 6; }
+.pl-coil .pl-t-hi { stroke-width: 1.6; transform: translate(-1.2px, -1.2px); }
+.pl-coil .pl-t-flow { stroke-width: 2.4; stroke-dasharray: 0.5 12; }
+
+.st-hot  .pl-t-body { stroke: var(--state-hotgas); }
+.st-cond .pl-t-body { stroke: var(--pl-condensing); }
+.st-liq  .pl-t-body { stroke: var(--state-liquid); }
+.st-mix  .pl-t-body { stroke: var(--state-flash); }
+.st-vap  .pl-t-body { stroke: var(--state-vapor); }
+/* Liquid moves slowly, vapour fast: the same mass flow, very different volumes. */
+.st-liq .pl-t-flow, .st-cond .pl-t-flow { animation-duration: calc(var(--pl-dur, 1.1s) * 2.2); }
+.st-mix .pl-t-flow { animation-duration: calc(var(--pl-dur, 1.1s) * 1.4); }
+@keyframes pl-flow { from { stroke-dashoffset: 15.5; } to { stroke-dashoffset: 0; } }
+
+/* Copper, as installed: the colours off, the suction line in its lagging. */
+.is-copper .pl-t-body { stroke: var(--copper); }
+.is-copper .pl-insulated .pl-t-edge { stroke: var(--insulation); stroke-width: 17; }
+.is-copper .pl-insulated .pl-t-body { stroke: var(--insulation-2); stroke-width: 12; }
+.is-copper .pl-insulated .pl-t-hi { stroke-width: 1.4; opacity: .35; }
+.is-copper .pl-t-flow { opacity: .45; }
+
+/* Stopped: nothing moves. A dead line (behind a shut solenoid) never does. */
+.is-stopped .pl-t-flow { animation-play-state: paused; opacity: .25; }
+.is-still .pl-t-flow { display: none; }
+.is-still .pl-t-body { opacity: .5; }
+
+.pl-thin { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pl-oil { stroke: var(--pl-oil); stroke-width: 4; }
+.pl-cap { stroke: var(--copper); stroke-width: 2; }
+.pl-capillary { stroke-width: 1.6; stroke-dasharray: 10 3; }
+.pl-note { font: italic 500 10.5px var(--font-body); fill: var(--muted); }
+.no-labels .pl-note { display: none; }
+.pl-gline { stroke: var(--copper); stroke-width: 3.5; }
+
+/* Frost and ice: a white crust along the pipe or over the part. */
+.pl-frost-line { fill: none; stroke: var(--pl-frost); stroke-width: 16; stroke-linecap: round; stroke-dasharray: 3 2; opacity: .88; }
+.pl-frost-fill { opacity: .92; }
+/* The light, even frost a low-temperature coil carries when it is working. */
+.pl-frost-light { fill: none; stroke: var(--pl-frost); stroke-width: 7.5; stroke-linecap: round; stroke-dasharray: 1.5 4; opacity: .55; }
+.pl-digits { font: 700 15px var(--font-mono); fill: var(--pl-red); letter-spacing: .04em; }
+.pl-ice { opacity: .95; }
+
+/* ---- Moving parts ---- */
+.pl-fan.is-turning .pl-spin { animation: pl-spin .6s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pl-spin { to { transform: rotate(360deg); } }
+.pl-comp.is-running .pl-shake { animation: pl-shake .09s linear infinite; }
+@keyframes pl-shake { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(.5px, -.4px); } }
+.pl-needle-in.is-flutter { animation: pl-flutter .28s ease-in-out infinite alternate; }
+@keyframes pl-flutter { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+
+.pl-air line { stroke-width: 2.4; stroke-linecap: round; }
+.pl-air.warm line { stroke: var(--pl-air-warm); }
+.pl-air.warm path { fill: var(--pl-air-warm); }
+.pl-air.cold line { stroke: var(--pl-air-cold); }
+.pl-air.cold path { fill: var(--pl-air-cold); }
+.pl-air { animation: pl-air 1.6s ease-in-out infinite; }
+@keyframes pl-air { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+/* ---- What is inside the vessels ---- */
+.pl-liquid { fill: var(--state-liquid); opacity: .55; }
+.pl-liquid-top { stroke: var(--state-liquid); stroke-width: 2; }
+.pl-liquid-low { fill: var(--state-flash); opacity: .65; }
+.pl-sg-liquid { fill: var(--state-liquid); opacity: .45; }
+.pl-bubbles circle { fill: var(--pl-bead); stroke: var(--pl-edge); stroke-width: .6; animation: pl-bubble 1.1s linear infinite; }
+@keyframes pl-bubble { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+.pl-moisture { fill: var(--good); stroke: var(--pl-edge); stroke-width: .8; }
+.pl-led { fill: var(--pl-led-off); stroke: var(--pl-edge); stroke-width: .6; }
+.pl-led.is-on { fill: var(--pl-led-on); }
+
+/* ---- Gauges and controls ---- */
+.pl-gauge-lo .pl-bezel { fill: var(--pl-blue); stroke: var(--pl-edge); stroke-width: 1.5; }
+.pl-gauge-hi .pl-bezel { fill: var(--pl-red); stroke: var(--pl-edge); stroke-width: 1.5; }
+.pl-satring { fill: none; stroke-width: 5; opacity: .25; }
+.pl-gauge-lo .pl-satring { stroke: var(--pl-blue); }
+.pl-gauge-hi .pl-satring { stroke: var(--pl-red); }
+.pl-gauge-word { font: 700 6.5px var(--font-mono); letter-spacing: .06em; fill: var(--pl-dial-ink); text-anchor: middle; }
+.pl-mini { font: 700 9px var(--font-mono); fill: var(--pl-dial-ink); text-anchor: middle; }
+.pl-reset { fill: var(--pl-red); stroke: var(--pl-edge); stroke-width: 1; }
+.pl-reset.is-tripped { animation: pl-blink .8s steps(2) infinite; }
+.pl-trip { font: 700 10px var(--font-mono); fill: var(--bad); letter-spacing: .04em; }
+@keyframes pl-blink { 50% { opacity: .3; } }
+
+/* ---- Labels, flags and the numbered points ---- */
+.pl-label {
+  font: 700 12.5px var(--font-body);
+  fill: var(--text);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.no-labels .pl-labels { display: none; }
+.pl-flag circle { fill: var(--warn); stroke: var(--panel); stroke-width: 2; }
+.pl-flag text { font: 800 11px var(--font-body); fill: var(--accent-ink); }
+.pl-flag { animation: pl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pl-pulse { 50% { opacity: .45; } }
+
+.pl-pt { cursor: pointer; }
+.pl-pt circle { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
+.pl-pt text { font: 700 11px var(--font-mono); fill: var(--text); text-anchor: middle; pointer-events: none; }
+.pl-pt:hover circle, .pl-pt:focus-visible circle { fill: var(--highlight); }
+.pl-pt.is-selected circle { fill: var(--cta); stroke: var(--ink-shadow); }
+.pl-pt.is-selected text { fill: var(--cta-ink); }
+.pl-pt:focus { outline: none; }
+.no-points .pl-points { display: none; }
+
+.pl-part { cursor: pointer; }
+.pl-part:hover { filter: brightness(1.06); }
+.pl-part:focus { outline: none; }
+.pl-part:focus-visible, .pl-part.is-selected { filter: drop-shadow(0 0 2.5px var(--accent)) drop-shadow(0 0 1px var(--accent)); }
+.pl-label-g { cursor: pointer; }
+
+/* ---- The workbench: the plant gets the full width ----
+   Beside a readings rail the drawing was scaled down past the point where its
+   labels could be read; the readings sit in a strip under it instead. */
+.plant-page .workbench-top { grid-template-columns: minmax(0, 1fr); }
+.plant-page .instrument-rail {
+  border-left: 0;
+  border-top: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s2) var(--s4);
+}
+.plant-page .instrument-rail .rail-head { grid-column: 1 / -1; }
+.plant-page .instrument-rail .readouts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.plant-page #plantPower { align-self: stretch; margin: 0; }
+@media (max-width: 900px) {
+  .plant-page .instrument-rail { grid-template-columns: minmax(0, 1fr); }
+  .plant-page .instrument-rail .readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .plant-page .instrument-rail .readouts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- Under the workbench: the P–h diagram and the inspector ---- */
+.plant-main { max-width: var(--maxw); margin: 0 auto; }
+.plant-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--s4);
+  margin-top: var(--s4);
+  align-items: start;
+}
+@media (max-width: 980px) { .plant-lower { grid-template-columns: minmax(0, 1fr); } }
+
+.plant-ph { display: block; width: 100%; height: auto; }
+.ph-frame { fill: none; stroke: var(--line); }
+.ph-grid { stroke: var(--line-soft); stroke-width: 1; }
+.ph-tick { font: 500 10.5px var(--font-mono); fill: var(--muted); }
+.ph-axis { font: 600 11.5px var(--font-body); fill: var(--text-2); }
+.ph-dome { fill: var(--lo-soft); stroke: var(--muted); stroke-width: 1.4; }
+.ph-sat { font: 500 10.5px var(--font-mono); fill: var(--muted); }
+.ph-seg-edge { fill: none; stroke: var(--pl-edge); stroke-width: 6; stroke-linecap: round; }
+.ph-seg { fill: none; stroke-width: 3.5; stroke-linecap: round; }
+.ph-seg.st-mix { stroke: var(--state-flash); }
+.ph-seg.st-vap { stroke: var(--state-vapor); }
+.ph-seg.st-comp { stroke: var(--state-hotgas); stroke-dasharray: 7 4; }
+.ph-seg.st-hot { stroke: var(--state-hotgas); }
+.ph-seg.st-cond { stroke: var(--pl-condensing); }
+.ph-seg.st-liq { stroke: var(--state-liquid); }
+.ph-seg.st-exp { stroke: var(--state-flash); stroke-dasharray: 7 4; }
+.ph-proc { font: 600 11px var(--font-body); fill: var(--muted); }
+.ph-pt { cursor: pointer; }
+.ph-pt circle { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
+.ph-pt text { font: 700 12px var(--font-mono); fill: var(--text); }
+.ph-pt:hover circle, .ph-pt:focus-visible circle { fill: var(--highlight); }
+.ph-pt.is-selected circle { fill: var(--cta); r: 6.5; }
+.ph-pt:focus { outline: none; }
+
+.plant-inspector h2 .insp-pt {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  padding: 0 6px;
+  border-radius: 14px;
+  background: var(--cta);
+  color: var(--cta-ink);
+  font: 700 14px var(--font-mono);
+  vertical-align: 2px;
+}
+.insp-what, .plant-inspector p { color: var(--text-2); font-size: var(--fs-sm); line-height: var(--lh); margin: 0 0 var(--s3); }
+.insp-h { margin: var(--s3) 0 var(--s1); font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.insp-sign {
+  padding: 10px 12px;
+  border: 1px solid var(--warn-line);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--r-md);
+  background: var(--warn-soft);
+  color: var(--text) !important;
+}
+.insp-vals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 var(--s3); }
+.insp-vals div { padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel-2); }
+.insp-vals dt { font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.insp-vals dd { margin: 2px 0 0; font: 700 15px var(--font-mono); color: var(--text); }
+.insp-vals dd small { display: block; font: 500 11.5px var(--font-mono); color: var(--muted); }
+.insp-foot { font-size: var(--fs-xs) !important; color: var(--muted) !important; }
+.insp-empty { margin-bottom: var(--s3); }
+.insp-parts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.insp-part-btn {
+  padding: 5px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--panel);
+  color: var(--text-2);
+  font: 600 13px var(--font-body);
+  cursor: pointer;
+}
+.insp-part-btn:hover { border-color: var(--ink); color: var(--text); }
+
+.readouts.is-frozen .value { color: var(--faint); }
+.readout .dot-vap { background: var(--state-vapor); }
+.readout .dot-hot { background: var(--state-hotgas); }
+.readout .dot-liq { background: var(--state-liquid); }
+.readout .dot-none { background: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-t-flow, .pl-spin, .pl-shake, .pl-needle-in, .pl-air, .pl-bubbles circle, .pl-flag, .pl-reset { animation: none !important; }
+}

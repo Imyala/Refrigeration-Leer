@@ -18,6 +18,7 @@ const PAGES = {
   "learn.html": ["learn", "page"],
   "practice.html": ["practice", "page"],
   "simulator.html": ["practice", "true"],
+  "plant.html": ["practice", "true"],
   "service.html": ["practice", "true"],
   "build.html": ["practice", "true"],
   "diagnose.html": ["practice", "true"],
@@ -32,11 +33,12 @@ const EXPECTED_ORDER = ["home", "learn", "practice", "teach", "about"];
 /* The pages that carry the practice-tool switcher, and the entry each marks. */
 const TOOL_PAGES = {
   "simulator.html": "sim",
+  "plant.html": "plant",
   "service.html": "service",
   "build.html": "build",
   "diagnose.html": "diagnose",
 };
-const EXPECTED_TOOLS = ["sim", "service", "build", "diagnose", "electrical", "procedures", "capstone", "quiz"];
+const EXPECTED_TOOLS = ["sim", "plant", "service", "build", "diagnose", "electrical", "procedures", "capstone", "quiz"];
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const blockOf = (src, cls, label) => {

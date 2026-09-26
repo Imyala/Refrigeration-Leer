@@ -1,6 +1,6 @@
 # Curriculum Mapping
 
-How the course's 64 modules and seven interactive tools relate to formal
+How the course's 64 modules and eight interactive tools relate to formal
 training frameworks — first and foremost the current Australian
 qualification, **UEE32225 Certificate III in Air Conditioning and
 Refrigeration**.
@@ -59,7 +59,7 @@ streams. Module-by-module lesson and question counts are in
 
 Bare numbers are **core-program** modules; `R1.x` / `R2.x` / `E.x` / `C.x`
 are modules of the Refrigeration 1, Refrigeration 2, Electrical principles
-and Capstone streams. Tools are the seven interactive workshops (see *The
+and Capstone streams. Tools are the eight interactive workshops (see *The
 interactive tools* below). The **status** column is what the sources
 checked said about the unit's placement in UEE32225: *core* and *elective*
 where a source stated it; *confirm* where the unit is known to sit in the
@@ -224,12 +224,13 @@ should schedule it *after* delivery, not count it as coverage.
 
 ## The interactive tools
 
-Seven tools sit alongside the lessons. All of them are open at any time and can
+Eight tools sit alongside the lessons. All of them are open at any time and can
 be set as activities in their own right.
 
 | Tool | What the learner does | Skill it drills | Units |
 |------|----------------------|-----------------|-------|
 | **Simulator** (`simulator.html`) | Drives a live vapour-compression cycle on seven refrigerants — including R32 and R454B (A2L) and R290 (A3) — applies faults, reads gauges and the P–h diagram | Cycle behaviour, instrument reading, off-design behaviour | UEERA0036, UEERA0035, UEERA0038 |
+| **Plant Simulator** (`plant.html`) | Walks round a working cool-room plant drawn as it is built, identifies each component and what it does, finds a fault at the part it shows at, and ties each numbered point on the pipework to the P–h diagram | Component identification, reading the plant before the gauges, cycle states on the P–h diagram | UEERA0036, UEERA0035, UEERA0038 |
 | **Technician Quiz** (simulator, quiz mode) | Names a hidden fault from the gauge picture | Signature recognition, scored repetition | UEERA0036 |
 | **PT trainer** (simulator) | Answers target-pressure and saturation-temperature questions on the selected refrigerant | The PT relationship on the gauge | UEERA0036 |
 | **Service Bay** (`service.html`) | Chooses a hose set off the van, proves the gauges read zero, **assesses the area as a flammable zone when the charge is A2L or A3**, fits, cracks, purges, reads and packs up — graded on the order of work against the taught steps | Service-procedure discipline, emission control, flammable-refrigerant practice, gauge hook-up | UEERA0064, UEERA0062, UEERA0048, UEECO0010 |

@@ -87,6 +87,8 @@ test("no stylesheet names a page colour of its own below the token blocks", () =
     ],
     "styles-build.css": [/^\.(pipe-base|run-none|side-split|cx|drop-slot|card-tool)/, /^@keyframes buildFlash/],
     "styles-diagnose.css": [/^\.(dg-zone|dg-coil|dg-fins|dg-meter|dg-air|dg-flow|dg-pt|dg-chip)/],
+    // The plant's material colours are tokens too, so nothing is exempt here.
+    "styles-plant.css": [],
   };
   for (const [file, ok] of Object.entries(allowed)) {
     const css = read(file);

@@ -18,7 +18,7 @@ The site nav offers three destinations — **Home**, **Learn** and **Practice** 
 with the instructor and institutional pages kept visibly secondary, and a
 theme switch: the site is light by default (it is read on classroom
 projectors and phones in daylight), dark by choice, and the drawn instruments
-keep a dark face in both. The seven
+keep a dark face in both. The eight
 hands-on workshops sit behind Practice, and carry a switcher strip so they stay
 one click from each other.
 
@@ -33,13 +33,16 @@ still makes no third-party requests. Icons are one drawn set in
 
 - **`index.html`** — the front door: the staged pathway through the core
   program, one pointer to Practice, and the specialist streams named and sized.
-- **`practice.html`** — the Practice hub: what each of the seven workshops is
+- **`practice.html`** — the Practice hub: what each of the eight workshops is
   for, in the order a technician grows into the work.
 - **`simulator.html`** — the simulator: animated cycle drawn either as a trade
   schematic or as the equipment it represents (`?draw=equipment`), every reading
   compared against what the same machine would read without the fault, the
   field symptoms of the active fault, gauge manifold, technician quiz
   (`?quiz=1`) and PT trainer.
+- **`plant.html`** — the Plant Simulator: the same cycle drawn as a real
+  cool-room plant — every component drawn as it looks — with faults that show
+  at the part and the P–h diagram beside it, point for point.
 - **`service.html`** — the Service Bay: a hands-on service-procedure trainer
   (choose and prove your gauges, fit and purge hoses, work the service valves),
   graded on the order of work.
@@ -154,6 +157,45 @@ depth:
 - **Accessibility** — pipe states are labelled with text (not colour alone),
   controls are keyboard-operable with visible focus, and animation respects
   `prefers-reduced-motion`.
+
+## The Plant Simulator (plant.html)
+
+The Cycle Simulator teaches the cycle as four boxes on a loop. The Plant
+Simulator is the machine a technician walks up to: a cool room with a unit
+cooler, its TXV (power head, capillary and sensing bulb on the suction line)
+and a room temperature controller, and outside it a condensing unit with a
+semi-hermetic compressor (service valves, oil sight glass), oil separator and
+oil return, finned condenser and fan, receiver with king valve, filter-drier,
+liquid-line solenoid, sight glass with moisture indicator, suction
+accumulator, dual pressure control and panel gauges.
+
+- **One operating point drives everything.** It comes from `js/model.js`, as
+  on every other page, so the plant, the gauges on it, the readings strip and
+  the P–h diagram always agree with the rest of the site.
+- **Seven numbered state points** — 5, 1, 1′, 2, 3, 4, 4′, as a textbook P–h
+  diagram numbers them — sit on the pipework and on the diagram. Click one in
+  either place and both light up, and the inspector gives its pressure (gauge
+  and absolute), temperature, saturation temperature, enthalpy and state.
+  Points 1, 3 and 4 are inside the coils and move with the fault: a starved
+  coil finishes boiling early, a backed-up condenser finishes condensing early.
+- **Faults show at the part.** Low charge bubbles in the sight glass and
+  empties the receiver; an iced coil ices; a failed condenser fan stops and
+  takes the head pressure to the high-pressure cut-out; a restricted drier
+  frosts; floodback fills the accumulator and frosts back to the compressor; a
+  solenoid that will not open leaves the line past it dead and pumps down to
+  the low-pressure switch. The part the fault shows at carries a warning badge.
+- **Click any part** for what it is, what it does, what to look for on it, and
+  what it looks like right now.
+- **Show switches**: refrigerant state colours or plain copper with the suction
+  line lagged, as installed; labels on or off (name every part yourself);
+  numbered points on or off.
+- Deep links: `plant.html?fault=lowCharge&ref=R134a&part=sightGlass&point=1'`.
+
+The drawing is built as a string (`js/plant-art.js`) from the layout and logic
+in `js/plant.js`, so both are tested in Node (`tests/plant.test.js`): the loop
+is unbroken, every state point sits where a P–h diagram puts it for every
+refrigerant and fault, every fault shows at the plant, and every part drawn is
+one the inspector can explain.
 
 ## The Service Bay (service.html)
 
@@ -667,7 +709,11 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | File | Purpose |
 |------|---------|
 | `index.html` | Front door: the staged pathway, the Practice pointer, the stream chips |
-| `practice.html` | Practice hub: the seven workshops, what each is for |
+| `practice.html` | Practice hub: the eight workshops, what each is for |
+| `plant.html`, `styles-plant.css` | The Plant Simulator page and its drawing styles |
+| `js/plant.js` | Plant layout (pipe runs, coils, parts), the seven P–h state points, fault symptoms at the plant, the parts catalogue (pure, tested) |
+| `js/plant-art.js` | The plant drawing: every component drawn as it looks, built as SVG markup (pure, tested) |
+| `js/plant-ui.js` | The Plant Simulator page: controls, readings, P–h diagram, inspector |
 | `simulator.html` | Simulator page structure; the schematic itself is drawn from data |
 | `service.html` | The Service Bay rig |
 | `build.html` | The System Builder: palette, loop and analysis panel |

@@ -19,7 +19,7 @@ const ROOT = path.join(__dirname, "..");
    in the test suite, which would then be the thing under test rather than the
    page. Its logic lives in js/model.js and js/data.js, which are covered
    directly. The check below still catches a broken script reference there. */
-const PAGES = ["build.html", "diagnose.html", "service.html", "electrical.html", "procedures.html", "capstone.html"];
+const PAGES = ["plant.html", "build.html", "diagnose.html", "service.html", "electrical.html", "procedures.html", "capstone.html"];
 
 
 function makeCtx(html) {
