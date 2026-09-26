@@ -90,8 +90,8 @@
 .dg-zone { fill: rgba(255, 90, 60, .045); stroke: rgba(125, 154, 181, .2); stroke-dasharray: 7 6; }
 .dg-zone-cold { fill: rgba(79, 195, 247, .05); }
 .dg-zone-label {
-  fill: var(--muted); font-size: 10px; letter-spacing: 1.6px; font-weight: 600;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  fill: var(--muted); font-size: 10px; letter-spacing: 1.2px; font-weight: 600;
+  font-family: var(--font-mono);
 }
 
 .dg-pipe { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
@@ -124,11 +124,11 @@
 }
 .dg-lab {
   fill: var(--text); font-size: 11px; letter-spacing: 1.2px; text-anchor: middle;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-body);
 }
 .dg-sub {
   fill: var(--muted); font-size: 9.5px; text-anchor: middle;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-body);
 }
 /* Component captions that must clear the pipework they name. */
 .dg-lab-left { text-anchor: middle; }

@@ -37,6 +37,13 @@ const FILES = [
   "styles-diagnose.css",
   "styles-control.css",
   "styles-procedure.css",
+  // The typefaces ship with the course (no font CDN): styles.css asks for
+  // these by relative URL, so the LMS copy must carry them too.
+  "fonts/bricolage-grotesque.woff2",
+  "fonts/atkinson-hyperlegible-next.woff2",
+  "fonts/atkinson-hyperlegible-next-italic.woff2",
+  "fonts/atkinson-hyperlegible-mono.woff2",
+  "fonts/OFL.txt",
   "js/theme.js",
   "js/nav.js",
   "js/howto.js",
@@ -121,6 +128,7 @@ function main() {
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.rmSync(ZIP, { force: true });
   fs.mkdirSync(path.join(OUT, "js"), { recursive: true });
+  fs.mkdirSync(path.join(OUT, "fonts"), { recursive: true });
 
   for (const f of FILES) {
     const src = path.join(ROOT, f);

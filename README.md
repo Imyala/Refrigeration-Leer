@@ -22,6 +22,15 @@ keep a dark face in both. The seven
 hands-on workshops sit behind Practice, and carry a switcher strip so they stay
 one click from each other.
 
+The look is taken from the trade itself: service-manual paper and navy ink,
+the gauge manifold's low-side blue and high-side red, and charging-hose yellow
+for the one main action on a page. Headings are set in Bricolage Grotesque,
+reading text in Atkinson Hyperlegible Next (drawn for legibility, with
+unmistakable 0/O and 1/l/I), and readings in Atkinson Hyperlegible Mono. All
+three are bundled in `fonts/` under the SIL Open Font Licence, so the site
+still makes no third-party requests. Icons are one drawn set in
+`styles.css`, not emoji.
+
 - **`index.html`** — the front door: the staged pathway through the core
   program, one pointer to Practice, and the specialist streams named and sized.
 - **`practice.html`** — the Practice hub: what each of the seven workshops is
@@ -664,7 +673,8 @@ that one fails). CI runs them on every push (`.github/workflows/ci.yml`).
 | `build.html` | The System Builder: palette, loop and analysis panel |
 | `diagnose.html` | The Fault Diagnosis Workshop: schematic, instruments, evidence and diagnosis panels |
 | `learn.html` | Course page (sidebar navigation + lesson view); loads every content file |
-| `styles.css` | Theme tokens (light default, dark by choice), layout, state colours, course styles |
+| `styles.css` | Typefaces, theme tokens (light default, dark by choice), icon set, layout, state colours, course styles |
+| `fonts/` | The three bundled typefaces (woff2, Latin subset) and their licence |
 | `js/theme.js` | Stamps the theme on `<html>` before first paint and wires the switch in the nav |
 | `styles-build.css` | System Builder layout: palette, the circuit drawing, drag states, findings |
 | `styles-diagnose.css` | Diagnosis Workshop layout: schematic overlay, instrument buttons, readings and evidence |

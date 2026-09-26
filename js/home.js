@@ -242,7 +242,7 @@
         // exists — three paragraphs of it on the front door buries the one
         // button this page is for.
         return `<a class="stream-chip" href="learn.html#stream-${esc(st.id)}">
-          <span class="stream-chip-icon" aria-hidden="true">${st.icon}</span>
+          <span class="stream-chip-icon ico ico-${esc(st.icon)}" aria-hidden="true"></span>
           <span class="stream-chip-title">${esc(st.title)}</span>
           <span class="stream-chip-meta">${info.modules} modules · ${info.lessons} lessons</span>
         </a>`;

@@ -18,7 +18,7 @@
       id: "core",
       title: "Core program",
       short: "Core",
-      icon: "❄",
+      icon: "snowflake",
       blurb:
         "The guided pathway: how a vapour-compression system works, how to read it " +
         "on gauges and on a P–h chart, how to diagnose it and how to work on it " +
@@ -29,7 +29,7 @@
       id: "v1",
       title: "Refrigeration & air-conditioning 1",
       short: "Refrigeration 1",
-      icon: "🧊",
+      icon: "coil",
       blurb:
         "The full first-year technical stream: principles and thermodynamics, every " +
         "major component in depth, system types from domestic to industrial, hand and " +
@@ -42,7 +42,7 @@
       id: "v2",
       title: "Refrigeration & air-conditioning 2",
       short: "Refrigeration 2",
-      icon: "🏭",
+      icon: "fan",
       blurb:
         "The second-year and post-trade stream: applied thermodynamics and cycle " +
         "analysis, commercial and industrial plant, multi-stage and cascade systems, " +
@@ -54,7 +54,7 @@
       id: "elec",
       title: "Electrical principles",
       short: "Electrical",
-      icon: "⚡",
+      icon: "bolt",
       blurb:
         "The electrical trade stream that underpins every refrigeration control " +
         "circuit: circuit theory and calculation, magnetism and electromagnetism, " +
@@ -66,7 +66,7 @@
       id: "capstone",
       title: "Capstone exam preparation",
       short: "Capstone",
-      icon: "\ud83c\udf93",
+      icon: "cap",
       blurb:
         "Revision aimed squarely at the end-of-apprenticeship knowledge assessment: " +
         "the mandatory electrical tests and their acceptance values, the limits of a " +

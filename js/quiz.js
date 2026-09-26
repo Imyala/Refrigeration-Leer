@@ -223,10 +223,10 @@ function quizAnswer(key) {
       const cardKey = "fault/" + Quiz.fault;
       if (!exact) {
         cards[cardKey] = RefrigSrs.grade(cards[cardKey], false, Date.now());
-        deckNote = `<p>🔁 Added to your <a href="learn.html#practice">Practice deck</a> — this one will resurface tomorrow so it sticks.</p>`;
+        deckNote = `<p><span class="ico ico-repeat" aria-hidden="true"></span> Added to your <a href="learn.html#practice">Practice deck</a> — this one will resurface tomorrow so it sticks.</p>`;
       } else if (cards[cardKey]) {
         cards[cardKey] = RefrigSrs.grade(cards[cardKey], true, Date.now());
-        deckNote = `<p>🔁 You'd missed this one before — nailing it now pushes its next review ${RefrigSrs.describeWhen(cards[cardKey].due, Date.now())}.</p>`;
+        deckNote = `<p><span class="ico ico-repeat" aria-hidden="true"></span> You'd missed this one before — nailing it now pushes its next review ${RefrigSrs.describeWhen(cards[cardKey].due, Date.now())}.</p>`;
       }
       localStorage.setItem(KEY, JSON.stringify(cards));
     } catch (e) { /* storage unavailable */ }

@@ -38,6 +38,13 @@ test("SCORM package builds with a valid manifest and zip", () => {
     }
   }
 
+  // ...and so must every font the stylesheet asks for, or the LMS copy falls
+  // back to system type
+  const css = fs.readFileSync(path.join(pkgDir, "styles.css"), "utf8");
+  const fonts = [...css.matchAll(/url\("?(fonts\/[^")]+)"?\)/g)].map(m => m[1]);
+  assert.ok(fonts.length >= 3, "styles.css loads the bundled fonts");
+  for (const f of fonts) assert.ok(fs.existsSync(path.join(pkgDir, f)), `packaged font: ${f}`);
+
   // ...and so must every page the navigation links to, or the learner hits a
   // dead link inside the LMS
   for (const html of pages) {

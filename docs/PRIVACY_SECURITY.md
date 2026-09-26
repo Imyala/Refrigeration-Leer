@@ -45,8 +45,10 @@ anywhere else, because nothing is stored anywhere else.
 - **Content integrity:** the product is distributed as version-controlled
   source (git history) and should be served over HTTPS (default on GitHub
   Pages and institutional hosting).
-- **Third-party code:** none at runtime. No CDNs, no trackers, no fonts, no
-  frameworks. The only network requests are for the product's own files.
+- **Third-party code:** none at runtime. No CDNs, no trackers, no font
+  services, no frameworks. The typefaces are bundled with the product
+  (`fonts/`, SIL Open Font Licence) and served as its own files. The only
+  network requests are for the product's own files.
 - **Input handling:** all learner-visible rendered content is authored
   in-repo; text is HTML-escaped before markup is applied. Imported progress
   files are parsed as JSON with format validation, and names are escaped

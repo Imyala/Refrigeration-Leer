@@ -332,7 +332,7 @@ function renderNavList() {
       <button class="nav-stream-head" type="button" data-stream="${st.id}"
               aria-expanded="${open ? "true" : "false"}">
         <span class="nav-stream-caret" aria-hidden="true">\u25b8</span>
-        <span class="nav-stream-icon" aria-hidden="true">${st.icon}</span>
+        <span class="nav-stream-icon ico ico-${st.icon}" aria-hidden="true"></span>
         <span class="nav-stream-title">${st.title}</span>
         <span class="nav-count ${done === total ? "all" : ""}">${done}/${total}</span>
       </button>
@@ -346,15 +346,15 @@ function renderNavList() {
       <span class="nav-count ${exam && exam.done ? "all" : ""}">${exam ? (exam.done ? "\u2713" : exam.best + "/" + exam.total) : "\u2014"}</span>
     </a>
     <a class="nav-mod nav-review ${m === "review" ? "active" : ""}" href="#review" ${m === "review" ? 'aria-current="page"' : ""}>
-      <span>\ud83d\udea9 My review list</span>
+      <span><span class="ico ico-flag" aria-hidden="true"></span> My review list</span>
       <span class="nav-count">${Flags.set.size}</span>
     </a>
     <a class="nav-mod nav-reference ${m === "reference" ? "active" : ""}" href="#reference" ${m === "reference" ? 'aria-current="page"' : ""}>
-      <span>\ud83d\udcd5 Reference library</span>
+      <span><span class="ico ico-book" aria-hidden="true"></span> Reference library</span>
       <span class="nav-count">${(window.REFDOCS ? window.REFDOCS.docs.length : 0)}</span>
     </a>
     <a class="nav-mod nav-practice ${m === "practice" ? "active" : ""}" href="#practice" ${m === "practice" ? 'aria-current="page"' : ""}>
-      <span>\ud83d\udd01 Practice</span>
+      <span><span class="ico ico-repeat" aria-hidden="true"></span> Practice</span>
       <span class="nav-count ${Srs.dueKeys().length ? "due" : ""}">${Srs.dueKeys().length ? Srs.dueKeys().length + " due" : (Srs.total() ? "\u2713" : "\u2014")}</span>
     </a>`;
 
@@ -473,7 +473,7 @@ function renderHome() {
       <h2>Refrigeration: from first principles to the toolbag</h2>
       <p>Five streams, ${COURSE.length} modules, ${total} short lessons. Each lesson ends in a
       quiz; pass it and the lesson is done. Work in order, or jump to what you need.</p>
-      ${due ? `<p class="practice-due-note">🔁 <b>${due}</b> practice question${due === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
+      ${due ? `<p class="practice-due-note"><span class="ico ico-repeat" aria-hidden="true"></span> <b>${due}</b> practice question${due === 1 ? " is" : "s are"} due — <a href="#practice">a few minutes now keeps it all fresh</a>.</p>` : ""}
       ${done ? `<div class="progress-line">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <span>${done} of ${total} lessons complete (${pct}%)</span>
@@ -499,9 +499,9 @@ function renderHome() {
         <p>Written for every learner — from first-year apprentices to career changers.
         Each lesson has a <b>plain-words version</b>, <b>diagrams</b>, and <b>live
         demonstrations</b> in the simulator; if something doesn't click, mark it
-        🚩 for your review list — and the <a href="#practice">🔁 Practice deck</a>
+        <span class="ico ico-flag" aria-hidden="true"></span> for your review list — and the <a href="#practice"><span class="ico ico-repeat" aria-hidden="true"></span> Practice deck</a>
         brings questions back at spaced intervals so it truly sticks. When you're
-        ready to get your hands dirty, the <a href="service.html">🔧 Service Bay</a>
+        ready to get your hands dirty, the <a href="service.html"><span class="ico ico-wrench" aria-hidden="true"></span> Service Bay</a>
         has you fitting gauges, purging hoses and working the service valves yourself.
         Sit the final exam at the end for a certificate.</p>
         <p class="align-note">Aligned to Australian practice: every lesson lists its references —
@@ -520,7 +520,7 @@ function renderHome() {
             <input id="importFile" type="file" accept=".json,application/json" hidden />
           </label>
           <a class="btn btn-ghost" href="teach.html">Instructor dashboard</a>
-          ${Flags.set.size ? `<a class="btn btn-ghost" href="#review">🚩 Review list (${Flags.set.size})</a>` : ""}
+          ${Flags.set.size ? `<a class="btn btn-ghost" href="#review"><span class="ico ico-flag" aria-hidden="true"></span> Review list (${Flags.set.size})</a>` : ""}
           <span id="ioStatus" class="io-status" aria-live="polite"></span>
         </div>
       </details>
@@ -535,7 +535,7 @@ function renderHome() {
       return `<details class="stream-section" id="stream-${st.id}"${open ? " open" : ""}>
         <summary class="stream-head">
           <span class="stream-caret" aria-hidden="true"></span>
-          <h3><span class="stream-icon" aria-hidden="true">${st.icon}</span> ${st.title}</h3>
+          <h3><span class="stream-icon ico ico-${st.icon}" aria-hidden="true"></span> ${st.title}</h3>
           <span class="stream-meta">${mods.length} modules · ${stotal} lessons · ${spct}%</span>
           ${sdone ? `<span class="progress-bar small stream-bar"><span class="progress-fill" style="width:${spct}%"></span></span>` : ""}
         </summary>
@@ -643,12 +643,12 @@ function renderLesson(mod, les) {
     <div class="lesson-head">
       <h2>${les.title}</h2>
       <button id="flagBtn" class="flag-btn ${flagged ? "on" : ""}" type="button" aria-pressed="${flagged}">
-        ${flagged ? "🚩 On your review list" : "🚩 Mark for review"}
+        <span class="ico ico-flag" aria-hidden="true"></span> ${flagged ? "On your review list" : "Mark for review"}
       </button>
     </div>
     ${les.simple ? `
     <details class="plain-words" ${flagged ? "open" : ""}>
-      <summary>💡 In plain words — a simpler way to say it</summary>
+      <summary><span class="ico ico-bulb" aria-hidden="true"></span> In plain words — a simpler way to say it</summary>
       <p>${les.simple}</p>
       <p class="plain-hint">Still foggy after the full lesson? Mark it for review and try the
       demonstrations — seeing it move often does what words can't.</p>
@@ -665,7 +665,7 @@ function renderLesson(mod, les) {
         <button id="quizRetryBtn" class="btn btn-ghost" type="button" hidden>Fresh try</button>
         <span id="quizResult" class="quiz-result" aria-live="polite"></span>
       </div>
-      <p class="quiz-note">Checked questions join your <a href="#practice">🔁 Practice deck</a> and
+      <p class="quiz-note">Checked questions join your <a href="#practice"><span class="ico ico-repeat" aria-hidden="true"></span> Practice deck</a> and
       come back at growing intervals — a few minutes a day beats cramming, and it's how this
       really sticks.</p>
     </section>
@@ -791,7 +791,7 @@ function renderReferenceIndex(R) {
   const main = document.getElementById("learnMain");
   main.innerHTML = `
     <div class="crumbs"><a href="#">Course</a> › <span>Reference library</span></div>
-    <h2>📕 Reference library</h2>
+    <h2><span class="ico ico-book" aria-hidden="true"></span> Reference library</h2>
     <p class="module-blurb">The authoritative documents this course teaches to. Open one to see
     how it is structured, what each Part covers, and the clause index the lessons cite.</p>
     <div class="module-grid">
@@ -826,7 +826,7 @@ function renderReview() {
 
   main.innerHTML = `
     <div class="crumbs"><a href="#">Course</a> › <span>My review list</span></div>
-    <h2>🚩 My review list</h2>
+    <h2><span class="ico ico-flag" aria-hidden="true"></span> My review list</h2>
     <p class="module-blurb">Everything you've marked as "not clicked yet", in one place. Revisit a
     lesson, open its plain-words box, run the demonstrations — and un-flag it when it makes sense.
     Marking things you don't get is what good learners do.</p>
@@ -836,7 +836,7 @@ function renderReview() {
         ${flagged.map(f => row(f, `<button class="btn btn-ghost unflag-btn" data-key="${f.mod.id}/${f.les.id}" type="button">Got it now ✓</button>`)).join("")}
       </div>` : `
       <div class="learn-hero"><p>Nothing marked right now. If a lesson ever feels foggy, hit
-      <b>🚩 Confusing? Mark it for review</b> at the top of the lesson and it will wait for you here.</p></div>`}
+      <b><span class="ico ico-flag" aria-hidden="true"></span> Confusing? Mark it for review</b> at the top of the lesson and it will wait for you here.</p></div>`}
     ${unfinished.length ? `
       <h3 class="review-heading">Quizzes started but not finished (${unfinished.length})</h3>
       <div class="lesson-list">
@@ -885,7 +885,7 @@ function markQuiz(container, questions) {
     const ex = f.querySelector(".quiz-explain");
     ex.innerHTML = right
       ? "<b>✓ Got it.</b> " + q.explain
-      : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain}`;
+      : `<b><span class="ico ico-bulb" aria-hidden="true"></span> Not this one — here's the idea:</b> the answer is <b>${q.options[q.answer]}</b>. ${q.explain}`;
     ex.hidden = false;
   });
   return { incomplete: false, score, results };
@@ -1303,7 +1303,7 @@ function renderPracticeHome(main) {
 
   main.innerHTML = `
     <div class="crumbs"><a href="#">Course</a> › <span>Practice</span></div>
-    <h2>🔁 Practice — spaced repetition</h2>
+    <h2><span class="ico ico-repeat" aria-hidden="true"></span> Practice — spaced repetition</h2>
     <div class="learn-hero">
       <p>Questions you've met in lesson quizzes come back here just before you'd
       naturally forget them — after a day, then a few days, then weeks. Get one
@@ -1381,7 +1381,7 @@ function renderPracticeCard(main) {
     const fb = document.getElementById("practiceFeedback");
     fb.innerHTML = right
       ? `<b>✓ Got it.</b> ${q.explain} <span class="practice-sched">This one retreats ${RefrigSrs.describeWhen(Srs.cards[key].due, Date.now())}.</span>`
-      : `<b>💡 Not this one — here's the idea:</b> the answer is <b>${correctText}</b>. ${q.explain} <span class="practice-sched">It'll come around again shortly, and tomorrow too — that's the method, not a penalty.</span>`;
+      : `<b><span class="ico ico-bulb" aria-hidden="true"></span> Not this one — here's the idea:</b> the answer is <b>${correctText}</b>. ${q.explain} <span class="practice-sched">It'll come around again shortly, and tomorrow too — that's the method, not a penalty.</span>`;
     fb.hidden = false;
     document.getElementById("practiceNextBtn").hidden = false;
     if (!right) document.getElementById("practiceLessonLink").hidden = false;
