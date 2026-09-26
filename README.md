@@ -636,9 +636,17 @@ licence.
   coming back to the compressor (floodback, an overfeeding valve) drives the
   discharge down toward saturation — a collapsed discharge superheat is the
   tell — and the model floors it 2 K above, since gas at discharge pressure
-  cannot be colder than its own saturation temperature. Near the top of a
-  fluid's dome the simplified discharge enthalpy can still sit level with the
-  suction's under floodback (R32 most of all); COP is guarded against it.
+  cannot be colder than its own saturation temperature.
+- **The compressor always does the work its lift needs.** At a given lift
+  the work is set by the gas the compressor is given, so a discharge cooler
+  than that lift produces means the suction was wet: the model moves the
+  suction (and the coil outlet) into the wet region by the enthalpy the
+  discharge is short of, and the refrigeration effect falls with it — the
+  liquid left the coil unboiled. Floodback runs at a suction quality of
+  about 0.88–0.95, an overfeeding TXV about 0.96, an iced coil about 0.99; a
+  healthy machine is never wet. The superheat *reading* stays what a
+  thermometer shows (about zero), and on the P–h diagrams 1′ sits inside the
+  dome.
 
 ## Refrigerants
 

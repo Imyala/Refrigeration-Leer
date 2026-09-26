@@ -53,16 +53,22 @@ test("the seven state points sit where a P–h diagram puts them, for every flui
       assert.ok(Math.abs(sp["5"].h - sp["4'"].h) < 1e-9, `${tag}: expansion is isenthalpic`);
       assert.ok(sp["1"].h > sp["5"].h, `${tag}: the evaporator adds heat`);
       assert.ok(sp["1'"].h >= sp["1"].h, `${tag}: superheat adds heat`);
-      // With liquid returning the model has no wet compression to show, so the
-      // compressor can only be shown doing no less than nothing; everywhere
-      // else it must visibly add work.
-      if (fault === "floodback") assert.ok(sp["2"].h >= sp["1'"].h - 1, `${tag}: compression does not remove heat`);
-      else assert.ok(sp["2"].h > sp["1'"].h, `${tag}: the compressor adds work`);
+      assert.ok(sp["2"].h > sp["1'"].h, `${tag}: the compressor adds work`);
       assert.ok(sp["2"].t >= M.satTemp(op.base, sp["2"].p) - 0.5, `${tag}: the discharge is never below saturation`);
       assert.ok(sp["3"].h > sp["4"].h && sp["4"].h >= sp["4'"].h, `${tag}: the condenser takes heat out`);
       assert.ok(sp["5"].x > 0 && sp["5"].x < 1, `${tag}: point 5 is a mix`);
       assert.ok(sp["1'"].t >= sp["1"].t && sp["4'"].t <= sp["4"].t, `${tag}: superheat and subcooling have the right sign`);
     }
+  }
+});
+
+test("with liquid coming back, 1 and 1′ are one wet point inside the dome", () => {
+  for (const ref of Object.keys(D.REFRIGERANTS)) {
+    const sp = P.statePoints(M.deriveAt(ref, 100, 100, "floodback", "basic"));
+    assert.ok(sp["1'"].wet && sp["1'"].phase === "mix" && sp["1'"].x < 0.99, `${ref}: the suction is wet`);
+    assert.strictEqual(sp["1"].h, sp["1'"].h, `${ref}: 1 and 1′ coincide`);
+    const dry = P.statePoints(M.deriveAt(ref, 100, 100, "none", "basic"));
+    assert.ok(!dry["1'"].wet && dry["1'"].phase === "vap", `${ref}: a healthy suction is superheated`);
   }
 });
 

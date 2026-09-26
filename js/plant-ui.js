@@ -158,12 +158,16 @@
     // Numbered points, clickable, offset so the pairs that sit close together
     // (1 and 1′, 4 and 4′) stay readable.
     const off = { "5": [-14, 14], "1": [0, 16], "1'": [12, 14], "2": [12, -10], "3": [0, -14], "4": [2, -14], "4'": [-14, -12] };
+    // Liquid coming back: 1 and 1′ are one point, labelled once.
+    const merged = sp["1'"].wet;
     P.POINT_ORDER.forEach((k) => {
+      if (merged && k === "1") return;
       const px = x(sp[k].h), py = y(sp[k].p);
       const [ox, oy] = off[k];
+      const label = merged && k === "1'" ? "1 = 1′" : k.replace("'", "′");
       out += `<g class="ph-pt${state.selPoint === k ? " is-selected" : ""}" data-point="${k}" tabindex="0" role="button" aria-label="State point ${k.replace("'", " prime")}">` +
         `<circle cx="${f(px)}" cy="${f(py)}" r="4.5"/>` +
-        `<text x="${f(px + ox)}" y="${f(py + oy + 4)}" text-anchor="middle">${k.replace("'", "′")}</text></g>`;
+        `<text x="${f(px + ox)}" y="${f(py + oy + 4)}" text-anchor="middle">${label}</text></g>`;
     });
     out += `<text class="ph-axis" x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">Enthalpy h (kJ/kg)</text>` +
       `<text class="ph-axis" transform="translate(16 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">Pressure (${esc(U.P_UNITS[U.prefs.p].label)} abs)</text>`;
@@ -178,13 +182,18 @@
       const g = pVal(s.p);
       const sat = M.satTemp(c.op.base, s.p);
       let extra = "";
-      if (k === "1'") extra = `<div><dt>Superheat</dt><dd>${dt(c.op.superheat)} ${dtUnit()} <small>line ${tVal(s.t)}°, saturated ${tVal(sat)}°</small></dd></div>`;
+      if (k === "1'") extra = s.wet
+        ? `<div><dt>Superheat</dt><dd>${dt(c.op.superheat)} ${dtUnit()} <small>on the thermometer only: the gas is wet</small></dd></div>`
+        : `<div><dt>Superheat</dt><dd>${dt(c.op.superheat)} ${dtUnit()} <small>line ${tVal(s.t)}°, saturated ${tVal(sat)}°</small></dd></div>`;
       if (k === "4'") extra = `<div><dt>Subcooling</dt><dd>${dt(c.op.subcool)} ${dtUnit()} <small>saturated ${tVal(sat)}°, line ${tVal(s.t)}°</small></dd></div>`;
       if (k === "2") extra = `<div><dt>Discharge superheat</dt><dd>${dt(Math.max(0, s.t - sat))} ${dtUnit()}</dd></div>`;
       const phase = P.PHASE_WORDS[s.phase] + (s.phase === "mix" ? ` · ${Math.round(s.x * 100)} % vapour` : "");
+      const wetNote = s.wet
+        ? `<p class="insp-sign"><b>Liquid is coming back.</b> The refrigerant never finishes boiling: it leaves the coil and reaches the compressor as a wet mix, so 1 and 1′ are the same point, inside the dome. A thermometer on the suction line reads about the evaporating temperature — superheat near zero — because a wet mix sits at saturation.</p>`
+        : "";
       host.innerHTML = `<div class="panel-head"><h2 id="inspTitle"><span class="insp-pt">${k.replace("'", "′")}</span> ${esc(pt.name)}</h2>
           <span class="hint">${esc(pt.where)}</span></div>
-        <p class="insp-what">${esc(pt.what)}</p>
+        ${s.wet ? wetNote : `<p class="insp-what">${esc(pt.what)}</p>`}
         <dl class="insp-vals">
           <div><dt>Pressure</dt><dd>${g.v} ${esc(g.u)} <small>${esc(U.fmtPAbs(s.p))} abs</small></dd></div>
           <div><dt>Temperature</dt><dd>${tVal(s.t)} ${tUnit()}</dd></div>

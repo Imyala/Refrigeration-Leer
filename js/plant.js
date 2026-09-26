@@ -254,10 +254,20 @@
       const f = hf(t), g = hg(t);
       return Math.max(0, Math.min(1, (h - f) / Math.max(g - f, 1)));
     };
+    /* Liquid coming back (floodback, an overfeeding valve, an iced coil): the
+       refrigerant never finishes boiling. It leaves the coil and reaches the
+       compressor as a wet mix, so 1 and 1′ are one point, inside the dome.
+       A trace of mist (quality above 0.99) still reads as saturated vapour. */
+    const wet = op.suctionQuality != null && op.suctionQuality < 0.99;
+    const suction = wet
+      ? { p: op.pLow, t: op.tEvap, h: op.h1, phase: "mix", x: op.suctionQuality, wet: true }
+      : null;
     return {
       "5":  { p: op.pLow,  t: op.tEvap,      h: op.h4,          phase: "mix", x: quality(op.h4, op.tEvap) },
-      "1":  { p: op.pLow,  t: op.tEvap,      h: hg(op.tEvap),   phase: "satVap", x: 1 },
-      "1'": { p: op.pLow,  t: op.tSuction,   h: op.h1,          phase: "vap" },
+      "1":  wet ? Object.assign({}, suction)
+                : { p: op.pLow, t: op.tEvap, h: Math.min(hg(op.tEvap), op.h1), phase: "satVap", x: 1 },
+      "1'": wet ? Object.assign({}, suction)
+                : { p: op.pLow, t: op.tSuction, h: op.h1, phase: op.h1 > hg(op.tEvap) + 0.5 ? "vap" : "satVap" },
       // With liquid coming back (floodback) the discharge is driven down
       // toward saturation, never below it. The model floors it just above
       // (MIN_DISCHARGE_SUPERHEAT); this guard stays in case that changes.

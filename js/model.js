@@ -128,9 +128,27 @@
     const hg1 = interpTable(tbl, "T", tEvap, "hg");           // saturated vapour at coil pressure
     const h3  = interpTable(tbl, "T", tLiquid, "hf");         // subcooled liquid ≈ hf(T)
     const h4  = h3;                                           // throttling is isenthalpic
-    const hCoilOut = hg1 + cpv * superheatCoil;               // what leaves the evaporator
-    const h1  = hg1 + cpv * superheat;                        // what reaches the compressor
+    let hCoilOut = hg1 + cpv * superheatCoil;                 // what leaves the evaporator
+    let h1  = hg1 + cpv * superheat;                          // what reaches the compressor
     const h2  = interpTable(tbl, "T", tCond, "hg") + cpv * Math.max(tDischarge - tCond, 0);
+
+    /* Energy balance at the compressor. At a given lift the compressor's work
+       is set by the gas it is given: stageWork() works it out with the same
+       discharge relation, for the suction as the gauges state it. A discharge
+       cooler than that — liquid coming back, from floodback or an overfeeding
+       valve — is not the same gas compressed with less work (at worst, none:
+       that drew the compression running backwards on the P–h diagram). It is
+       wetter gas compressed with the same work. So the suction, and the coil
+       outlet it came from, move into the wet region by the enthalpy the
+       discharge is short of; the liquid that left the coil unboiled did no
+       cooling, so the refrigeration effect falls by the same amount. A
+       healthy machine, and a fault that runs the discharge hot, is untouched:
+       there the two agree, or the compressor is doing more work, not less. */
+    const clean = stageWork(base, tEvap, tCond, superheat, subcool, 0.6 + 0.4 * s);
+    const wetBy = Math.max(0, clean.work - (h2 - h1));
+    h1 -= wetBy;
+    hCoilOut -= wetBy;
+    const wetSuction = h1 < hg1 - 1e-6;
 
     // How much of the liquid flashes to vapour crossing the metering device.
     // This is worth showing on every circuit — it is why subcooling matters.
@@ -166,6 +184,8 @@
 
     const out = { base, pLow, pHigh, tEvap, tCond, tSuction, tDischarge, tLiquid,
       superheat, superheatCoil, subcool, ratio, flow,
+      // Liquid in the suction: the vapour fraction the compressor is given.
+      wetSuction, suctionQuality: wetSuction ? clamp((h1 - hf1) / Math.max(hg1 - hf1, 1), 0, 1) : 1,
       h1, h2, h3, h4, hCoilOut, hf1, hg1,
       effect, work, heatRej, cop, capRaw, flashFraction,
       circuit: circuitKey || "basic", circuitNote: fx.note || null };

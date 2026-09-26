@@ -213,3 +213,42 @@ test("floodback still reads as floodback: a discharge far cooler than a healthy 
     assert.ok(flooded.superheat <= 2, `${r}: suction superheat gone`);
   }
 });
+
+/* The compressor's work at a given lift is set by the gas it is given. The
+   model's discharge used to come out below what that lift needs under
+   floodback — on R32 and four other fluids below the suction's own enthalpy,
+   drawing the compression running backwards on the P–h diagram, with a COP
+   of 6.8 for a machine full of liquid. A discharge that cool means wet
+   suction, compressed with the full work. */
+test("the compressor always does at least the work its lift needs", () => {
+  for (const r of REF_KEYS) {
+    for (const f of FAULT_KEYS) {
+      for (const c of Object.keys(C.CIRCUITS)) {
+        for (const s of [50, 100, 150]) {
+          for (const l of [50, 100, 150]) {
+            const op = M.deriveAt(r, s, l, f, c);
+            const clean = M.stageWork(op.base, op.tEvap, op.tCond, op.superheat, op.subcool, 0.6 + 0.4 * s / 100);
+            assert.ok(op.h2 - op.h1 >= clean.work - 1e-6,
+              `${r}/${f}/${c} at ${s}/${l}: work ${(op.h2 - op.h1).toFixed(1)} against ${clean.work.toFixed(1)} for the lift`);
+          }
+        }
+      }
+    }
+  }
+});
+
+test("liquid coming back makes the suction wet, and costs refrigeration effect", () => {
+  for (const r of REF_KEYS) {
+    const healthy = M.deriveAt(r, 100, 100, "none", "accumulator");
+    const flooded = M.deriveAt(r, 100, 100, "floodback", "accumulator");
+    assert.ok(!healthy.wetSuction && healthy.suctionQuality === 1, `${r}: a healthy suction is dry`);
+    assert.ok(flooded.wetSuction && flooded.suctionQuality > 0.8 && flooded.suctionQuality < 0.97, `${r}: floodback suction is wet (x ${flooded.suctionQuality.toFixed(3)})`);
+    assert.ok(flooded.h1 < flooded.hg1, `${r}: 1′ sits inside the dome`);
+    assert.ok(flooded.effect < healthy.effect, `${r}: liquid leaving the coil unboiled did no cooling`);
+    assert.ok(flooded.cop < 6, `${r}: no free COP from a flooded compressor (got ${flooded.cop.toFixed(2)})`);
+  }
+  // Healthy on every circuit, at every duty: never wet.
+  for (const r of REF_KEYS) for (const c of Object.keys(C.CIRCUITS)) for (const s of [50, 100, 150]) for (const l of [50, 100, 150]) {
+    assert.ok(!M.deriveAt(r, s, l, "none", c).wetSuction, `${r}/${c} at ${s}/${l}: healthy is dry`);
+  }
+});
