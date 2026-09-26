@@ -60,6 +60,28 @@
       <button id="viewUnitsBtn" class="btn btn-ghost" type="button" aria-pressed="false">By unit of competency</button>
     </div>
     <div id="cohort"></div>
+
+    <!-- Before any file is loaded: how the files get here, in three steps. -->
+    <ol class="teach-steps" id="teachSteps">
+      <li>
+        <span class="teach-step-n" aria-hidden="true">1</span>
+        <b>Students export</b>
+        <span>On the course page each student opens <i>Your progress file</i> and exports their
+        progress: one <code>.json</code> file.</span>
+      </li>
+      <li>
+        <span class="teach-step-n" aria-hidden="true">2</span>
+        <b>They send it to you</b>
+        <span>By email, an LMS submission or a shared folder — however your class already
+        hands work in.</span>
+      </li>
+      <li>
+        <span class="teach-step-n" aria-hidden="true">3</span>
+        <b>You load them here</b>
+        <span>Any number at once. See each student by module or by unit of competency, and
+        download the table as CSV.</span>
+      </li>
+    </ol>
   </main>
 
   <footer class="footer">

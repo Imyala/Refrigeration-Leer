@@ -430,7 +430,7 @@ function sbRenderSequence() {
     </div>
     <p class="sb-seq-status" aria-live="polite">${status}</p>
     ${verdict}
-    <ol class="sb-seq">${rep.steps.map(item).join("")}</ol>`;
+    <ol class="sb-seq" style="--rows: ${Math.ceil(rep.steps.length / 2)}">${rep.steps.map(item).join("")}</ol>`;
 
   el.querySelectorAll("details.sb-why").forEach(d =>
     d.addEventListener("toggle", () => { SB.openWhy[d.dataset.step] = d.open; }));

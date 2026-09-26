@@ -126,7 +126,8 @@
            click and the thermodynamics all change together. -->
       <svg id="diagram" viewBox="30 18 900 362" role="img"
            aria-label="Refrigeration circuit schematic"></svg>
-
+          <!-- The key to the pipe colours, under the pipes it explains -->
+          <div class="legend" id="legend" aria-label="Pipe key"></div>
         </div><!-- /.diagram-wrap -->
 
         <!-- Instrument rail: the live readings, beside the machine they read -->
@@ -136,11 +137,6 @@
             <span class="rail-status" id="railStatus">Running</span>
           </div>
           <div class="readouts" id="readouts"></div>
-
-          <div class="rail-head rail-head-key">
-            <h2 class="rail-title">Pipe key</h2>
-          </div>
-          <div class="legend" id="legend"></div>
 
           <button id="powerBtn" class="btn btn-stop" type="button">Stop compressor</button>
         </aside>

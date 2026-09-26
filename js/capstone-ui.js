@@ -42,7 +42,7 @@ function cpRender() {
         <div class="stage-body">
           <p class="stage-blurb">${cpEsc(st.brief)}</p>
           <p class="cp-units">${st.units.map(u => `<span class="unit-chip">${u}</span>`).join(" ")}</p>
-          <div class="stage-actions"><a class="btn ${cls === "next" ? "btn-tour" : "btn-ghost"}" href="${cpEsc(st.href)}">${st.complete ? "Do it again" : "Open this stage"}</a></div>
+          <div class="stage-actions"><a class="btn btn-ghost" href="${cpEsc(st.href)}">${st.complete ? "Do it again" : "Open this stage"}</a></div>
         </div>
       </details>
     </li>`;

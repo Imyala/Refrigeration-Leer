@@ -310,7 +310,7 @@ function prRenderSequence() {
         <p>${s.warns ? `${s.warns} thing${s.warns === 1 ? "" : "s"} the rig objected to along the way — each one is a lesson banked. ` : ""}${outCount ? `${outCount} step${outCount === 1 ? "" : "s"} out of turn: read the flagged ones for what the shortcut costs. ` : ""}${P.id === "pressureTest" && P.verdict(s).leakLine ? prEsc(P.verdict(s).leakLine) : ""}</p>
         <div class="quiz-controls"><button id="prAgainBtn" class="btn btn-tour" type="button">Run it again</button></div></div>`
     : "";
-  el.innerHTML = `<p class="sb-seq-status" aria-live="polite">${status}</p>${verdict}<ol class="sb-seq">${steps.map(item).join("")}</ol>`;
+  el.innerHTML = `<p class="sb-seq-status" aria-live="polite">${status}</p>${verdict}<ol class="sb-seq" style="--rows: ${Math.ceil(steps.length / 2)}">${steps.map(item).join("")}</ol>`;
   el.querySelectorAll("details.sb-why").forEach(d => d.addEventListener("toggle", () => { PR.openWhy[d.dataset.step] = d.open; }));
   const again = document.getElementById("prAgainBtn"); if (again) again.addEventListener("click", prReset);
 }

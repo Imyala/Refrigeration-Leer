@@ -76,7 +76,7 @@
   --bg: #f4f1ea;
   --panel: #fffdf9;
   --panel-2: #faf7f1;
-  --sunken: #ebe6dc;
+  --sunken: #edeae3;
   --line: #d6cebe;
   --line-soft: #e4ddd0;
 
@@ -959,6 +959,7 @@ output, .num, .tnum { font-variant-numeric: tabular-nums; }
    still reads as one column rather than a wide bar over a narrow one. */
 .home-page,
 .practice-page,
+.capstone-page,
 .about-page,
 .teach-page { --maxw: 1080px; }
 .home-page .home-lede,
@@ -995,6 +996,14 @@ output, .num, .tnum { font-variant-numeric: tabular-nums; }
   font-size: var(--fs-base);
   line-height: 1.5;
   max-width: 68ch;
+}
+/* On a laptop and up, the title and the page's controls share one row, so
+   the machine starts a row higher: the controls take the width they need and
+   the title block takes what is left, its subtitle wrapping to fit. */
+@media (min-width: 1100px) {
+  .topbar:has(.controls) { flex-wrap: nowrap; }
+  .topbar:has(.controls) .title-block { flex: 1 1 auto; }
+  .topbar .controls { flex: 0 0 auto; }
 }
 
 .controls {
@@ -1544,6 +1553,10 @@ select.field { max-width: 100%; }
 @media (max-width: 900px) {
   .workbench-top { grid-template-columns: minmax(0, 1fr); }
   .instrument-rail { border-left: 0 !important; border-top: 1px solid var(--line-soft); }
+  /* Under the diagram the rail has the width, not the height: the readings
+     go two or three across instead of six rows down. */
+  .instrument-rail .readouts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .instrument-rail #powerBtn { margin-top: var(--s1); }
 }
 
 /* Below ~700px the schematic is wider than the screen. Rather than shrink the
@@ -1603,21 +1616,12 @@ select.field { max-width: 100%; }
   color: var(--good);
 }
 .rail-status.off { color: var(--faint); }
-.rail-head-key { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line-soft); }
-.instrument-rail .legend {
-  flex-direction: column;
-  gap: 7px;
-  padding: 0 2px;
-  border-top: 0;
-  margin-top: 0;
-}
-.instrument-rail .legend-item { align-items: flex-start; line-height: 1.35; }
-.instrument-rail .legend-swatch { margin-top: 5px; }
-.legend-name { color: var(--text-2); font-weight: 600; display: block; }
-.legend-detail { color: var(--faint); display: block; font-size: 11px; }
 .instrument-rail #powerBtn { margin-top: auto; }
 
 .diagram-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background: var(--face);
   border: 0;
   border-radius: 0;
@@ -1708,7 +1712,7 @@ select.field { max-width: 100%; }
      left, right, above or below their device without colliding. */
 }
 .comp-label-left { text-anchor: end; }
-.comp-sub { fill: var(--muted); font-size: 10px; text-anchor: middle; letter-spacing: .5px; }
+.comp-sub { fill: var(--text-2); font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-anchor: middle; letter-spacing: .08em; text-transform: uppercase; }
 
 .fin-set line { stroke: rgba(255,255,255,.18); stroke-width: 2; }
 .fins-hotgas line { stroke: rgba(255,106,77,.35); }
@@ -1799,17 +1803,23 @@ select.field { max-width: 100%; }
 /* Particles */
 .particle { stroke: none; }
 
-/* Legend — the key to the pipe colours, sitting with the diagram it explains */
+/* Legend — the key to the pipe colours, along the foot of the diagram it
+   explains: each line's name, and what is in it, beside its colour. */
 .legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 18px;
-  padding: var(--s2) var(--s4) var(--s3);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 18px;
+  padding: var(--s3) 2px var(--s1);
   border-top: 1px solid var(--line-soft);
   margin-top: var(--s2);
 }
-.legend-item { display: flex; align-items: center; gap: 7px; font-size: var(--fs-xs); color: var(--muted); }
-.legend-swatch { width: 18px; height: 6px; border-radius: 3px; flex: none; }
+.legend-item { display: flex; align-items: flex-start; gap: 9px; font-size: var(--fs-xs); color: var(--muted); line-height: 1.35; }
+.legend-swatch { width: 20px; height: 6px; border-radius: 3px; flex: none; margin-top: 6px; }
+.legend-name { color: var(--text-2); font-weight: 650; display: block; }
+.legend-detail { color: var(--faint); display: block; font-size: 11.5px; }
+@media (max-width: 700px) {
+  .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+}
 
 /* ---------- Circuit picker + note ----------
    The system selector decides what the whole page is about, so it leads the
@@ -2048,10 +2058,11 @@ select.field { max-width: 100%; }
 .quiz-opt {
   text-align: left;
   padding: 11px 13px;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   border-radius: var(--r-md);
-  background: var(--sunken);
-  color: var(--text-2);
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
   font-family: inherit;
   font-size: var(--fs-sm);
   line-height: 1.5;
@@ -2331,6 +2342,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   padding: 26px;
   margin-bottom: 20px;
 }
+.learn-hero ~ .learn-hero { background-image: none; }
 .learn-hero h2 { margin: 0 0 8px; font-size: clamp(22px, 2.3vw, 28px); font-weight: 750; letter-spacing: -.02em; line-height: 1.15; }
 .learn-hero-compact { padding: 20px 24px; margin-bottom: 16px; }
 .learn-hero-compact > p:first-of-type { margin-bottom: 12px; }
@@ -2588,8 +2600,20 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 /* The lesson's own title is the largest thing in the view, larger than the
    course name above it: that is what is being read. */
 .lesson-head h2 { margin: 0; font-size: clamp(26px, 2.6vw, 34px); font-weight: 750; letter-spacing: -.025em; line-height: 1.12; text-wrap: balance; }
-/* On the course page the course name is where you are, not what you read. */
-.course-page .topbar { padding-bottom: var(--s2); }
+/* On the course page the course name is where you are, not what you read:
+   the nav already says "Learn", and the overview's own heading names the
+   course, so the page heading is kept for screen readers and the row it
+   took goes to the course. */
+.course-page .topbar {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.course-page .learn-layout { padding-top: 0; }
 .course-page .title-block h1 { font-size: 18px; font-weight: 700; color: var(--muted); letter-spacing: -.01em; }
 
 /* Where this lesson sits in its module: one segment per lesson, filled when
@@ -3053,6 +3077,43 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 
 /* ---------- Instructor dashboard ---------- */
+/* Before a cohort is loaded: the three steps that get the files here. */
+.teach-steps {
+  list-style: none;
+  margin: var(--s5) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s3);
+}
+.teach-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.teach-steps b { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
+.teach-steps code { font-family: var(--font-mono); font-size: .92em; }
+.teach-step-n {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+@media (max-width: 720px) { .teach-steps { grid-template-columns: minmax(0, 1fr); } }
 .teach-main { max-width: var(--maxw); margin: 0 auto; padding: 20px 0; }
 .teach-main .learn-hero p { max-width: 78ch; }
 .cohort-table { border-collapse: collapse; font-size: 13px; min-width: 640px; background: var(--panel); }
@@ -3061,7 +3122,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   padding: 8px 12px;
   text-align: center;
 }
-.cohort-table th { background: var(--sunken); color: var(--accent); }
+/* Header cells as the lesson tables have them: ink band, mono capitals. */
+.cohort-table th {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.cohort-table tbody tr:nth-child(even) td { background: var(--panel-2); }
 .cohort-table .student-name { text-align: left; font-weight: 600; }
 .cohort-table .exported { color: var(--muted); font-size: 12px; }
 .cell-all  { color: var(--good); font-weight: 600; }
@@ -3074,8 +3145,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .doc-list { margin: 8px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.8; }
 .doc-list i { color: var(--muted); font-size: 12px; }
 .deploy-table td, .deploy-table th { text-align: left; }
-#aboutMain .learn-hero h2 { font-size: 18px; }
-#aboutMain .module-card h3 { color: var(--accent); }
+#aboutMain .learn-hero h2 { font-size: 22px; }
+#aboutMain .module-card h3 { color: var(--text); }
 #aboutMain .module-card p { font-size: 13px; }
 #aboutMain .table-wrap { overflow-x: auto; }
 
@@ -3685,10 +3756,10 @@ details.fold > .ph-caption { margin-top: var(--s2); }
 details.reveal {
   margin: 14px 0;
   padding: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--card-line);
-  border-left: 3px solid var(--accent);
-  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 details.reveal > summary {
@@ -3702,11 +3773,12 @@ details.reveal > summary {
 }
 details.reveal > summary::-webkit-details-marker { display: none; }
 details.reveal > summary::before {
-  content: "▸ ";
+  content: "▸";
   display: inline-block;
+  margin-right: 8px;
   transition: transform .15s ease;
 }
-details.reveal[open] > summary::before { content: "▾ "; }
+details.reveal[open] > summary::before { transform: rotate(90deg); }
 details.reveal > summary:hover { color: var(--text); }
 details.reveal > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 details.reveal > *:not(summary) { padding: 0 14px; }
@@ -3731,11 +3803,13 @@ details.reveal p:first-of-type { margin-top: 0; }
 .sb-hose-card {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--sunken);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel);
   overflow: hidden;
+  transition: border-color .15s ease;
 }
+.sb-hose-card:hover { border-color: var(--ink); }
 .sb-hose-card.on { border-color: var(--good); }
 .sb-hose-card.rejected { border-color: var(--bad-line); }
 /* The whole label+detail block is the target: a hose set is picked up whole. */
@@ -3745,14 +3819,15 @@ details.reveal p:first-of-type { margin-top: 0; }
   gap: 5px;
   text-align: left;
   width: 100%;
+  flex: 1 1 auto;
   padding: 12px 14px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--line-soft);
   color: var(--text);
   cursor: pointer;
   font: inherit;
 }
+.sb-hose-pick:not(:last-child) { border-bottom: 1px solid var(--line-soft); }
 .sb-hose-pick:hover { background: var(--accent-soft); }
 .sb-hose-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .sb-hose-label { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
@@ -3805,7 +3880,15 @@ details.reveal p:first-of-type { margin-top: 0; }
 /* A checklist, not a wall of cards: one row per step, a divider between
    rows and the state in the bar down the left. */
 .sb-seq { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 20px; }
-@media (min-width: 941px) { .sb-seq { grid-template-columns: 1fr 1fr; } }
+/* Two columns read down, then across — 1 to 4 on the left, 5 to 8 on the
+   right — the way a numbered checklist is read. The script sets --rows. */
+@media (min-width: 941px) {
+  .sb-seq {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(var(--rows, 4), auto);
+    grid-auto-flow: column;
+  }
+}
 .sb-step {
   display: flex;
   gap: 10px;

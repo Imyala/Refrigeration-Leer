@@ -119,6 +119,8 @@ function renderTable() {
   const status = document.getElementById("teachStatus");
   const views = document.getElementById("teachViews");
   views.hidden = !students.length;
+  const steps = document.getElementById("teachSteps");
+  if (steps) steps.hidden = students.length > 0;
   if (!students.length) { wrap.innerHTML = ""; return; }
   if (teachView === "units") { renderUnitsTable(); status.textContent = `${students.length} student file${students.length === 1 ? "" : "s"} loaded.`; return; }
 

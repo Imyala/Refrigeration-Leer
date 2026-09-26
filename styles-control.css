@@ -47,17 +47,18 @@
 @media (max-width: 400px) { .ct-insts { grid-template-columns: minmax(0, 1fr); } }
 .ct-inst {
   display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px;
-  border: 1px solid var(--line); border-radius: 10px; background: var(--sunken);
+  border: 1.5px solid var(--line); border-radius: var(--r-md); background: var(--panel);
   font-size: var(--fs-sm); cursor: pointer; line-height: 1.35;
 }
-.ct-inst.on { border-color: var(--accent-line); background: var(--accent-soft); }
+.ct-inst:hover { border-color: var(--ink); }
+.ct-inst.on { border-color: var(--accent); background: var(--accent-soft); }
 .ct-inst input { accent-color: var(--accent); margin-top: 3px; }
 .ct-inst small { display: block; color: var(--muted); font-size: var(--fs-xs); }
 .ct-probes { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px; }
 .ct-probes label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-xs); color: var(--muted); }
 .ct-probes select {
-  background: var(--sunken); color: var(--text); border: 1px solid var(--line);
-  border-radius: 10px; padding: 8px 10px; font-size: var(--fs-sm); min-height: 40px; max-width: 100%;
+  background: var(--panel); color: var(--text); border: 1.5px solid var(--line);
+  border-radius: var(--r-md); padding: 8px 10px; font-size: var(--fs-sm); min-height: 40px; max-width: 100%;
 }
 
 .ct-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: var(--fs-sm); line-height: 1.5; }
