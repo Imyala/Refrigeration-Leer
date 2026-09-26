@@ -19,6 +19,13 @@
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+  /* The least superheat the discharge gas can carry. Liquid coming back to
+     the compressor (floodback, an overfeeding valve) drives the discharge
+     temperature down toward the condensing temperature — a low discharge
+     superheat is how a technician spots it — but never below it: gas at
+     discharge pressure cannot be colder than its own saturation temperature. */
+  const MIN_DISCHARGE_SUPERHEAT = 2;
+
   // Generic 1-D linear interpolation: look up `outKey` for a given value of `inKey`.
   function interpTable(table, inKey, x, outKey) {
     const asc = table[0][inKey] < table[table.length - 1][inKey];
@@ -110,8 +117,10 @@
 
     const ratio = pHigh / pLow, baseRatio = base.pHigh / base.pLow;
     // Extra suction superheat arrives at the compressor and leaves it hotter still.
-    const tDischarge = tCond + (base.tDischarge - base.tCond) * (ratio / baseRatio) * (0.6 + 0.4 * s)
-      + f.dDisch + (fx.dSuper || 0) * 1.25;
+    const tDischarge = Math.max(
+      tCond + (base.tDischarge - base.tCond) * (ratio / baseRatio) * (0.6 + 0.4 * s)
+        + f.dDisch + (fx.dSuper || 0) * 1.25,
+      tCond + MIN_DISCHARGE_SUPERHEAT);
     const flow = D.BASE_FLOW * s;
 
     // Enthalpies straight from the table
@@ -189,7 +198,7 @@
     return out;
   }
 
-  const api = { clamp, interpTable, satTemp, satPress, deriveAt, stageWork };
+  const api = { clamp, interpTable, satTemp, satPress, deriveAt, stageWork, MIN_DISCHARGE_SUPERHEAT };
   root.RefrigModel = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

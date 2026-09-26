@@ -632,6 +632,13 @@ licence.
   signatures — are the reliable, teachable part.
 - The slider and fault models are **directionally correct but qualitative** —
   tuned for intuition, not for engineering design.
+- **The discharge never reads below the condensing temperature.** Liquid
+  coming back to the compressor (floodback, an overfeeding valve) drives the
+  discharge down toward saturation — a collapsed discharge superheat is the
+  tell — and the model floors it 2 K above, since gas at discharge pressure
+  cannot be colder than its own saturation temperature. Near the top of a
+  fluid's dome the simplified discharge enthalpy can still sit level with the
+  suction's under floodback (R32 most of all); COP is guarded against it.
 
 ## Refrigerants
 

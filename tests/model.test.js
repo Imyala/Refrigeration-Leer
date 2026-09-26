@@ -183,3 +183,33 @@ test("the new fluids sit where the trade expects them against R410A and R134a", 
   const r32 = M.deriveAt("R32", 100, 100, "none"), r410 = M.deriveAt("R410A", 100, 100, "none");
   assert.ok(r32.tDischarge > r410.tDischarge + 8, "R32 discharge temperature is the well-known problem");
 });
+
+/* Discharge gas cannot be colder than its own saturation temperature at the
+   discharge pressure. Floodback used to take it well below — R134a read 48 °C
+   against 60 °C condensing — which put a physically impossible number on the
+   simulator's readings rail and in the Diagnosis Workshop. */
+test("the discharge is never below condensing, for any fluid, fault, circuit or duty", () => {
+  for (const r of REF_KEYS) {
+    for (const f of FAULT_KEYS) {
+      for (const c of Object.keys(C.CIRCUITS)) {
+        for (const s of [50, 100, 150]) {
+          for (const l of [50, 100, 150]) {
+            const op = M.deriveAt(r, s, l, f, c);
+            assert.ok(op.tDischarge >= op.tCond + M.MIN_DISCHARGE_SUPERHEAT - 1e-9,
+              `${r}/${f}/${c} at ${s}/${l}: discharge ${op.tDischarge.toFixed(1)} against condensing ${op.tCond.toFixed(1)}`);
+          }
+        }
+      }
+    }
+  }
+});
+
+test("floodback still reads as floodback: a discharge far cooler than a healthy machine's", () => {
+  for (const r of REF_KEYS) {
+    const healthy = M.deriveAt(r, 100, 100, "none", "accumulator");
+    const flooded = M.deriveAt(r, 100, 100, "floodback", "accumulator");
+    assert.ok(flooded.tDischarge < healthy.tDischarge - 10, `${r}: floodback discharge well below healthy`);
+    assert.ok(flooded.tDischarge - flooded.tCond < 10, `${r}: discharge superheat collapsed`);
+    assert.ok(flooded.superheat <= 2, `${r}: suction superheat gone`);
+  }
+});
